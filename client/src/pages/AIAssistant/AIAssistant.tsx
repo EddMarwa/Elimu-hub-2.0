@@ -80,8 +80,9 @@ const AIAssistant: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // API Configuration
-  const API_KEY = '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';
-  const API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+  // IMPORTANT: Set REACT_APP_GROQ_API_KEY and REACT_APP_GROQ_API_URL in your .env file (never commit secrets)
+  const API_KEY = process.env.REACT_APP_GROQ_API_KEY || '';
+  const API_URL = process.env.REACT_APP_GROQ_API_URL || '';
 
   const suggestions: AISuggestion[] = [
     {
