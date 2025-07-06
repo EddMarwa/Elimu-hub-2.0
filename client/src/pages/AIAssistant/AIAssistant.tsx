@@ -80,8 +80,7 @@ const AIAssistant: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // API Configuration
-  // (Removed Groq API integration. 
-  // Add your new API integration here.)
+  // (Removed Groq API integration.  Add your new API integration here.)
 
   const suggestions: AISuggestion[] = [
     {
