@@ -1,0 +1,27 @@
+
+# Grade 6 Mathematics - Fractions
+
+## What are Fractions?
+A fraction represents a part of a whole. It consists of two numbers:
+- The numerator (top number) - tells us how many parts we have
+- The denominator (bottom number) - tells us how many equal parts the whole is divided into
+
+## Types of Fractions
+1. **Proper Fractions**: The numerator is smaller than the denominator (e.g., 3/4)
+2. **Improper Fractions**: The numerator is larger than or equal to the denominator (e.g., 5/3)
+3. **Mixed Numbers**: A whole number combined with a proper fraction (e.g., 2 1/3)
+
+## Adding Fractions
+To add fractions with the same denominator:
+1. Add the numerators
+2. Keep the same denominator
+3. Simplify if possible
+
+Example: 1/4 + 2/4 = 3/4
+
+## Real-world Applications
+Fractions are used in:
+- Cooking (measuring ingredients)
+- Sports (tracking scores)
+- Money (counting coins)
+- Time (parts of an hour)

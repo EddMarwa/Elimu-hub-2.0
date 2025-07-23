@@ -70,7 +70,7 @@ class EmbeddingRetriever:
                     name=self.collection_name
                 )
                 logger.info(f"Loaded existing collection: {self.collection_name}")
-            except ValueError:
+            except Exception:
                 # Collection doesn't exist, create it
                 self.collection = self.chroma_client.create_collection(
                     name=self.collection_name,
@@ -165,14 +165,22 @@ class EmbeddingRetriever:
                         "token_count": chunk.token_count or 0
                     }
                     
-                    # Add document metadata if available
-                    if hasattr(chunk, 'document') and chunk.document:
-                        metadata.update({
-                            "education_level": chunk.document.education_level,
-                            "subject": chunk.document.subject,
-                            "language": chunk.document.language,
-                            "filename": chunk.document.filename
-                        })
+                    # Add document metadata if available (try to avoid lazy loading)
+                    try:
+                        # Check for manually added document info first
+                        if hasattr(chunk, '_document_info'):
+                            metadata.update(chunk._document_info)
+                        elif hasattr(chunk, 'document') and chunk.document:
+                            metadata.update({
+                                "education_level": chunk.document.education_level,
+                                "subject": chunk.document.subject,
+                                "language": chunk.document.language,
+                                "filename": chunk.document.filename
+                            })
+                    except Exception:
+                        # If lazy loading fails, we'll skip document metadata for now
+                        # This can be improved by eager loading or separate queries
+                        pass
                     
                     metadatas.append(metadata)
                 
@@ -225,11 +233,21 @@ class EmbeddingRetriever:
             # Build metadata filter
             where_filter = {}
             if education_level:
-                where_filter["education_level"] = education_level
+                where_filter["education_level"] = {"$eq": education_level}
             if subject:
-                where_filter["subject"] = subject
+                where_filter["subject"] = {"$eq": subject}
             if language:
-                where_filter["language"] = language
+                where_filter["language"] = {"$eq": language}
+            
+            # If multiple filters, combine with $and
+            if len(where_filter) > 1:
+                where_filter = {"$and": [
+                    {k: v for k, v in [(key, value) for key, value in where_filter.items()]}
+                ]}
+            elif len(where_filter) == 1:
+                # Single filter can be used directly but need to restructure
+                key, value = next(iter(where_filter.items()))
+                where_filter = {key: value}
             
             # Search in ChromaDB
             search_kwargs = {
