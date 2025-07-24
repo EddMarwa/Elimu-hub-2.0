@@ -4,6 +4,7 @@ SQLAlchemy database models for Elimu Hub
 from datetime import datetime
 from enum import Enum
 from typing import Optional
+import hashlib
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Float, Boolean, JSON
 from sqlalchemy.ext.declarative import declarative_base
@@ -14,10 +15,69 @@ import uuid
 Base = declarative_base()
 
 
-class EducationLevel(str, Enum):
-    PRIMARY = "Primary"
-    JUNIOR_SECONDARY = "Junior Secondary"
-    SECONDARY = "Secondary"
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    SUPER_USER = "super_user"
+    USER = "user"
+
+
+class User(Base):
+    """User accounts and authentication"""
+    __tablename__ = "users"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    username = Column(String(50), nullable=False, unique=True)
+    email = Column(String(255), nullable=False, unique=True)
+    password_hash = Column(String(255), nullable=False)
+    
+    # User profile
+    full_name = Column(String(255), nullable=True)
+    role = Column(String(20), nullable=False, default=UserRole.USER.value)
+    is_active = Column(Boolean, default=True)
+    
+    # Account management
+    last_login = Column(DateTime, nullable=True)
+    login_count = Column(Integer, default=0)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def set_password(self, password: str):
+        """Hash and set password"""
+        self.password_hash = hashlib.sha256(password.encode()).hexdigest()
+    
+    def check_password(self, password: str) -> bool:
+        """Verify password"""
+        return self.password_hash == hashlib.sha256(password.encode()).hexdigest()
+    
+    def __repr__(self):
+        return f"<User(id={self.id}, username={self.username}, role={self.role})>"
+
+
+class EducationLevel(Base):
+    """Dynamic education levels that can be managed by super users"""
+    __tablename__ = "education_levels"
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False, unique=True)
+    name_swahili = Column(String(100), nullable=True)
+    description = Column(Text, nullable=True)
+    display_order = Column(Integer, default=0)  # For ordering in UI
+    
+    # Status and metadata
+    is_active = Column(Boolean, default=True)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    creator = relationship("User", foreign_keys=[created_by])
+    
+    def __repr__(self):
+        return f"<EducationLevel(id={self.id}, name={self.name})>"
 
 
 class Document(Base):
@@ -31,10 +91,13 @@ class Document(Base):
     file_size = Column(Integer, nullable=False)  # in bytes
     file_hash = Column(String(64), nullable=False, unique=True)  # SHA-256 hash
     
-    # Educational metadata
-    education_level = Column(String(50), nullable=False)
+    # Educational metadata - now references dynamic education levels
+    education_level_id = Column(Integer, ForeignKey("education_levels.id"), nullable=False)
     subject = Column(String(100), nullable=False)
     language = Column(String(10), default="en")  # ISO language code
+    
+    # Upload tracking
+    uploaded_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     
     # Document processing metadata
     total_pages = Column(Integer, default=0)
@@ -48,6 +111,12 @@ class Document(Base):
     processed_at = Column(DateTime, nullable=True)
     
     # Relationships
+    education_level = relationship("EducationLevel", foreign_keys=[education_level_id])
+    uploader = relationship("User", foreign_keys=[uploaded_by])
+    chunks = relationship("Chunk", back_populates="document", cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f"<Document(id={self.id}, filename={self.filename}, subject={self.subject})>"
     chunks = relationship("Chunk", back_populates="document", cascade="all, delete-orphan")
     
     def __repr__(self):

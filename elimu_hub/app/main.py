@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import List, Optional, Dict, Any
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
@@ -18,11 +18,13 @@ from dotenv import load_dotenv
 from loguru import logger
 
 # Local imports
-from .db_models import Base, Document, Chunk, Subject, QueryLog
-from .crud import DocumentCRUD, ChunkCRUD, SubjectCRUD, QueryLogCRUD, SystemMetricsCRUD
+from .db_models import Base, Document, Chunk, Subject, QueryLog, User, EducationLevel, UserRole
+from .crud import DocumentCRUD, ChunkCRUD, SubjectCRUD, QueryLogCRUD, SystemMetricsCRUD, UserCRUD, EducationLevelCRUD
 from .pdf_ingestor import PDFIngestor
 from .retriever import EmbeddingRetriever
 from .rag_runner import RAGRunner
+from . import auth
+from .auth import create_access_token, get_current_user, require_super_user, require_admin
 
 # Load environment variables
 load_dotenv()
@@ -59,6 +61,48 @@ embedding_retriever = None
 rag_runner = None
 
 # Pydantic models for API
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user_id: str
+    username: str
+    role: str
+
+class UserRequest(BaseModel):
+    username: str
+    email: str
+    password: str
+    full_name: Optional[str] = None
+    role: str = UserRole.USER.value
+
+class UserResponse(BaseModel):
+    id: str
+    username: str
+    email: str
+    full_name: Optional[str]
+    role: str
+    is_active: bool
+    created_at: datetime
+
+class EducationLevelRequest(BaseModel):
+    name: str
+    name_swahili: Optional[str] = None
+    description: Optional[str] = None
+    display_order: int = 0
+
+class EducationLevelResponse(BaseModel):
+    id: int
+    name: str
+    name_swahili: Optional[str]
+    description: Optional[str]
+    display_order: int
+    is_active: bool
+    created_at: datetime
+
 class QueryRequest(BaseModel):
     query: str = Field(..., description="The question to ask")
     education_level: Optional[str] = Field(None, description="Filter by education level")
@@ -96,6 +140,12 @@ def get_db():
     finally:
         db.close()
 
+# Set up auth module references to avoid circular imports
+auth.get_db = get_db
+auth.UserCRUD = UserCRUD  
+auth.User = User
+auth.UserRole = UserRole
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize components on startup"""
@@ -130,8 +180,10 @@ async def startup_event():
             model_name=ollama_model
         )
         
-        # Initialize default subjects
+        # Initialize default subjects and education levels
         await _initialize_default_subjects()
+        await _initialize_default_education_levels()
+        await _initialize_default_admin_user()
         
         logger.info("Elimu Hub API started successfully")
         
@@ -189,7 +241,8 @@ async def upload_document(
     subject: str = Form(...),
     language: str = Form("en"),
     background_tasks: BackgroundTasks = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     """
     Upload a PDF document for processing and indexing
@@ -198,6 +251,11 @@ async def upload_document(
         # Validate file type
         if not file.filename.lower().endswith('.pdf'):
             raise HTTPException(status_code=400, detail="Only PDF files are supported")
+        
+        # Validate education level exists
+        education_level_obj = EducationLevelCRUD.get_by_name(db, education_level)
+        if not education_level_obj or not education_level_obj.is_active:
+            raise HTTPException(status_code=400, detail="Invalid or inactive education level")
         
         # Check file size
         max_size_mb = int(os.getenv("MAX_FILE_SIZE_MB", "50"))
@@ -226,7 +284,7 @@ async def upload_document(
         with open(file_path, "wb") as f:
             f.write(file_content)
         
-        # Create document record
+        # Create document record with education level ID and uploader
         document = DocumentCRUD.create(
             db,
             filename=file_path.name,
@@ -234,9 +292,10 @@ async def upload_document(
             file_path=str(file_path),
             file_size=len(file_content),
             file_hash=file_hash,
-            education_level=education_level,
+            education_level_id=education_level_obj.id,
             subject=subject,
             language=language,
+            uploaded_by=current_user.id,
             processing_status="pending"
         )
         
@@ -624,6 +683,280 @@ async def _initialize_default_subjects():
         logger.error(f"Error initializing subjects: {e}")
     finally:
         db.close()
+
+
+async def _initialize_default_education_levels():
+    """Initialize default education levels"""
+    db = SessionLocal()
+    try:
+        default_levels = [
+            {
+                "name": "Primary",
+                "name_swahili": "Msingi",
+                "description": "Primary education levels (Grades 1-6)",
+                "display_order": 1
+            },
+            {
+                "name": "Junior Secondary",
+                "name_swahili": "Sekondari ya Chini",
+                "description": "Junior Secondary School (Grades 7-9)",
+                "display_order": 2
+            },
+            {
+                "name": "Secondary",
+                "name_swahili": "Sekondari",
+                "description": "Senior Secondary School (Grades 10-12)",
+                "display_order": 3
+            }
+        ]
+        
+        for level_data in default_levels:
+            existing_level = EducationLevelCRUD.get_by_name(db, level_data["name"])
+            if not existing_level:
+                EducationLevelCRUD.create(db, **level_data)
+        
+        logger.info("Initialized default education levels")
+        
+    except Exception as e:
+        logger.error(f"Error initializing education levels: {e}")
+    finally:
+        db.close()
+
+
+async def _initialize_default_admin_user():
+    """Initialize default admin user"""
+    db = SessionLocal()
+    try:
+        # Check if admin user exists
+        admin_user = UserCRUD.get_by_username(db, "admin")
+        if not admin_user:
+            admin_user = User(
+                username="admin",
+                email="admin@elimuhub.co.ke",
+                full_name="System Administrator",
+                role=UserRole.ADMIN.value
+            )
+            admin_user.set_password("admin123")  # Change this in production!
+            
+            UserCRUD.create(
+                db,
+                username=admin_user.username,
+                email=admin_user.email,
+                password_hash=admin_user.password_hash,
+                full_name=admin_user.full_name,
+                role=admin_user.role
+            )
+            
+            logger.warning("Created default admin user - CHANGE PASSWORD IN PRODUCTION!")
+        
+        logger.info("Admin user initialization complete")
+        
+    except Exception as e:
+        logger.error(f"Error initializing admin user: {e}")
+    finally:
+        db.close()
+
+
+# Authentication Endpoints
+@app.post("/auth/login", response_model=LoginResponse, summary="User login")
+async def login(
+    request: LoginRequest,
+    db: Session = Depends(get_db)
+):
+    """Authenticate user and return access token"""
+    user = UserCRUD.authenticate(db, request.username, request.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password"
+        )
+    
+    access_token = create_access_token(
+        user_id=str(user.id),
+        username=user.username,
+        role=user.role
+    )
+    
+    return LoginResponse(
+        access_token=access_token,
+        user_id=str(user.id),
+        username=user.username,
+        role=user.role
+    )
+
+
+@app.post("/auth/register", response_model=UserResponse, summary="Register new user")
+async def register_user(
+    request: UserRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin)
+):
+    """Register a new user (Admin only)"""
+    # Check if username or email already exists
+    if UserCRUD.get_by_username(db, request.username):
+        raise HTTPException(
+            status_code=400,
+            detail="Username already exists"
+        )
+    
+    if UserCRUD.get_by_email(db, request.email):
+        raise HTTPException(
+            status_code=400,
+            detail="Email already exists"
+        )
+    
+    # Create new user
+    new_user = User(
+        username=request.username,
+        email=request.email,
+        full_name=request.full_name,
+        role=request.role
+    )
+    new_user.set_password(request.password)
+    
+    user = UserCRUD.create(
+        db,
+        username=new_user.username,
+        email=new_user.email,
+        password_hash=new_user.password_hash,
+        full_name=new_user.full_name,
+        role=new_user.role
+    )
+    
+    return UserResponse(
+        id=str(user.id),
+        username=user.username,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role,
+        is_active=user.is_active,
+        created_at=user.created_at
+    )
+
+
+# Education Level Management Endpoints
+@app.get("/education-levels", response_model=List[EducationLevelResponse], summary="Get all education levels")
+async def get_education_levels(
+    include_inactive: bool = False,
+    db: Session = Depends(get_db)
+):
+    """Get all education levels"""
+    levels = EducationLevelCRUD.get_all(db, include_inactive=include_inactive)
+    return [
+        EducationLevelResponse(
+            id=level.id,
+            name=level.name,
+            name_swahili=level.name_swahili,
+            description=level.description,
+            display_order=level.display_order,
+            is_active=level.is_active,
+            created_at=level.created_at
+        )
+        for level in levels
+    ]
+
+
+@app.post("/education-levels", response_model=EducationLevelResponse, summary="Create education level")
+async def create_education_level(
+    request: EducationLevelRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_super_user)
+):
+    """Create a new education level (Super User only)"""
+    # Check if name already exists
+    if EducationLevelCRUD.get_by_name(db, request.name):
+        raise HTTPException(
+            status_code=400,
+            detail="Education level with this name already exists"
+        )
+    
+    level = EducationLevelCRUD.create(
+        db,
+        name=request.name,
+        name_swahili=request.name_swahili,
+        description=request.description,
+        display_order=request.display_order,
+        created_by=current_user.id
+    )
+    
+    return EducationLevelResponse(
+        id=level.id,
+        name=level.name,
+        name_swahili=level.name_swahili,
+        description=level.description,
+        display_order=level.display_order,
+        is_active=level.is_active,
+        created_at=level.created_at
+    )
+
+
+@app.put("/education-levels/{level_id}", response_model=EducationLevelResponse, summary="Update education level")
+async def update_education_level(
+    level_id: int,
+    request: EducationLevelRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_super_user)
+):
+    """Update an education level (Super User only)"""
+    level = EducationLevelCRUD.get_by_id(db, level_id)
+    if not level:
+        raise HTTPException(status_code=404, detail="Education level not found")
+    
+    # Check if new name conflicts with existing level
+    existing_level = EducationLevelCRUD.get_by_name(db, request.name)
+    if existing_level and existing_level.id != level_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Education level with this name already exists"
+        )
+    
+    updated_level = EducationLevelCRUD.update(
+        db,
+        level_id,
+        name=request.name,
+        name_swahili=request.name_swahili,
+        description=request.description,
+        display_order=request.display_order
+    )
+    
+    return EducationLevelResponse(
+        id=updated_level.id,
+        name=updated_level.name,
+        name_swahili=updated_level.name_swahili,
+        description=updated_level.description,
+        display_order=updated_level.display_order,
+        is_active=updated_level.is_active,
+        created_at=updated_level.created_at
+    )
+
+
+@app.delete("/education-levels/{level_id}", summary="Delete education level")
+async def delete_education_level(
+    level_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_super_user)
+):
+    """Soft delete an education level (Super User only)"""
+    level = EducationLevelCRUD.get_by_id(db, level_id)
+    if not level:
+        raise HTTPException(status_code=404, detail="Education level not found")
+    
+    # Check if any documents are using this level
+    documents_using_level = DocumentCRUD.get_by_filters(
+        db, education_level_id=level_id, limit=1
+    )
+    
+    if documents_using_level:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete education level that is used by documents"
+        )
+    
+    success = EducationLevelCRUD.delete(db, level_id)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete education level")
+    
+    return {"message": "Education level deleted successfully"}
 
 if __name__ == "__main__":
     import uvicorn

@@ -9,7 +9,125 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func
 
-from .db_models import Document, Chunk, Subject, QueryLog, SystemMetrics
+from .db_models import Document, Chunk, Subject, QueryLog, SystemMetrics, User, EducationLevel
+
+
+class UserCRUD:
+    """CRUD operations for User model"""
+    
+    @staticmethod
+    def create(db: Session, **kwargs) -> User:
+        """Create a new user"""
+        user = User(**kwargs)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+    
+    @staticmethod
+    def get_by_id(db: Session, user_id: UUID) -> Optional[User]:
+        """Get user by ID"""
+        return db.query(User).filter(User.id == user_id).first()
+    
+    @staticmethod
+    def get_by_username(db: Session, username: str) -> Optional[User]:
+        """Get user by username"""
+        return db.query(User).filter(User.username == username).first()
+    
+    @staticmethod
+    def get_by_email(db: Session, email: str) -> Optional[User]:
+        """Get user by email"""
+        return db.query(User).filter(User.email == email).first()
+    
+    @staticmethod
+    def authenticate(db: Session, username: str, password: str) -> Optional[User]:
+        """Authenticate user with username/password"""
+        user = UserCRUD.get_by_username(db, username)
+        if user and user.check_password(password) and user.is_active:
+            # Update login tracking
+            user.last_login = datetime.utcnow()
+            user.login_count += 1
+            db.commit()
+            return user
+        return None
+    
+    @staticmethod
+    def update_role(db: Session, user_id: UUID, new_role: str) -> Optional[User]:
+        """Update user role"""
+        user = UserCRUD.get_by_id(db, user_id)
+        if user:
+            user.role = new_role
+            user.updated_at = datetime.utcnow()
+            db.commit()
+            db.refresh(user)
+        return user
+    
+    @staticmethod
+    def get_all(db: Session, limit: int = 100, offset: int = 0) -> List[User]:
+        """Get all users with pagination"""
+        return db.query(User).offset(offset).limit(limit).all()
+
+
+class EducationLevelCRUD:
+    """CRUD operations for EducationLevel model"""
+    
+    @staticmethod
+    def create(db: Session, **kwargs) -> EducationLevel:
+        """Create a new education level"""
+        education_level = EducationLevel(**kwargs)
+        db.add(education_level)
+        db.commit()
+        db.refresh(education_level)
+        return education_level
+    
+    @staticmethod
+    def get_by_id(db: Session, level_id: int) -> Optional[EducationLevel]:
+        """Get education level by ID"""
+        return db.query(EducationLevel).filter(EducationLevel.id == level_id).first()
+    
+    @staticmethod
+    def get_by_name(db: Session, name: str) -> Optional[EducationLevel]:
+        """Get education level by name"""
+        return db.query(EducationLevel).filter(EducationLevel.name == name).first()
+    
+    @staticmethod
+    def get_all_active(db: Session) -> List[EducationLevel]:
+        """Get all active education levels ordered by display_order"""
+        return db.query(EducationLevel).filter(
+            EducationLevel.is_active == True
+        ).order_by(EducationLevel.display_order, EducationLevel.name).all()
+    
+    @staticmethod
+    def get_all(db: Session, include_inactive: bool = False) -> List[EducationLevel]:
+        """Get all education levels"""
+        query = db.query(EducationLevel)
+        if not include_inactive:
+            query = query.filter(EducationLevel.is_active == True)
+        return query.order_by(EducationLevel.display_order, EducationLevel.name).all()
+    
+    @staticmethod
+    def update(db: Session, level_id: int, **kwargs) -> Optional[EducationLevel]:
+        """Update education level"""
+        level = EducationLevelCRUD.get_by_id(db, level_id)
+        if level:
+            for key, value in kwargs.items():
+                if hasattr(level, key):
+                    setattr(level, key, value)
+            level.updated_at = datetime.utcnow()
+            db.commit()
+            db.refresh(level)
+        return level
+    
+    @staticmethod
+    def delete(db: Session, level_id: int) -> bool:
+        """Soft delete education level (set inactive)"""
+        level = EducationLevelCRUD.get_by_id(db, level_id)
+        if level:
+            level.is_active = False
+            level.updated_at = datetime.utcnow()
+            db.commit()
+            return True
+        return False
 
 
 class DocumentCRUD:
@@ -37,24 +155,30 @@ class DocumentCRUD:
     @staticmethod
     def get_by_filters(
         db: Session,
-        education_level: Optional[str] = None,
+        education_level_id: Optional[int] = None,
+        education_level_name: Optional[str] = None,
         subject: Optional[str] = None,
         language: Optional[str] = None,
         processing_status: Optional[str] = None,
+        uploaded_by: Optional[UUID] = None,
         limit: int = 100,
         offset: int = 0
     ) -> List[Document]:
         """Get documents with filters"""
-        query = db.query(Document)
+        query = db.query(Document).join(EducationLevel)
         
-        if education_level:
-            query = query.filter(Document.education_level == education_level)
+        if education_level_id:
+            query = query.filter(Document.education_level_id == education_level_id)
+        if education_level_name:
+            query = query.filter(EducationLevel.name == education_level_name)
         if subject:
             query = query.filter(Document.subject == subject)
         if language:
             query = query.filter(Document.language == language)
         if processing_status:
             query = query.filter(Document.processing_status == processing_status)
+        if uploaded_by:
+            query = query.filter(Document.uploaded_by == uploaded_by)
         
         return query.offset(offset).limit(limit).all()
     
@@ -146,7 +270,23 @@ class ChunkCRUD:
         if language:
             query = query.filter(Document.language == language)
         
-        return query.limit(limit).all()
+    @staticmethod
+    def update_vector_metadata(
+        db: Session,
+        chunk_id: UUID,
+        vector_id: str,
+        embedding_model: str
+    ) -> Optional[Chunk]:
+        """Update chunk with vector database metadata"""
+        chunk = db.query(Chunk).filter(Chunk.id == chunk_id).first()
+        if chunk:
+            chunk.vector_id = vector_id
+            chunk.embedding_model = embedding_model
+            chunk.embedding_created_at = datetime.utcnow()
+            chunk.updated_at = datetime.utcnow()
+            db.commit()
+            db.refresh(chunk)
+        return chunk
     
     @staticmethod
     def update_vector_metadata(
