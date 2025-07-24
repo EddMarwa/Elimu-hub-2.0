@@ -232,22 +232,20 @@ class EmbeddingRetriever:
             
             # Build metadata filter
             where_filter = {}
-            if education_level:
-                where_filter["education_level"] = {"$eq": education_level}
-            if subject:
-                where_filter["subject"] = {"$eq": subject}
-            if language:
-                where_filter["language"] = {"$eq": language}
+            filter_conditions = []
             
-            # If multiple filters, combine with $and
-            if len(where_filter) > 1:
-                where_filter = {"$and": [
-                    {k: v for k, v in [(key, value) for key, value in where_filter.items()]}
-                ]}
-            elif len(where_filter) == 1:
-                # Single filter can be used directly but need to restructure
-                key, value = next(iter(where_filter.items()))
-                where_filter = {key: value}
+            if education_level:
+                filter_conditions.append({"education_level": {"$eq": education_level}})
+            if subject:
+                filter_conditions.append({"subject": {"$eq": subject}})
+            if language:
+                filter_conditions.append({"language": {"$eq": language}})
+            
+            # Build proper filter structure
+            if len(filter_conditions) > 1:
+                where_filter = {"$and": filter_conditions}
+            elif len(filter_conditions) == 1:
+                where_filter = filter_conditions[0]
             
             # Search in ChromaDB
             search_kwargs = {
