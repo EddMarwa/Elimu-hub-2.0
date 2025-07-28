@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  role      UserRole @default(TEACHER)
+  school    String?
+  county    String?
+  subjects  String?  // JSON string array
+  password  String   // hashed password
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  lessonPlans   LessonPlan[]
+  schemesOfWork SchemeOfWork[]
+  documents     Document[]
+
+  @@map("users")
+}
+
+model Document {
+  id               String            @id @default(cuid())
+  title            String
+  subject          String
+  grade            String
+  documentType     DocumentType
+  fileName         String
+  filePath         String
+  extractedContent String?
+  processingStatus ProcessingStatus @default(PENDING)
+  uploadedBy       String
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Relations
+  user   User              @relation(fields: [uploadedBy], references: [id])
+  chunks DocumentChunk[]
+
+  @@map("documents")
+}
+
+model DocumentChunk {
+  id         String   @id @default(cuid())
+  documentId String
+  content    String
+  metadata   String   // JSON string
+  chunkIndex Int
+  createdAt  DateTime @default(now())
+
+  // Relations
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@map("document_chunks")
+}
+
+model LessonPlan {
+  id                   String              @id @default(cuid())
+  title                String
+  subject              String
+  grade                String
+  duration             Int                 // in minutes
+  learningOutcomes     String              // JSON string array
+  coreCompetencies     String              // JSON string array
+  values               String              // JSON string array
+  keyInquiryQuestions  String              // JSON string array
+  learningExperiences  String              // JSON string array of objects
+  assessmentCriteria   String              // JSON string array of objects
+  resources            String              // JSON string array
+  reflection           String?
+  createdBy            String
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  // Relations
+  user User @relation(fields: [createdBy], references: [id])
+
+  @@map("lesson_plans")
+}
+
+model SchemeOfWork {
+  id                String   @id @default(cuid())
+  title             String
+  subject           String
+  grade             String
+  term              Int
+  weeks             String   // JSON string array of weekly plans
+  overallObjectives String   // JSON string array
+  coreCompetencies  String   // JSON string array
+  values            String   // JSON string array
+  createdBy         String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [createdBy], references: [id])
+
+  @@map("schemes_of_work")
+}
+
+model Template {
+  id          String       @id @default(cuid())
+  name        String
+  type        TemplateType
+  subject     String?
+  grade       String?
+  content     String       // JSON template structure
+  isDefault   Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("templates")
+}
+
+// Enums
+enum UserRole {
+  TEACHER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum DocumentType {
+  CURRICULUM_DESIGN
+  TEACHERS_GUIDE
+  LEARNERS_BOOK
+  ASSESSMENT_RUBRIC
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum TemplateType {
+  LESSON_PLAN
+  SCHEME_OF_WORK
+  ASSESSMENT
+}

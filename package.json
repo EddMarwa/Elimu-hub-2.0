@@ -1,0 +1,29 @@
+{
+  "name": "elimuhub-2.0",
+  "version": "1.0.0",
+  "description": "A full-stack web application for Kenyan teachers to generate CBC-compliant lesson plans and schemes of work",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd server && npm run dev",
+    "client:dev": "cd client && npm start",
+    "server:start": "cd server && npm start",
+    "client:build": "cd client && npm run build",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "test": "cd server && npm test && cd ../client && npm test",
+    "build": "npm run client:build"
+  },
+  "keywords": [
+    "education",
+    "kenya",
+    "cbc",
+    "lesson-plans",
+    "teachers",
+    "curriculum"
+  ],
+  "author": "ElimuHub Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

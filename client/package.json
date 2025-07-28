@@ -1,0 +1,74 @@
+{
+  "name": "elimuhub-client",
+  "version": "1.0.0",
+  "description": "Frontend React application for ElimuHub 2.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.3",
+    "@mui/material": "^5.14.3",
+    "@mui/x-data-grid": "^6.10.1",
+    "@types/node": "^20.5.0",
+    "@types/react": "^18.2.20",
+    "@types/react-dom": "^18.2.7",
+    "axios": "^1.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.45.4",
+    "react-router-dom": "^6.15.0",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5",
+    "web-vitals": "^3.4.0",
+    "@hookform/resolvers": "^3.3.1",
+    "yup": "^1.2.0",
+    "react-dropzone": "^14.2.3",
+    "react-pdf": "^7.3.3",
+    "react-toastify": "^9.1.3",
+    "date-fns": "^2.30.0",
+    "tailwindcss": "^3.3.3",
+    "@tailwindcss/forms": "^0.5.6",
+    "@tailwindcss/typography": "^0.5.10",
+    "autoprefixer": "^10.4.15",
+    "postcss": "^8.4.29",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-table": "^7.8.0",
+    "framer-motion": "^10.16.4",
+    "react-query": "^3.39.3",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.10.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint src/**/*.{ts,tsx}",
+    "lint:fix": "eslint src/**/*.{ts,tsx} --fix"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.2",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.4.3",
+    "@types/jest": "^29.5.4"
+  },
+  "proxy": "http://localhost:5000"
+}
