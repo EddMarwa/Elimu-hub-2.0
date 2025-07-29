@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { Request, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import lessonPlanService from '../services/lessonPlanService';
+import { logger } from '../utils/logger';
 
 const router = Router();
 
@@ -85,30 +86,49 @@ router.post('/', asyncHandler(async (req: Request, res: Response) => {
 router.post('/generate', asyncHandler(async (req: Request, res: Response) => {
   const { subject, grade, topic, duration, context } = req.body;
   
-  // TODO: Get user ID from auth middleware
-  const createdBy = 'system'; // Temporary until auth middleware is implemented
+  try {
+    // Get the first available user for testing (in production, this would come from auth)
+    const { PrismaClient } = require('../generated/prisma');
+    const testPrisma = new PrismaClient();
+    const testUser = await testPrisma.user.findFirst();
+    await testPrisma.$disconnect();
+    
+    if (!testUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'No users found. Please run database seed first.'
+      });
+    }
 
-  if (!subject || !grade || !topic || !duration) {
-    return res.status(400).json({
+    if (!subject || !grade || !topic || !duration) {
+      return res.status(400).json({
+        success: false,
+        message: 'Subject, grade, topic, and duration are required'
+      });
+    }
+
+    const lessonPlan = await lessonPlanService.generateLessonPlanWithAI({
+      subject,
+      grade,
+      topic,
+      duration: parseInt(duration),
+      createdBy: testUser.id,
+      context
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'AI lesson plan generated successfully',
+      data: lessonPlan
+    });
+  } catch (error) {
+    logger.error('Route error:', error instanceof Error ? error.message : 'Unknown error');
+    res.status(500).json({
       success: false,
-      message: 'Subject, grade, topic, and duration are required'
+      message: 'Failed to generate lesson plan',
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
-
-  const lessonPlan = await lessonPlanService.generateLessonPlanWithAI({
-    subject,
-    grade,
-    topic,
-    duration: parseInt(duration),
-    createdBy,
-    context
-  });
-
-  res.status(201).json({
-    success: true,
-    message: 'AI lesson plan generated successfully',
-    data: lessonPlan
-  });
 }));
 
 // @desc    Update lesson plan

@@ -195,7 +195,7 @@ export class AIService {
 
       return response.data.choices[0]?.message?.content || '';
     } catch (error) {
-      logger.error('Grok API call failed:', error);
+      logger.error('Grok API call failed:', error instanceof Error ? error.message : 'Unknown error');
       throw error;
     }
   }
@@ -283,7 +283,7 @@ export class AIService {
   }
 
   private generateFallbackSchemeOfWork(data: SchemeOfWorkGenerationData): any {
-    const weeks = [];
+    const weeks: any[] = [];
     for (let i = 1; i <= data.weeks; i++) {
       weeks.push({
         week: i,
