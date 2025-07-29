@@ -15,8 +15,12 @@ import {
   Step,
   StepLabel,
   Chip,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import { AutoStories, Psychology, Groups, Assessment } from '@mui/icons-material';
+import { toast } from 'react-toastify';
+import { lessonPlansAPI } from '../../services/api';
 
 interface LessonPlan {
   subject: string;
@@ -31,6 +35,8 @@ interface LessonPlan {
 
 const LessonPlanGenerator: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [generatedPlan, setGeneratedPlan] = useState<any>(null);
   const [lessonPlan, setLessonPlan] = useState<LessonPlan>({
     subject: '',
     grade: '',
@@ -91,6 +97,46 @@ const LessonPlanGenerator: React.FC = () => {
       ...prev,
       [field]: prev[field].map((item, i) => i === index ? value : item)
     }));
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!lessonPlan.subject || !lessonPlan.grade || !lessonPlan.topic) {
+      toast.error('Please fill in subject, grade, and topic before generating');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await lessonPlansAPI.generateWithAI({
+        subject: lessonPlan.subject,
+        grade: lessonPlan.grade,
+        topic: lessonPlan.topic,
+        duration: lessonPlan.duration,
+      });
+
+      if (response.data.success) {
+        setGeneratedPlan(response.data.data);
+        toast.success('AI lesson plan generated successfully!');
+        setActiveStep(steps.length); // Move to a completion step
+      } else {
+        toast.error('Failed to generate lesson plan');
+      }
+    } catch (error) {
+      console.error('Error generating lesson plan:', error);
+      toast.error('Failed to generate lesson plan. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickGenerate = async () => {
+    // Quick generation from basic info
+    if (!lessonPlan.subject || !lessonPlan.grade || !lessonPlan.topic) {
+      toast.error('Please fill in subject, grade, and topic');
+      return;
+    }
+
+    await handleGenerateWithAI();
   };
 
   const renderStepContent = (step: number) => {
