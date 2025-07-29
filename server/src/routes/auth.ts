@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { asyncHandler } from '../middleware/errorHandler';
+import { authenticateToken, AuthenticatedRequest } from '../middleware/authMiddleware';
 import userService from '../services/userService';
 
 const router = Router();
@@ -127,12 +128,35 @@ router.post('/logout', asyncHandler(async (req: Request, res: Response) => {
 // @desc    Get user profile
 // @route   GET /api/auth/profile
 // @access  Private
-router.get('/profile', asyncHandler(async (req: Request, res: Response) => {
-  // This would require auth middleware to extract user from token
-  // For now, return a placeholder
+router.get('/profile', authenticateToken, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'User not authenticated'
+    });
+  }
+
+  // Get user details from database
+  const user = await userService.findUserById(req.user.userId);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
   res.status(200).json({
     success: true,
-    message: 'User profile endpoint - requires auth middleware implementation'
+    data: {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      school: user.school,
+      county: user.county,
+      subjects: user.subjects ? JSON.parse(user.subjects) : []
+    }
   });
 }));
 
