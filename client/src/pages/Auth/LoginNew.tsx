@@ -98,9 +98,9 @@ const LoginNew: React.FC = () => {
   };
 
   const demoCredentials = [
-    { role: 'Teacher', email: 'teacher@elimuhub.com', password: 'teacher123' },
-    { role: 'Admin', email: 'admin@elimuhub.com', password: 'admin123' },
-    { role: 'Super Admin', email: 'superadmin@elimuhub.com', password: 'superadmin123' },
+    { role: 'Teacher', email: 'teacher@elimuhub.com', password: 'password123' },
+    { role: 'Admin', email: 'admin@elimuhub.com', password: 'password123' },
+    { role: 'Super Admin', email: 'superadmin@elimuhub.com', password: 'password123' },
   ];
 
   const handleDemoLogin = (email: string, password: string) => {
