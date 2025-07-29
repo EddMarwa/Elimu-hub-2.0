@@ -1,22 +1,25 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import { Box, Typography, Container } from '@mui/material';
+import { Box, Container } from '@mui/material';
+import Navbar from './Navbar';
 
 const Layout: React.FC = () => {
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', flexDirection: 'column' }}>
-      {/* Header */}
-      <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 2 }}>
-        <Container maxWidth="lg">
-          <Typography variant="h6">
-            ElimuHub 2.0 - CBC Lesson Plans & Schemes of Work
-          </Typography>
-        </Container>
-      </Box>
+      {/* Navigation Bar */}
+      <Navbar />
       
       {/* Main Content */}
-      <Box sx={{ flex: 1, p: 3 }}>
-        <Container maxWidth="lg">
+      <Box 
+        component="main" 
+        sx={{ 
+          flex: 1, 
+          p: { xs: 2, md: 3 },
+          bgcolor: 'background.default',
+          minHeight: 'calc(100vh - 64px)', // Subtract navbar height
+        }}
+      >
+        <Container maxWidth="xl">
           <Outlet />
         </Container>
       </Box>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elimu Hub 2.0 - UI Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #fbbf24;
+        }
+        
+        .feature-card ul {
+            list-style: none;
+        }
+        
+        .feature-card li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .feature-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .demo-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .demo-section h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #fbbf24;
+        }
+        
+        .demo-accounts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .demo-account {
+            background: rgba(30, 58, 138, 0.5);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .demo-account h4 {
+            color: #fbbf24;
+            margin-bottom: 10px;
+        }
+        
+        .demo-account p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .status {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .status h3 {
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+        
+        .tech-stack {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        
+        .tech-stack h3 {
+            color: #fbbf24;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .tech-item {
+            background: rgba(30, 58, 138, 0.3);
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Elimu Hub 2.0</h1>
+            <p>Modern Educational Platform - UI/UX Overhaul Complete!</p>
+        </div>
+        
+        <div class="status">
+            <h3>✅ UI/UX Transformation Complete</h3>
+            <p>Dark blue theme implemented • Role-based authentication • Admin management system</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>🎨 New Dark Blue Theme</h3>
+                <ul>
+                    <li>Professional dark blue color palette</li>
+                    <li>Material-UI components redesigned</li>
+                    <li>Modern gradients and transitions</li>
+                    <li>Responsive design for all devices</li>
+                    <li>Improved accessibility and contrast</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🔐 Enhanced Authentication</h3>
+                <ul>
+                    <li>Modern login/register pages</li>
+                    <li>Role-based access control</li>
+                    <li>Demo accounts for testing</li>
+                    <li>Form validation and error handling</li>
+                    <li>Secure session management</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🏠 Role-Based Dashboards</h3>
+                <ul>
+                    <li>Teacher dashboard with quick actions</li>
+                    <li>Admin panel with user management</li>
+                    <li>Super admin system control</li>
+                    <li>Statistics and activity monitoring</li>
+                    <li>Personalized user experience</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>👥 Admin Management</h3>
+                <ul>
+                    <li>Complete user administration</li>
+                    <li>Role assignment and permissions</li>
+                    <li>User search and filtering</li>
+                    <li>System settings configuration</li>
+                    <li>Backup and maintenance tools</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🧭 Smart Navigation</h3>
+                <ul>
+                    <li>Role-aware menu system</li>
+                    <li>Responsive mobile navigation</li>
+                    <li>User profile dropdown</li>
+                    <li>Quick access to key features</li>
+                    <li>Breadcrumb navigation</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <h3>⚙️ System Features</h3>
+                <ul>
+                    <li>Grok AI integration ready</li>
+                    <li>Backend API running on port 5000</li>
+                    <li>Database connected and operational</li>
+                    <li>Security configurations</li>
+                    <li>Monitoring and logging</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🚀 Demo Accounts Ready</h2>
+            <p>Test the new authentication system with these pre-configured accounts:</p>
+            
+            <div class="demo-accounts">
+                <div class="demo-account">
+                    <h4>👨‍🏫 Teacher Account</h4>
+                    <p><strong>Email:</strong> teacher@demo.com</p>
+                    <p><strong>Password:</strong> password123</p>
+                    <p>Access to lesson plans, schemes of work, and educational tools</p>
+                </div>
+                
+                <div class="demo-account">
+                    <h4>👨‍💼 Admin Account</h4>
+                    <p><strong>Email:</strong> admin@demo.com</p>
+                    <p><strong>Password:</strong> password123</p>
+                    <p>User management, system overview, and administrative controls</p>
+                </div>
+                
+                <div class="demo-account">
+                    <h4>👑 Super Admin Account</h4>
+                    <p><strong>Email:</strong> superadmin@demo.com</p>
+                    <p><strong>Password:</strong> password123</p>
+                    <p>Full system control, settings, and advanced management</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tech-stack">
+            <h3>🛠️ Technology Stack</h3>
+            <div class="tech-grid">
+                <div class="tech-item"><strong>Frontend:</strong> React + TypeScript</div>
+                <div class="tech-item"><strong>UI:</strong> Material-UI + Dark Blue Theme</div>
+                <div class="tech-item"><strong>Backend:</strong> Node.js + Express</div>
+                <div class="tech-item"><strong>Database:</strong> SQLite + Prisma</div>
+                <div class="tech-item"><strong>Auth:</strong> JWT + bcryptjs</div>
+                <div class="tech-item"><strong>AI:</strong> Grok + OpenAI Integration</div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; opacity: 0.8;">
+            <p>🌟 Your modern educational platform is ready for testing and deployment!</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">Backend running on <strong>http://localhost:5000</strong> • Frontend components created and themed</p>
+        </div>
+    </div>
+</body>
+</html>

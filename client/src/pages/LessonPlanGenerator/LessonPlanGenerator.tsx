@@ -21,8 +21,6 @@ import {
 import { AutoStories, Psychology, Groups, Assessment } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { lessonPlansAPI } from '../../services/api';
-import { toast } from 'react-toastify';
-import { lessonPlansAPI } from '../../services/api';
 
 interface LessonPlan {
   subject: string;

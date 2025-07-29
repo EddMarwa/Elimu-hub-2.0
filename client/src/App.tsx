@@ -4,8 +4,13 @@ import { Box } from '@mui/material';
 
 import Layout from './components/Layout/Layout';
 import Login from './pages/Auth/Login';
+import LoginNew from './pages/Auth/LoginNew';
 import Register from './pages/Auth/Register';
+import RegisterNew from './pages/Auth/RegisterNew';
 import Dashboard from './pages/Dashboard/Dashboard';
+import DashboardNew from './pages/Dashboard/DashboardNew';
+import UserManagement from './pages/Admin/UserManagement';
+import SystemSettings from './pages/Admin/SystemSettings';
 import Documents from './pages/Documents/Documents';
 import LessonPlans from './pages/LessonPlans/LessonPlans';
 import SchemesOfWork from './pages/SchemesOfWork/SchemesOfWork';
@@ -28,13 +33,23 @@ const App: React.FC = () => {
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <Routes>
-        {/* Public routes */}
+        {/* Public routes - Using new UI components */}
         <Route 
           path="/login" 
-          element={!user ? <Login /> : <Navigate to="/dashboard" replace />} 
+          element={!user ? <LoginNew /> : <Navigate to="/dashboard" replace />} 
         />
         <Route 
           path="/register" 
+          element={!user ? <RegisterNew /> : <Navigate to="/dashboard" replace />} 
+        />
+        
+        {/* Legacy routes for testing */}
+        <Route 
+          path="/login-old" 
+          element={!user ? <Login /> : <Navigate to="/dashboard" replace />} 
+        />
+        <Route 
+          path="/register-old" 
           element={!user ? <Register /> : <Navigate to="/dashboard" replace />} 
         />
         
@@ -44,7 +59,28 @@ const App: React.FC = () => {
           element={user ? <Layout /> : <Navigate to="/login" replace />}
         >
           <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="dashboard" element={<DashboardNew />} />
+          <Route path="dashboard-old" element={<Dashboard />} />
+          
+          {/* Admin routes */}
+          <Route 
+            path="admin/users" 
+            element={
+              user && ['admin', 'super_admin'].includes(user.role || '') ? 
+              <UserManagement /> : 
+              <Navigate to="/dashboard" replace />
+            } 
+          />
+          <Route 
+            path="admin/settings" 
+            element={
+              user && user.role === 'super_admin' ? 
+              <SystemSettings /> : 
+              <Navigate to="/dashboard" replace />
+            } 
+          />
+          
+          {/* Regular app routes */}
           <Route path="upload" element={<Upload />} />
           <Route path="reference" element={<Reference />} />
           <Route path="lesson-plan-generator" element={<LessonPlanGenerator />} />

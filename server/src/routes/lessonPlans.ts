@@ -6,6 +6,36 @@ import { logger } from '../utils/logger';
 
 const router = Router();
 
+// Helper function to transform lesson plan data for frontend
+const transformLessonPlanData = (lessonPlan: any) => {
+  if (!lessonPlan) return null;
+  
+  return {
+    ...lessonPlan,
+    learningOutcomes: typeof lessonPlan.learningOutcomes === 'string' 
+      ? JSON.parse(lessonPlan.learningOutcomes) 
+      : lessonPlan.learningOutcomes || [],
+    coreCompetencies: typeof lessonPlan.coreCompetencies === 'string' 
+      ? JSON.parse(lessonPlan.coreCompetencies) 
+      : lessonPlan.coreCompetencies || [],
+    values: typeof lessonPlan.values === 'string' 
+      ? JSON.parse(lessonPlan.values) 
+      : lessonPlan.values || [],
+    keyInquiryQuestions: typeof lessonPlan.keyInquiryQuestions === 'string' 
+      ? JSON.parse(lessonPlan.keyInquiryQuestions) 
+      : lessonPlan.keyInquiryQuestions || [],
+    learningExperiences: typeof lessonPlan.learningExperiences === 'string' 
+      ? JSON.parse(lessonPlan.learningExperiences) 
+      : lessonPlan.learningExperiences || [],
+    assessmentCriteria: typeof lessonPlan.assessmentCriteria === 'string' 
+      ? JSON.parse(lessonPlan.assessmentCriteria) 
+      : lessonPlan.assessmentCriteria || [],
+    resources: typeof lessonPlan.resources === 'string' 
+      ? JSON.parse(lessonPlan.resources) 
+      : lessonPlan.resources || []
+  };
+};
+
 // @desc    Get all lesson plans
 // @route   GET /api/lesson-plans
 // @access  Public
@@ -29,9 +59,14 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
     lessonPlans = await lessonPlanService.getAllLessonPlans();
   }
 
+  // Transform the data for frontend
+  const transformedPlans = Array.isArray(lessonPlans) 
+    ? lessonPlans.map(transformLessonPlanData) 
+    : [];
+
   res.status(200).json({
     success: true,
-    data: lessonPlans
+    data: transformedPlans
   });
 }));
 
@@ -52,7 +87,7 @@ router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
 
   res.status(200).json({
     success: true,
-    data: lessonPlan
+    data: transformLessonPlanData(lessonPlan)
   });
 }));
 
@@ -119,7 +154,7 @@ router.post('/generate', asyncHandler(async (req: Request, res: Response) => {
     res.status(201).json({
       success: true,
       message: 'AI lesson plan generated successfully',
-      data: lessonPlan
+      data: transformLessonPlanData(lessonPlan)
     });
   } catch (error) {
     logger.error('Route error:', error instanceof Error ? error.message : 'Unknown error');
@@ -143,7 +178,7 @@ router.put('/:id', asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'Lesson plan updated successfully',
-    data: lessonPlan
+    data: transformLessonPlanData(lessonPlan)
   });
 }));
 
