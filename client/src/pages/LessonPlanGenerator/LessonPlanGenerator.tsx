@@ -1,0 +1,285 @@
+import React, { useState } from 'react';
+import {
+  Container,
+  Paper,
+  Typography,
+  Button,
+  Grid,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Box,
+  Stepper,
+  Step,
+  StepLabel,
+  Chip,
+} from '@mui/material';
+import { AutoStories, Psychology, Groups, Assessment } from '@mui/icons-material';
+
+interface LessonPlan {
+  subject: string;
+  grade: string;
+  topic: string;
+  duration: number;
+  objectives: string[];
+  activities: string[];
+  resources: string[];
+  assessment: string;
+}
+
+const LessonPlanGenerator: React.FC = () => {
+  const [activeStep, setActiveStep] = useState(0);
+  const [lessonPlan, setLessonPlan] = useState<LessonPlan>({
+    subject: '',
+    grade: '',
+    topic: '',
+    duration: 40,
+    objectives: [''],
+    activities: [''],
+    resources: [''],
+    assessment: '',
+  });
+
+  const steps = [
+    'Basic Information',
+    'Learning Objectives',
+    'Activities & Resources',
+    'Assessment & Review'
+  ];
+
+  const cbcSubjects = [
+    'Mathematics',
+    'English',
+    'Kiswahili',
+    'Science & Technology',
+    'Social Studies',
+    'Creative Arts',
+    'Physical Education'
+  ];
+
+  const cbcGrades = [
+    'PP1', 'PP2', 'Grade 1', 'Grade 2', 'Grade 3', 
+    'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9'
+  ];
+
+  const handleNext = () => {
+    setActiveStep((prevStep) => prevStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
+
+  const handleInputChange = (field: keyof LessonPlan, value: any) => {
+    setLessonPlan(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const addArrayItem = (field: 'objectives' | 'activities' | 'resources') => {
+    setLessonPlan(prev => ({
+      ...prev,
+      [field]: [...prev[field], '']
+    }));
+  };
+
+  const updateArrayItem = (field: 'objectives' | 'activities' | 'resources', index: number, value: string) => {
+    setLessonPlan(prev => ({
+      ...prev,
+      [field]: prev[field].map((item, i) => i === index ? value : item)
+    }));
+  };
+
+  const renderStepContent = (step: number) => {
+    switch (step) {
+      case 0:
+        return (
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel>Subject</InputLabel>
+                <Select
+                  value={lessonPlan.subject}
+                  onChange={(e) => handleInputChange('subject', e.target.value)}
+                >
+                  {cbcSubjects.map(subject => (
+                    <MenuItem key={subject} value={subject}>{subject}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth>
+                <InputLabel>Grade</InputLabel>
+                <Select
+                  value={lessonPlan.grade}
+                  onChange={(e) => handleInputChange('grade', e.target.value)}
+                >
+                  {cbcGrades.map(grade => (
+                    <MenuItem key={grade} value={grade}>{grade}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Lesson Topic"
+                value={lessonPlan.topic}
+                onChange={(e) => handleInputChange('topic', e.target.value)}
+                placeholder="Enter the main topic for this lesson"
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Duration (minutes)"
+                value={lessonPlan.duration}
+                onChange={(e) => handleInputChange('duration', parseInt(e.target.value))}
+              />
+            </Grid>
+          </Grid>
+        );
+      case 1:
+        return (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              <Psychology sx={{ mr: 1, verticalAlign: 'middle' }} />
+              Learning Objectives
+            </Typography>
+            {lessonPlan.objectives.map((objective, index) => (
+              <TextField
+                key={index}
+                fullWidth
+                multiline
+                rows={2}
+                label={`Objective ${index + 1}`}
+                value={objective}
+                onChange={(e) => updateArrayItem('objectives', index, e.target.value)}
+                sx={{ mb: 2 }}
+              />
+            ))}
+            <Button onClick={() => addArrayItem('objectives')}>
+              Add Objective
+            </Button>
+          </Box>
+        );
+      case 2:
+        return (
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>
+                <Groups sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Learning Activities
+              </Typography>
+              {lessonPlan.activities.map((activity, index) => (
+                <TextField
+                  key={index}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  label={`Activity ${index + 1}`}
+                  value={activity}
+                  onChange={(e) => updateArrayItem('activities', index, e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+              ))}
+              <Button onClick={() => addArrayItem('activities')}>
+                Add Activity
+              </Button>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>
+                <AutoStories sx={{ mr: 1, verticalAlign: 'middle' }} />
+                Resources Needed
+              </Typography>
+              {lessonPlan.resources.map((resource, index) => (
+                <TextField
+                  key={index}
+                  fullWidth
+                  label={`Resource ${index + 1}`}
+                  value={resource}
+                  onChange={(e) => updateArrayItem('resources', index, e.target.value)}
+                  sx={{ mb: 2 }}
+                />
+              ))}
+              <Button onClick={() => addArrayItem('resources')}>
+                Add Resource
+              </Button>
+            </Grid>
+          </Grid>
+        );
+      case 3:
+        return (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              <Assessment sx={{ mr: 1, verticalAlign: 'middle' }} />
+              Assessment Method
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="How will you assess student learning?"
+              value={lessonPlan.assessment}
+              onChange={(e) => handleInputChange('assessment', e.target.value)}
+              placeholder="Describe your assessment strategy..."
+            />
+          </Box>
+        );
+      default:
+        return 'Unknown step';
+    }
+  };
+
+  return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Paper sx={{ p: 4 }}>
+        <Typography variant="h4" gutterBottom align="center">
+          CBC Lesson Plan Generator
+        </Typography>
+        <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
+          Create comprehensive lesson plans aligned with CBC curriculum standards
+        </Typography>
+
+        <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+
+        <Box sx={{ mb: 4 }}>
+          {renderStepContent(activeStep)}
+        </Box>
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Button
+            disabled={activeStep === 0}
+            onClick={handleBack}
+          >
+            Back
+          </Button>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            {activeStep === steps.length - 1 ? (
+              <Button variant="contained" color="primary">
+                Generate Lesson Plan
+              </Button>
+            ) : (
+              <Button variant="contained" onClick={handleNext}>
+                Next
+              </Button>
+            )}
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
+  );
+};
+
+export default LessonPlanGenerator;
