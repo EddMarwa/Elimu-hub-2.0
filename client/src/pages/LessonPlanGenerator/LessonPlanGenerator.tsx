@@ -21,6 +21,8 @@ import {
 import { AutoStories, Psychology, Groups, Assessment } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { lessonPlansAPI } from '../../services/api';
+import { toast } from 'react-toastify';
+import { lessonPlansAPI } from '../../services/api';
 
 interface LessonPlan {
   subject: string;
@@ -360,6 +362,25 @@ const LessonPlanGenerator: React.FC = () => {
         </Stepper>
 
         <Box sx={{ mb: 4 }}>
+          {/* Quick AI Generation Section */}
+          {activeStep === 0 && lessonPlan.subject && lessonPlan.grade && lessonPlan.topic && (
+            <Alert severity="info" sx={{ mb: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography>
+                  Ready to generate? You can create an AI-powered lesson plan now or continue customizing.
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  onClick={handleQuickGenerate}
+                  disabled={loading}
+                  startIcon={loading ? <CircularProgress size={20} /> : <Psychology />}
+                >
+                  {loading ? 'Generating...' : 'Generate with AI'}
+                </Button>
+              </Box>
+            </Alert>
+          )}
+          
           {renderStepContent(activeStep)}
         </Box>
 
@@ -372,8 +393,14 @@ const LessonPlanGenerator: React.FC = () => {
           </Button>
           <Box sx={{ display: 'flex', gap: 2 }}>
             {activeStep === steps.length - 1 ? (
-              <Button variant="contained" color="primary">
-                Generate Lesson Plan
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={handleGenerateWithAI}
+                disabled={loading}
+                startIcon={loading ? <CircularProgress size={20} /> : <Psychology />}
+              >
+                {loading ? 'Generating...' : 'Generate with AI'}
               </Button>
             ) : (
               <Button variant="contained" onClick={handleNext}>
@@ -383,6 +410,9 @@ const LessonPlanGenerator: React.FC = () => {
           </Box>
         </Box>
       </Paper>
+
+      {/* Display Generated Lesson Plan */}
+      {renderGeneratedPlan()}
     </Container>
   );
 };
