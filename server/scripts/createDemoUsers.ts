@@ -44,23 +44,6 @@ async function createDemoUsers() {
     },
   });
 
-  // Create super admin user
-  const superAdminPassword = await bcrypt.hash('superadmin123', 10);
-  const superAdminUser = await prisma.user.upsert({
-    where: { email: 'superadmin@elimuhub.com' },
-    update: {},
-    create: {
-      email: 'superadmin@elimuhub.com',
-      firstName: 'Super',
-      lastName: 'Admin',
-      role: UserRole.SUPER_ADMIN,
-      school: 'ElimuHub System',
-      county: 'Nairobi',
-      subjects: JSON.stringify(['Mathematics', 'Science', 'English', 'Administration']),
-      password: superAdminPassword,
-    },
-  });
-
   console.log('✅ Demo users created successfully!');
   console.log('👨‍🏫 Teacher: teacher@elimuhub.com / teacher123');
   console.log('👤 Admin: admin@elimuhub.com / admin123');
