@@ -79,18 +79,25 @@ const Login: React.FC = () => {
 
   const demoAccounts = [
     {
+      type: 'Teacher',
+      email: 'teacher@demo.com',
+      password: 'teacher123',
+      icon: <School />,
+      color: '#2e7d32'
+    },
+    {
       type: 'Admin',
-      email: 'admin@elimuhub.com',
+      email: 'admin@demo.com',
       password: 'admin123',
       icon: <Person />,
       color: '#1976d2'
     },
     {
-      type: 'Teacher',
-      email: 'teacher@elimuhub.com', 
-      password: 'password123',
-      icon: <School />,
-      color: '#2e7d32'
+      type: 'Super Admin',
+      email: 'superadmin@demo.com',
+      password: 'superadmin123',
+      icon: <Person />,
+      color: '#9c27b0'
     }
   ];
 
