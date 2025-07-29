@@ -1,9 +1,13 @@
 import { PrismaClient, UserRole, DocumentType, ProcessingStatus, TemplateType } from '../src/generated/prisma';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Seeding database...');
+
+  // Hash the password properly
+  const hashedPassword = await bcrypt.hash('password123', 10);
 
   // Create admin user
   const adminUser = await prisma.user.upsert({
@@ -17,7 +21,7 @@ async function main() {
       school: 'ElimuHub System',
       county: 'Nairobi',
       subjects: JSON.stringify(['Mathematics', 'Science', 'English']),
-      password: '$2a$10$K1/qkKUB8B2VW5ZKJ9ZrY.5OPQKVPhHY9YzLHq7tE2C8W9P3sZ1Eq', // 'password123'
+      password: hashedPassword,
     },
   });
 
@@ -33,7 +37,7 @@ async function main() {
       school: 'Sample Primary School',
       county: 'Nairobi',
       subjects: JSON.stringify(['Mathematics', 'Science']),
-      password: '$2a$10$K1/qkKUB8B2VW5ZKJ9ZrY.5OPQKVPhHY9YzLHq7tE2C8W9P3sZ1Eq', // 'password123'
+      password: hashedPassword,
     },
   });
 
