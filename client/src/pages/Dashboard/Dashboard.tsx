@@ -90,7 +90,7 @@ const Dashboard: React.FC = () => {
               </Typography>
               <Box sx={{ mt: 1 }}>
                 <Chip 
-                  label={`${user?.subjects ? JSON.parse(user.subjects).length : 0} Subjects`} 
+                  label={`${user?.subjects ? (typeof user.subjects === 'string' ? JSON.parse(user.subjects).length : user.subjects.length) : 0} Subjects`} 
                   size="small" 
                   sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }} 
                 />
