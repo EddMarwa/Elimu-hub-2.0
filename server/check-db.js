@@ -1,4 +1,5 @@
 const { PrismaClient } = require('./src/generated/prisma');
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
@@ -6,7 +7,7 @@ async function checkDatabase() {
   try {
     console.log('🔍 Checking ElimuHub Database...\n');
 
-    // Check users
+    // Check users with password info
     const userCount = await prisma.user.count();
     console.log(`👥 Total Users: ${userCount}`);
     
@@ -20,13 +21,19 @@ async function checkDatabase() {
           role: true,
           school: true,
           county: true,
+          password: true,
           createdAt: true
         }
       });
       console.log('\n📋 Users:');
-      users.forEach(user => {
+      for (const user of users) {
         console.log(`  - ${user.firstName} ${user.lastName} (${user.email}) - ${user.role}`);
-      });
+        console.log(`    Password hash: ${user.password.substring(0, 20)}...`);
+        
+        // Test password verification
+        const isValid = await bcrypt.compare('password123', user.password);
+        console.log(`    Password 'password123' is valid: ${isValid}`);
+      }
     }
 
     // Check lesson plans
