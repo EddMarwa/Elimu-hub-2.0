@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const token = localStorage.getItem('token');
       if (token) {
         const response = await authAPI.getProfile();
-        setUser(response.data);
+        setUser(response.data.data); // Fix: accessing nested data property
       }
     } catch (error) {
       localStorage.removeItem('token');
@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<void> => {
     try {
       const response = await authAPI.login({ email, password });
-      const { token, user: userData } = response.data;
+      const { token, user: userData } = response.data.data; // Fix: accessing nested data property
       
       localStorage.setItem('token', token);
       setUser(userData);
@@ -72,7 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (userData: RegisterData): Promise<void> => {
     try {
       const response = await authAPI.register(userData);
-      const { token, user: newUser } = response.data;
+      const { token, user: newUser } = response.data.data; // Fix: accessing nested data property
       
       localStorage.setItem('token', token);
       setUser(newUser);
@@ -89,7 +89,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const updateProfile = async (userData: Partial<User>): Promise<void> => {
     try {
       const response = await authAPI.updateProfile(userData);
-      setUser(response.data);
+      setUser(response.data.data); // Fix: accessing nested data property if needed
     } catch (error) {
       throw error;
     }
