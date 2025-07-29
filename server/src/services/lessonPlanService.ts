@@ -1,5 +1,6 @@
 import { PrismaClient } from '../generated/prisma';
 import { logger } from '../utils/logger';
+import AIService from './aiService';
 
 const prisma = new PrismaClient();
 
@@ -200,6 +201,101 @@ export class LessonPlanService {
       logger.error('Error searching lesson plans:', error);
       throw error;
     }
+  }
+
+  async generateLessonPlanWithAI(data: {
+    subject: string;
+    grade: string;
+    topic: string;
+    duration: number;
+    createdBy: string;
+    context?: string;
+  }) {
+    try {
+      logger.info(`Generating AI lesson plan for ${data.subject} - ${data.topic}`);
+      
+      // Use AI service to generate lesson plan content
+      const aiData = await AIService.generateLessonPlan({
+        subject: data.subject,
+        grade: data.grade,
+        topic: data.topic,
+        duration: data.duration,
+        context: data.context
+      });
+
+      if (aiData) {
+        // Create lesson plan with AI-generated content
+        const lessonPlanData: CreateLessonPlanData = {
+          title: aiData.title || `${data.subject} - ${data.topic}`,
+          subject: data.subject,
+          grade: data.grade,
+          duration: data.duration,
+          learningOutcomes: aiData.learningOutcomes || [],
+          coreCompetencies: aiData.coreCompetencies || [],
+          values: aiData.values || [],
+          keyInquiryQuestions: aiData.keyInquiryQuestions || [],
+          learningExperiences: aiData.learningExperiences || [],
+          assessmentCriteria: aiData.assessmentCriteria || [],
+          resources: aiData.resources || [],
+          reflection: aiData.reflection || '',
+          createdBy: data.createdBy
+        };
+
+        return await this.createLessonPlan(lessonPlanData);
+      } else {
+        // Fallback to basic lesson plan if AI fails
+        return await this.createBasicLessonPlan(data);
+      }
+    } catch (error) {
+      logger.error('Error generating AI lesson plan:', error);
+      // Fallback to basic lesson plan
+      return await this.createBasicLessonPlan(data);
+    }
+  }
+
+  private async createBasicLessonPlan(data: {
+    subject: string;
+    grade: string;
+    topic: string;
+    duration: number;
+    createdBy: string;
+  }) {
+    const basicData: CreateLessonPlanData = {
+      title: `${data.subject} - ${data.topic}`,
+      subject: data.subject,
+      grade: data.grade,
+      duration: data.duration,
+      learningOutcomes: [
+        `Understand the key concepts of ${data.topic}`,
+        `Apply knowledge of ${data.topic} in practical situations`
+      ],
+      coreCompetencies: ['Critical Thinking and Problem Solving', 'Communication and Collaboration'],
+      values: ['Responsibility', 'Respect'],
+      keyInquiryQuestions: [
+        `What is ${data.topic}?`,
+        `How can we apply ${data.topic} in real life?`
+      ],
+      learningExperiences: [
+        {
+          activity: `Introduction to ${data.topic}`,
+          duration: '10 minutes',
+          methodology: 'Discussion',
+          materials: ['Whiteboard', 'Markers']
+        }
+      ],
+      assessmentCriteria: [
+        {
+          type: 'formative',
+          method: 'Observation',
+          criteria: 'Student participation and understanding'
+        }
+      ],
+      resources: ['Textbook', 'Whiteboard'],
+      reflection: 'Monitor student progress and adjust as needed.',
+      createdBy: data.createdBy
+    };
+
+    return await this.createLessonPlan(basicData);
   }
 
   async getAllLessonPlans() {
