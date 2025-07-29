@@ -3,12 +3,13 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Box } from '@mui/material';
 
 import Layout from './components/Layout/Layout';
+import Home from './pages/Home/Home';
 import Login from './pages/Auth/Login';
 import LoginNew from './pages/Auth/LoginNew';
 import Register from './pages/Auth/Register';
 import RegisterNew from './pages/Auth/RegisterNew';
 import Dashboard from './pages/Dashboard/Dashboard';
-import DashboardNew from './pages/Dashboard/DashboardNew';
+import DashboardEnhanced from './pages/Dashboard/DashboardEnhanced';
 import UserManagement from './pages/Admin/UserManagement';
 import SystemSettings from './pages/Admin/SystemSettings';
 import Documents from './pages/Documents/Documents';
@@ -22,6 +23,7 @@ import SchemeOfWorkEditor from './pages/SchemeOfWorkEditor/SchemeOfWorkEditor';
 import CBCTransition from './pages/CBCTransition/CBCTransition';
 import { useAuth } from './contexts/AuthContext';
 import LoadingSpinner from './components/Common/LoadingSpinner';
+import { UserRole } from './types';
 
 const App: React.FC = () => {
   const { user, loading } = useAuth();
@@ -33,6 +35,12 @@ const App: React.FC = () => {
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <Routes>
+        {/* Public Home Page */}
+        <Route 
+          path="/" 
+          element={!user ? <Home /> : <Navigate to="/dashboard" replace />} 
+        />
+        
         {/* Public routes - Using new UI components */}
         <Route 
           path="/login" 
@@ -52,6 +60,10 @@ const App: React.FC = () => {
           path="/register-old" 
           element={!user ? <Register /> : <Navigate to="/dashboard" replace />} 
         />
+        <Route 
+          path="/register-old" 
+          element={!user ? <Register /> : <Navigate to="/dashboard" replace />} 
+        />
         
         {/* Protected routes */}
         <Route 
@@ -59,14 +71,14 @@ const App: React.FC = () => {
           element={user ? <Layout /> : <Navigate to="/login" replace />}
         >
           <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardNew />} />
-          <Route path="dashboard-old" element={<Dashboard />} />
+          <Route path="dashboard" element={<DashboardEnhanced />} />
+          <Route path="dashboard-legacy" element={<Dashboard />} />
           
           {/* Admin routes */}
           <Route 
             path="admin/users" 
             element={
-              user && ['admin', 'super_admin'].includes(user.role || '') ? 
+              user && [UserRole.ADMIN, UserRole.SUPER_ADMIN].includes(user.role) ? 
               <UserManagement /> : 
               <Navigate to="/dashboard" replace />
             } 
@@ -74,7 +86,7 @@ const App: React.FC = () => {
           <Route 
             path="admin/settings" 
             element={
-              user && user.role === 'super_admin' ? 
+              user && user.role === UserRole.SUPER_ADMIN ? 
               <SystemSettings /> : 
               <Navigate to="/dashboard" replace />
             } 
@@ -84,7 +96,7 @@ const App: React.FC = () => {
           <Route path="upload" element={<Upload />} />
           <Route path="reference" element={<Reference />} />
           <Route path="lesson-plan-generator" element={<LessonPlanGenerator />} />
-          <Route path="scheme-of-work-editor" element={<SchemeOfWorkEditor />} />
+          <Route path="scheme-editor" element={<SchemeOfWorkEditor />} />
           <Route path="cbc-transition" element={<CBCTransition />} />
           <Route path="documents" element={<Documents />} />
           <Route path="lesson-plans" element={<LessonPlans />} />

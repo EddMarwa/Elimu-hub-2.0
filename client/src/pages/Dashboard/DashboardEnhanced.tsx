@@ -138,9 +138,9 @@ const DashboardNew: React.FC = () => {
   ];
 
   const adminActions = [
-    { title: 'User Management', icon: <SupervisorAccount />, path: '/admin/users', roles: ['admin', 'super_admin'] },
-    { title: 'System Settings', icon: <AdminPanelSettings />, path: '/admin/settings', roles: ['super_admin'] },
-    { title: 'Analytics Dashboard', icon: <Analytics />, path: '/admin/analytics', roles: ['admin', 'super_admin'] },
+    { title: 'User Management', icon: <SupervisorAccount />, path: '/admin/users', roles: ['ADMIN', 'SUPER_ADMIN'] },
+    { title: 'System Settings', icon: <AdminPanelSettings />, path: '/admin/settings', roles: ['SUPER_ADMIN'] },
+    { title: 'Analytics Dashboard', icon: <Analytics />, path: '/admin/analytics', roles: ['ADMIN', 'SUPER_ADMIN'] },
   ];
 
   const filteredAdminActions = adminActions.filter(action => 

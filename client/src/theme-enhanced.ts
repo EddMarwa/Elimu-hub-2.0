@@ -157,4 +157,18 @@ const theme = createTheme({
   },
 });
 
+// Add custom gradient utilities
+export const gradients = {
+  primary: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+  secondary: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+  success: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+  purple: 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)',
+  blue: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+  orange: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+  green: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+  hero: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+  card: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+  background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+};
+
 export default theme;
