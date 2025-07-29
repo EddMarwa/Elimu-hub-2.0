@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElimuHub 2.0 - Test Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #0A8754, #2E7D32);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #FFD700;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #FFD700;
+            color: #0A8754;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #FFC107;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: rgba(255, 0, 0, 0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .success {
+            background: rgba(0, 255, 0, 0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🇰🇪 ElimuHub 2.0 - CBC Lesson Planning System</h1>
+    
+    <!-- Login Section -->
+    <div class="container">
+        <h2>👤 Login / Register</h2>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" placeholder="Enter your email" value="teacher@elimuhub.com">
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Enter your password" value="password123">
+        </div>
+        <button onclick="login()">🚀 Login</button>
+        <button onclick="showRegister()">📝 Register New User</button>
+        <div id="authResult"></div>
+    </div>
+
+    <!-- Registration Form (hidden by default) -->
+    <div class="container" id="registerForm" style="display: none;">
+        <h2>📝 Register New User</h2>
+        <div class="form-group">
+            <label for="regEmail">Email:</label>
+            <input type="email" id="regEmail" placeholder="Enter email">
+        </div>
+        <div class="form-group">
+            <label for="regPassword">Password:</label>
+            <input type="password" id="regPassword" placeholder="Enter password">
+        </div>
+        <div class="form-group">
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" placeholder="Enter first name">
+        </div>
+        <div class="form-group">
+            <label for="lastName">Last Name:</label>
+            <input type="text" id="lastName" placeholder="Enter last name">
+        </div>
+        <div class="form-group">
+            <label for="school">School:</label>
+            <input type="text" id="school" placeholder="Enter school name">
+        </div>
+        <div class="form-group">
+            <label for="county">County:</label>
+            <input type="text" id="county" placeholder="Enter county">
+        </div>
+        <button onclick="register()">✅ Register</button>
+        <button onclick="hideRegister()">❌ Cancel</button>
+    </div>
+
+    <!-- AI Lesson Plan Generator -->
+    <div class="container">
+        <h2>🧠 AI Lesson Plan Generator</h2>
+        <div class="form-group">
+            <label for="subject">Subject:</label>
+            <select id="subject">
+                <option value="Mathematics">Mathematics</option>
+                <option value="English">English</option>
+                <option value="Science">Science</option>
+                <option value="Social Studies">Social Studies</option>
+                <option value="Kiswahili">Kiswahili</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="grade">Grade:</label>
+            <select id="grade">
+                <option value="Grade 1">Grade 1</option>
+                <option value="Grade 2">Grade 2</option>
+                <option value="Grade 3">Grade 3</option>
+                <option value="Grade 4">Grade 4</option>
+                <option value="Grade 5">Grade 5</option>
+                <option value="Grade 6">Grade 6</option>
+                <option value="Grade 7">Grade 7</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="topic">Topic:</label>
+            <input type="text" id="topic" placeholder="Enter lesson topic" value="Introduction to Fractions">
+        </div>
+        <div class="form-group">
+            <label for="duration">Duration (minutes):</label>
+            <input type="number" id="duration" value="40" min="20" max="120">
+        </div>
+        <div class="form-group">
+            <label for="context">Additional Context (optional):</label>
+            <textarea id="context" rows="3" placeholder="Any additional context or requirements..."></textarea>
+        </div>
+        <button onclick="generateLessonPlan()" id="generateBtn">🚀 Generate CBC Lesson Plan with AI</button>
+        <div id="lessonResult"></div>
+    </div>
+
+    <!-- API Status -->
+    <div class="container">
+        <h2>🔧 System Status</h2>
+        <button onclick="checkHealth()">🏥 Check API Health</button>
+        <div id="healthResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let authToken = null;
+
+        // Check API Health
+        async function checkHealth() {
+            try {
+                console.log('Checking API health...');
+                const response = await fetch('http://localhost:5000/health');
+                console.log('Health response:', response);
+                const data = await response.json();
+                console.log('Health data:', data);
+                document.getElementById('healthResult').innerHTML = 
+                    `<div class="success">✅ API is healthy! Uptime: ${Math.round(data.uptime)}s</div>`;
+            } catch (error) {
+                console.error('Health check error:', error);
+                document.getElementById('healthResult').innerHTML = 
+                    `<div class="error">❌ API connection failed: ${error.message}</div>`;
+            }
+        }
+
+        // Login function
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.data.token;
+                    document.getElementById('authResult').innerHTML = 
+                        `<div class="success">✅ Login successful! Welcome ${data.data.user.firstName}!</div>`;
+                } else {
+                    document.getElementById('authResult').innerHTML = 
+                        `<div class="error">❌ Login failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('authResult').innerHTML = 
+                    `<div class="error">❌ Login error: ${error.message}</div>`;
+            }
+        }
+
+        // Register function
+        async function register() {
+            const userData = {
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPassword').value,
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                school: document.getElementById('school').value,
+                county: document.getElementById('county').value,
+                subjects: ["Mathematics", "Science"]
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.data.token;
+                    document.getElementById('authResult').innerHTML = 
+                        `<div class="success">✅ Registration successful! Welcome ${data.data.user.firstName}!</div>`;
+                    hideRegister();
+                } else {
+                    document.getElementById('authResult').innerHTML = 
+                        `<div class="error">❌ Registration failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('authResult').innerHTML = 
+                    `<div class="error">❌ Registration error: ${error.message}</div>`;
+            }
+        }
+
+        // Generate Lesson Plan with AI
+        async function generateLessonPlan() {
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            generateBtn.textContent = '🔄 Generating with Grok AI...';
+
+            const lessonData = {
+                subject: document.getElementById('subject').value,
+                grade: document.getElementById('grade').value,
+                topic: document.getElementById('topic').value,
+                duration: parseInt(document.getElementById('duration').value),
+                context: document.getElementById('context').value
+            };
+
+            console.log('Sending lesson data:', lessonData);
+
+            try {
+                const response = await fetch(`${API_BASE}/lesson-plans/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                    },
+                    body: JSON.stringify(lessonData)
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    const lesson = data.data;
+                    let resultHTML = `
+                        <div class="success">
+                            <h3>🎉 ${lesson.title}</h3>
+                            <p><strong>Subject:</strong> ${lesson.subject} | <strong>Grade:</strong> ${lesson.grade} | <strong>Duration:</strong> ${lesson.duration} minutes</p>
+                            
+                            <h4>📚 Learning Outcomes:</h4>
+                            <ul>`;
+                    
+                    try {
+                        const outcomes = JSON.parse(lesson.learningOutcomes || '[]');
+                        outcomes.forEach(outcome => {
+                            resultHTML += `<li>${outcome}</li>`;
+                        });
+                    } catch (e) {
+                        resultHTML += `<li>Error parsing learning outcomes</li>`;
+                    }
+                    
+                    resultHTML += `</ul>
+                            <h4>🎯 Core Competencies:</h4>
+                            <p>${JSON.parse(lesson.coreCompetencies || '[]').join(', ')}</p>
+                            
+                            <h4>💎 Values:</h4>
+                            <p>${JSON.parse(lesson.values || '[]').join(', ')}</p>
+                            
+                            <h4>❓ Key Inquiry Questions:</h4>
+                            <ul>`;
+                    
+                    try {
+                        const questions = JSON.parse(lesson.keyInquiryQuestions || '[]');
+                        questions.forEach(question => {
+                            resultHTML += `<li>${question}</li>`;
+                        });
+                    } catch (e) {
+                        resultHTML += `<li>Error parsing questions</li>`;
+                    }
+                    
+                    resultHTML += `</ul>
+                            <p><em>✨ Generated via ElimuHub 2.0 with Grok AI | CBC Compliant</em></p>
+                        </div>`;
+                    
+                    document.getElementById('lessonResult').innerHTML = resultHTML;
+                } else {
+                    document.getElementById('lessonResult').innerHTML = 
+                        `<div class="error">❌ Generation failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                console.error('Generation error:', error);
+                document.getElementById('lessonResult').innerHTML = 
+                    `<div class="error">❌ Generation error: ${error.message}</div>`;
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🚀 Generate CBC Lesson Plan with AI';
+            }
+        }
+
+        function showRegister() {
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function hideRegister() {
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        // Check API health on page load
+        window.onload = function() {
+            checkHealth();
+        };
+    </script>
+</body>
+</html>
