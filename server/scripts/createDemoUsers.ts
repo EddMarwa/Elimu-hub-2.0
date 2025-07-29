@@ -64,7 +64,6 @@ async function createDemoUsers() {
   console.log('✅ Demo users created successfully!');
   console.log('👨‍🏫 Teacher: teacher@elimuhub.com / teacher123');
   console.log('👤 Admin: admin@elimuhub.com / admin123');
-  console.log('🔧 Super Admin: superadmin@elimuhub.com / superadmin123');
 }
 
 createDemoUsers()
