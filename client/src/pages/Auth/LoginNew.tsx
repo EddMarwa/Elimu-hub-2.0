@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Paper,
@@ -27,12 +27,21 @@ import {
 } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { UserRole } from '../../types';
 import { toast } from 'react-toastify';
 
 const LoginNew: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (user) {
+      const redirectPath = getRoleBasedRedirect(user.role);
+      navigate(redirectPath);
+    }
+  }, [user, navigate]);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -50,6 +59,18 @@ const LoginNew: React.FC = () => {
     setError('');
   };
 
+  const getRoleBasedRedirect = (userRole: UserRole): string => {
+    switch (userRole) {
+      case UserRole.SUPER_ADMIN:
+        return '/admin/settings'; // Super Admin goes to system settings
+      case UserRole.ADMIN:
+        return '/admin/users'; // Admin goes to user management
+      case UserRole.TEACHER:
+      default:
+        return '/dashboard'; // Teachers go to main dashboard
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -58,7 +79,16 @@ const LoginNew: React.FC = () => {
     try {
       await login(formData.email, formData.password);
       toast.success('Welcome back! Login successful.');
-      navigate('/dashboard');
+      
+      // Wait a moment for the auth context to update with user data
+      setTimeout(() => {
+        if (user) {
+          const redirectPath = getRoleBasedRedirect(user.role);
+          navigate(redirectPath);
+        } else {
+          navigate('/dashboard'); // Fallback
+        }
+      }, 100);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
       toast.error('Login failed. Please check your credentials.');
