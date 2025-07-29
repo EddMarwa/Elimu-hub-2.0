@@ -92,13 +92,7 @@ const Login: React.FC = () => {
       icon: <Person />,
       color: '#1976d2'
     },
-    {
-      type: 'Super Admin',
-      email: 'superadmin@demo.com',
-      password: 'superadmin123',
-      icon: <Person />,
-      color: '#9c27b0'
-    }
+  
   ];
 
   const fillDemoAccount = (email: string, password: string) => {
