@@ -282,6 +282,65 @@ const LessonPlanGenerator: React.FC = () => {
     }
   };
 
+  const renderGeneratedPlan = () => {
+    if (!generatedPlan) return null;
+
+    return (
+      <Paper sx={{ p: 4, mt: 3 }}>
+        <Typography variant="h4" gutterBottom color="primary">
+          🎉 Generated CBC Lesson Plan
+        </Typography>
+        
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Typography variant="h5" gutterBottom>
+              {generatedPlan.title}
+            </Typography>
+            <Box sx={{ mb: 2 }}>
+              <Chip label={`${generatedPlan.subject}`} color="primary" sx={{ mr: 1, mb: 1 }} />
+              <Chip label={`${generatedPlan.grade}`} color="secondary" sx={{ mr: 1, mb: 1 }} />
+              <Chip label={`${generatedPlan.duration} minutes`} variant="outlined" sx={{ mr: 1, mb: 1 }} />
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>Learning Outcomes</Typography>
+            <Box component="ul" sx={{ pl: 2 }}>
+              {generatedPlan.learningOutcomes?.map((outcome: string, index: number) => (
+                <li key={index}>
+                  <Typography>{outcome}</Typography>
+                </li>
+              ))}
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>Core Competencies</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {generatedPlan.coreCompetencies?.map((competency: string, index: number) => (
+                <Chip key={index} label={competency} variant="outlined" size="small" />
+              ))}
+            </Box>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+              <Button variant="contained" color="primary">
+                Export to DOCX
+              </Button>
+              <Button variant="outlined" onClick={() => {
+                setGeneratedPlan(null);
+                setActiveStep(0);
+              }}>
+                Create Another Plan
+              </Button>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+    );
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Paper sx={{ p: 4 }}>
