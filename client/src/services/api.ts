@@ -82,10 +82,18 @@ export const lessonPlansAPI = {
   generate: (request: GenerationRequest) =>
     api.post('/lesson-plans/generate', request),
   
+  generateWithAI: (data: {
+    subject: string;
+    grade: string;
+    topic: string;
+    duration: number;
+    context?: string;
+  }) => api.post('/lesson-plans/generate', data),
+  
   create: (lessonPlan: Partial<LessonPlan>) =>
     api.post('/lesson-plans', lessonPlan),
   
-  getAll: (params?: { page?: number; limit?: number; subject?: string; grade?: string }) =>
+  getAll: (params?: { page?: number; limit?: number; subject?: string; grade?: string; search?: string }) =>
     api.get('/lesson-plans', { params }),
   
   getById: (id: string) => api.get(`/lesson-plans/${id}`),
@@ -94,6 +102,9 @@ export const lessonPlansAPI = {
     api.put(`/lesson-plans/${id}`, lessonPlan),
   
   delete: (id: string) => api.delete(`/lesson-plans/${id}`),
+
+  export: (id: string, format: 'docx' | 'pdf') =>
+    api.post(`/lesson-plans/${id}/export`, { format }, { responseType: 'blob' }),
 };
 
 // Schemes of Work API
