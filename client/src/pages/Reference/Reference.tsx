@@ -332,7 +332,6 @@ const Reference: React.FC = () => {
                       <Tooltip key={index} title={quick.description}>
                         <Chip
                           label={quick.category}
-                          icon={quick.icon}
                           variant="outlined"
                           clickable
                           onClick={() => {
