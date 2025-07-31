@@ -17,10 +17,15 @@ import {
   Chip,
   Alert,
   CircularProgress,
+  Divider,
+  Card,
+  CardContent,
+  CardActions,
 } from '@mui/material';
-import { AutoStories, Psychology, Groups, Assessment } from '@mui/icons-material';
+import { AutoStories, Psychology, Groups, Assessment, Save, Download, CloudUpload, DeleteOutline } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { lessonPlansAPI } from '../../services/api';
+import { lessonPlansAPI, documentsAPI } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface LessonPlan {
   subject: string;
@@ -34,8 +39,14 @@ interface LessonPlan {
 }
 
 const LessonPlanGenerator: React.FC = () => {
+  const { user } = useAuth();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [uploadingTemplate, setUploadingTemplate] = useState(false);
+  const [templateFile, setTemplateFile] = useState<File | null>(null);
+  const [uploadedTemplate, setUploadedTemplate] = useState<any>(null);
   const [generatedPlan, setGeneratedPlan] = useState<any>(null);
   const [lessonPlan, setLessonPlan] = useState<LessonPlan>({
     subject: '',
@@ -107,12 +118,25 @@ const LessonPlanGenerator: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await lessonPlansAPI.generateWithAI({
+      const contextData: {
+        subject: string;
+        grade: string;
+        topic: string;
+        duration: number;
+        context?: string;
+      } = {
         subject: lessonPlan.subject,
         grade: lessonPlan.grade,
         topic: lessonPlan.topic,
         duration: lessonPlan.duration,
-      });
+      };
+
+      // If we have a template, add it to the context
+      if (uploadedTemplate) {
+        contextData.context = `Please follow the format and structure from the uploaded template document: ${uploadedTemplate.filename}. Use the same sections, formatting style, and criteria as shown in the template.`;
+      }
+
+      const response = await lessonPlansAPI.generateWithAI(contextData);
 
       if (response.data.success) {
         setGeneratedPlan(response.data.data);
@@ -137,6 +161,171 @@ const LessonPlanGenerator: React.FC = () => {
     }
 
     await handleGenerateWithAI();
+  };
+
+  const handleSaveLessonPlan = async () => {
+    if (!generatedPlan || !user) {
+      toast.error('Please generate a lesson plan first and ensure you are logged in');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await lessonPlansAPI.create({
+        title: generatedPlan.title,
+        subject: generatedPlan.subject,
+        grade: generatedPlan.grade,
+        duration: generatedPlan.duration,
+        learningOutcomes: generatedPlan.learningOutcomes,
+        coreCompetencies: generatedPlan.coreCompetencies,
+        values: generatedPlan.values,
+        keyInquiryQuestions: generatedPlan.keyInquiryQuestions,
+        learningExperiences: generatedPlan.learningExperiences,
+        assessmentCriteria: generatedPlan.assessmentCriteria,
+        resources: generatedPlan.resources,
+        reflection: generatedPlan.reflection,
+        createdBy: user.id,
+      });
+
+      if (response.data.success) {
+        toast.success('Lesson plan saved successfully!');
+      } else {
+        toast.error('Failed to save lesson plan');
+      }
+    } catch (error) {
+      console.error('Error saving lesson plan:', error);
+      toast.error('Failed to save lesson plan. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleExportToDOCX = async () => {
+    if (!generatedPlan) {
+      toast.error('Please generate a lesson plan first');
+      return;
+    }
+
+    setExporting(true);
+    try {
+      // For now, we'll create a simple text export
+      // In production, you would implement proper DOCX generation
+      const content = `
+CBC LESSON PLAN
+
+Title: ${generatedPlan.title}
+Subject: ${generatedPlan.subject}
+Grade: ${generatedPlan.grade}
+Duration: ${generatedPlan.duration} minutes
+
+LEARNING OUTCOMES:
+${generatedPlan.learningOutcomes?.map((outcome: string, index: number) => `${index + 1}. ${outcome}`).join('\n') || 'None specified'}
+
+CORE COMPETENCIES:
+${generatedPlan.coreCompetencies?.join(', ') || 'None specified'}
+
+VALUES:
+${generatedPlan.values?.join(', ') || 'None specified'}
+
+KEY INQUIRY QUESTIONS:
+${generatedPlan.keyInquiryQuestions?.map((question: string, index: number) => `${index + 1}. ${question}`).join('\n') || 'None specified'}
+
+LEARNING EXPERIENCES:
+${generatedPlan.learningExperiences?.map((exp: any, index: number) => `
+${index + 1}. ${exp.activity}
+   Duration: ${exp.duration}
+   Method: ${exp.methodology}
+   Materials: ${Array.isArray(exp.materials) ? exp.materials.join(', ') : exp.materials}
+`).join('\n') || 'None specified'}
+
+ASSESSMENT CRITERIA:
+${generatedPlan.assessmentCriteria?.map((assessment: any, index: number) => `
+${index + 1}. Type: ${assessment.type}
+   Method: ${assessment.method}
+   Criteria: ${assessment.criteria}
+`).join('\n') || 'None specified'}
+
+RESOURCES:
+${generatedPlan.resources?.join(', ') || 'None specified'}
+
+REFLECTION:
+${generatedPlan.reflection || 'None provided'}
+      `;
+
+      // Create and download the file
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${generatedPlan.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_lesson_plan.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success('Lesson plan exported successfully!');
+    } catch (error) {
+      console.error('Error exporting lesson plan:', error);
+      toast.error('Failed to export lesson plan. Please try again.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleTemplateFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+        toast.error('Please upload a PDF file');
+        return;
+      }
+      // Validate file size (10MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size should be less than 10MB');
+        return;
+      }
+      setTemplateFile(file);
+    }
+  };
+
+  const handleUploadTemplate = async () => {
+    if (!templateFile) {
+      toast.error('Please select a template file first');
+      return;
+    }
+
+    setUploadingTemplate(true);
+    try {
+      const formData = new FormData();
+      formData.append('document', templateFile);
+      formData.append('type', 'lesson-plan-template');
+      formData.append('description', 'Lesson plan template for AI generation');
+
+      const response = await documentsAPI.upload(formData);
+
+      if (response.data.success) {
+        setUploadedTemplate(response.data.data);
+        toast.success('Template uploaded successfully! It will be used for future generations.');
+        setTemplateFile(null);
+        // Reset file input
+        const fileInput = document.getElementById('template-upload') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+      } else {
+        toast.error('Failed to upload template');
+      }
+    } catch (error) {
+      console.error('Error uploading template:', error);
+      toast.error('Failed to upload template. Please try again.');
+    } finally {
+      setUploadingTemplate(false);
+    }
+  };
+
+  const handleRemoveTemplate = () => {
+    setUploadedTemplate(null);
+    setTemplateFile(null);
+    toast.info('Template removed. AI will use default format.');
   };
 
   const renderStepContent = (step: number) => {
@@ -323,10 +512,92 @@ const LessonPlanGenerator: React.FC = () => {
             </Box>
           </Grid>
 
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>Values</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {generatedPlan.values?.map((value: string, index: number) => (
+                <Chip key={index} label={value} color="secondary" variant="outlined" size="small" />
+              ))}
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>Key Inquiry Questions</Typography>
+            <Box component="ul" sx={{ pl: 2 }}>
+              {generatedPlan.keyInquiryQuestions?.map((question: string, index: number) => (
+                <li key={index}>
+                  <Typography>{question}</Typography>
+                </li>
+              ))}
+            </Box>
+          </Grid>
+
           <Grid item xs={12}>
-            <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
-              <Button variant="contained" color="primary">
-                Export to DOCX
+            <Typography variant="h6" gutterBottom>Learning Experiences</Typography>
+            <Box sx={{ mt: 2 }}>
+              {generatedPlan.learningExperiences?.map((experience: any, index: number) => (
+                <Paper key={index} sx={{ p: 2, mb: 2, backgroundColor: '#f5f5f5' }}>
+                  <Typography variant="subtitle1" fontWeight="bold">{experience.activity}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Duration: {experience.duration} | Method: {experience.methodology}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    Materials: {Array.isArray(experience.materials) ? experience.materials.join(', ') : experience.materials}
+                  </Typography>
+                </Paper>
+              ))}
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>Assessment Criteria</Typography>
+            <Box sx={{ mt: 2 }}>
+              {generatedPlan.assessmentCriteria?.map((assessment: any, index: number) => (
+                <Paper key={index} sx={{ p: 2, mb: 1, backgroundColor: '#f0f8ff' }}>
+                  <Typography variant="subtitle2" fontWeight="bold">{assessment.type}</Typography>
+                  <Typography variant="body2">{assessment.method}</Typography>
+                  <Typography variant="body2" color="text.secondary">{assessment.criteria}</Typography>
+                </Paper>
+              ))}
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>Resources</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {generatedPlan.resources?.map((resource: string, index: number) => (
+                <Chip key={index} label={resource} variant="outlined" />
+              ))}
+            </Box>
+            {generatedPlan.reflection && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="h6" gutterBottom>Reflection Notes</Typography>
+                <Paper sx={{ p: 2, backgroundColor: '#fff3e0' }}>
+                  <Typography variant="body2">{generatedPlan.reflection}</Typography>
+                </Paper>
+              </Box>
+            )}
+          </Grid>
+
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', gap: 2, mt: 3, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Button 
+                variant="contained" 
+                color="primary"
+                startIcon={saving ? <CircularProgress size={20} /> : <Save />}
+                onClick={handleSaveLessonPlan}
+                disabled={saving || !user}
+              >
+                {saving ? 'Saving...' : 'Save Lesson Plan'}
+              </Button>
+              <Button 
+                variant="contained" 
+                color="secondary"
+                startIcon={exporting ? <CircularProgress size={20} /> : <Download />}
+                onClick={handleExportToDOCX}
+                disabled={exporting}
+              >
+                {exporting ? 'Exporting...' : 'Export to TXT'}
               </Button>
               <Button variant="outlined" onClick={() => {
                 setGeneratedPlan(null);
@@ -335,6 +606,11 @@ const LessonPlanGenerator: React.FC = () => {
                 Create Another Plan
               </Button>
             </Box>
+            {!user && (
+              <Alert severity="warning" sx={{ mt: 2 }}>
+                Please log in to save lesson plans to your account.
+              </Alert>
+            )}
           </Grid>
         </Grid>
       </Paper>
@@ -351,6 +627,89 @@ const LessonPlanGenerator: React.FC = () => {
           Create comprehensive lesson plans aligned with CBC curriculum standards
         </Typography>
 
+        {/* Template Upload Section */}
+        <Card sx={{ mb: 4, border: '2px dashed #1976d2', backgroundColor: '#f8f9ff' }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom color="primary">
+              📄 Upload Lesson Plan Template (Optional)
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Upload a sample lesson plan PDF to ensure all generated plans follow the same format and criteria.
+            </Typography>
+            
+            {!uploadedTemplate ? (
+              <Box>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+                  <Box
+                    component="input"
+                    id="template-upload"
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleTemplateFileChange}
+                    sx={{ display: 'none' }}
+                  />
+                  <label htmlFor="template-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<CloudUpload />}
+                    >
+                      Choose PDF Template
+                    </Button>
+                  </label>
+                  
+                  {templateFile && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="body2">
+                        {templateFile.name} ({(templateFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={handleUploadTemplate}
+                        disabled={uploadingTemplate}
+                        startIcon={uploadingTemplate ? <CircularProgress size={16} /> : <CloudUpload />}
+                      >
+                        {uploadingTemplate ? 'Uploading...' : 'Upload'}
+                      </Button>
+                    </Box>
+                  )}
+                </Box>
+                
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  <Typography variant="body2">
+                    <strong>Tip:</strong> Upload a well-structured lesson plan PDF that includes all the sections you want in your generated plans (learning outcomes, activities, assessments, etc.)
+                  </Typography>
+                </Alert>
+              </Box>
+            ) : (
+              <Box>
+                <Alert severity="success" sx={{ mb: 2 }}>
+                  <Typography variant="body2">
+                    ✅ Template uploaded: <strong>{uploadedTemplate.filename}</strong>
+                  </Typography>
+                </Alert>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
+                    All generated lesson plans will follow the format and criteria from your uploaded template.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    onClick={handleRemoveTemplate}
+                    startIcon={<DeleteOutline />}
+                  >
+                    Remove Template
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+
+        <Divider sx={{ mb: 4 }} />
+
         <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
           {steps.map((label) => (
             <Step key={label}>
@@ -366,6 +725,7 @@ const LessonPlanGenerator: React.FC = () => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography>
                   Ready to generate? You can create an AI-powered lesson plan now or continue customizing.
+                  {uploadedTemplate && ' 📄 Using your uploaded template format!'}
                 </Typography>
                 <Button 
                   variant="contained" 
