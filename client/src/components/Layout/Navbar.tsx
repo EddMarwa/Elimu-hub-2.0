@@ -74,7 +74,9 @@ const Navbar: React.FC = () => {
   const navigationItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Lesson Plans', icon: <Assignment />, path: '/lesson-plans', roles: ['teacher', 'admin', 'super_admin'] },
-    { text: 'Schemes of Work', icon: <Description />, path: '/schemes', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Lesson Plan Generator', icon: <Assignment />, path: '/lesson-plan-generator', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Schemes of Work', icon: <Description />, path: '/schemes-of-work', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Scheme Generator', icon: <Description />, path: '/scheme-generator', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Documents', icon: <School />, path: '/documents', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'User Management', icon: <SupervisorAccount />, path: '/admin/users', roles: ['admin', 'super_admin'] },
     { text: 'System Settings', icon: <AdminPanelSettings />, path: '/admin/settings', roles: ['super_admin'] },
