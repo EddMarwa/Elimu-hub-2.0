@@ -286,7 +286,7 @@ const LessonPlanGenerator: React.FC = () => {
     if (!generatedPlan) return null;
 
     return (
-      <Paper sx={{ p: 4, mt: 3 }}>
+      <Paper sx={{ p: 4, mt: 3, backgroundColor: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         <Typography variant="h4" gutterBottom color="primary">
           🎉 Generated CBC Lesson Plan
         </Typography>
@@ -342,8 +342,8 @@ const LessonPlanGenerator: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper sx={{ p: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+      <Paper sx={{ p: 4, backgroundColor: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         <Typography variant="h4" gutterBottom align="center">
           CBC Lesson Plan Generator
         </Typography>
