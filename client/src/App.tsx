@@ -19,6 +19,7 @@ import Profile from './pages/Profile/Profile';
 import Upload from './pages/Upload/Upload';
 import Reference from './pages/Reference/Reference';
 import LessonPlanGenerator from './pages/LessonPlanGenerator/LessonPlanGenerator';
+import SchemeOfWorkGenerator from './pages/SchemeOfWorkGenerator/SchemeOfWorkGenerator';
 import SchemeOfWorkEditor from './pages/SchemeOfWorkEditor/SchemeOfWorkEditor';
 import CBCTransition from './pages/CBCTransition/CBCTransition';
 import { useAuth } from './contexts/AuthContext';
@@ -96,6 +97,7 @@ const App: React.FC = () => {
           <Route path="upload" element={<Upload />} />
           <Route path="reference" element={<Reference />} />
           <Route path="lesson-plan-generator" element={<LessonPlanGenerator />} />
+          <Route path="scheme-generator" element={<SchemeOfWorkGenerator />} />
           <Route path="scheme-editor" element={<SchemeOfWorkEditor />} />
           <Route path="cbc-transition" element={<CBCTransition />} />
           <Route path="documents" element={<Documents />} />
