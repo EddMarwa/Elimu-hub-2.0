@@ -109,19 +109,25 @@ export const lessonPlansAPI = {
 
 // Schemes of Work API
 export const schemesAPI = {
-  generate: (request: GenerationRequest) =>
-    api.post('/schemes/generate', request),
+  generateWithAI: (data: {
+    subject: string;
+    grade: string;
+    term: string;
+    strand: string;
+    subStrand?: string;
+    weeks: number;
+    duration: string;
+    context?: string;
+  }) => api.post('/schemes/generate', data),
   
-  create: (scheme: Partial<SchemeOfWork>) =>
-    api.post('/schemes', scheme),
+  create: (scheme: any) => api.post('/schemes', scheme),
   
-  getAll: (params?: { page?: number; limit?: number; subject?: string; grade?: string }) =>
+  getAll: (params?: { page?: number; limit?: number; subject?: string; grade?: string; term?: string }) =>
     api.get('/schemes', { params }),
   
   getById: (id: string) => api.get(`/schemes/${id}`),
   
-  update: (id: string, scheme: Partial<SchemeOfWork>) =>
-    api.put(`/schemes/${id}`, scheme),
+  update: (id: string, scheme: any) => api.put(`/schemes/${id}`, scheme),
   
   delete: (id: string) => api.delete(`/schemes/${id}`),
 };
