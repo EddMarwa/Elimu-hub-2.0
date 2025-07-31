@@ -298,11 +298,9 @@ const SchemeOfWorkGenerator: React.FC = () => {
       ];
 
       // Convert to CSV format
-      const csv = csvContent.map(row => 
-        row.map(cell => `"${cell?.toString().replace(/"/g, '""') || ''}"`).join(',')
-      ).join('\n');
-
-      // Create and download the file
+      const csv = csvContent.map(row =>
+        row.map((cell: any) => `"${cell?.toString().replace(/"/g, '""') || ''}"`).join(',')
+      ).join('\n');      // Create and download the file
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');

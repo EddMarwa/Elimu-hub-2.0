@@ -1,5 +1,5 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../generated/prisma';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/authMiddleware';
 import { logger } from '../utils/logger';
 import OpenAI from 'openai';
@@ -50,7 +50,7 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
 
     const scheme = await prisma.schemeOfWork.findFirst({
       where: {
-        id: parseInt(id),
+        id: id,
         createdBy: userId
       }
     });
@@ -102,11 +102,11 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
         strand,
         subStrand,
         duration,
-        weeks,
+        weeks: parseInt(weeks),
         generalObjectives: JSON.stringify(generalObjectives),
         weeklyPlans: JSON.stringify(weeklyPlans),
         resources: JSON.stringify(resources),
-        createdBy: userId
+        createdBy: userId!
       }
     });
 
@@ -152,7 +152,7 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
     // Check if scheme exists and belongs to user
     const existingScheme = await prisma.schemeOfWork.findFirst({
       where: {
-        id: parseInt(id),
+        id: id,
         createdBy: userId
       }
     });
@@ -165,7 +165,7 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
     }
 
     const updatedScheme = await prisma.schemeOfWork.update({
-      where: { id: parseInt(id) },
+      where: { id: id },
       data: {
         title,
         subject,
@@ -174,7 +174,7 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
         strand,
         subStrand,
         duration,
-        weeks,
+        weeks: parseInt(weeks),
         generalObjectives: JSON.stringify(generalObjectives),
         weeklyPlans: JSON.stringify(weeklyPlans),
         resources: JSON.stringify(resources),
@@ -211,7 +211,7 @@ router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res) 
     // Check if scheme exists and belongs to user
     const existingScheme = await prisma.schemeOfWork.findFirst({
       where: {
-        id: parseInt(id),
+        id: id,
         createdBy: userId
       }
     });
@@ -224,7 +224,7 @@ router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res) 
     }
 
     await prisma.schemeOfWork.delete({
-      where: { id: parseInt(id) }
+      where: { id: id }
     });
 
     logger.info(`Scheme of work deleted: ${id} by user ${userId}`);
