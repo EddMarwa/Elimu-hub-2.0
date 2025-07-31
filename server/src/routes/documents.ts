@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { asyncHandler } from '../middleware/errorHandler';
 import PDFProcessor from '../services/pdfProcessor';
+import DocumentProcessor from '../services/documentProcessor';
 import EmbeddingService from '../services/embeddingService';
 import { logger } from '../utils/logger';
 
@@ -31,10 +32,22 @@ const upload = multer({
     fileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760') // 10MB default
   },
   fileFilter: (req: any, file: any, cb: any) => {
-    if (file.mimetype === 'application/pdf') {
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    
+    const allowedExtensions = ['.pdf', '.doc', '.docx', '.txt', '.xls', '.xlsx'];
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    
+    if (allowedMimeTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF files are allowed'));
+      cb(new Error('Only PDF, Word, text, and Excel files are allowed'));
     }
   }
 });
@@ -58,16 +71,16 @@ router.post('/upload', upload.single('document'), asyncHandler(async (req: Reque
     logger.info(`Processing uploaded document: ${filename}`);
 
     // Initialize services
-    const pdfProcessor = PDFProcessor.getInstance();
+    const documentProcessor = DocumentProcessor.getInstance();
     const embeddingService = EmbeddingService.getInstance();
 
-    // Process the PDF
-    const processedDoc = await pdfProcessor.processPDF(filePath);
+    // Process the document (supports PDF, Word, text, Excel)
+    const processedDoc = await documentProcessor.processDocument(filePath);
 
     if (!processedDoc.success) {
       return res.status(400).json({
         success: false,
-        message: 'Failed to process PDF',
+        message: `Failed to process ${processedDoc.fileType || 'document'}`,
         error: processedDoc.error
       });
     }
@@ -93,6 +106,7 @@ router.post('/upload', upload.single('document'), asyncHandler(async (req: Reque
         subject,
         grade,
         documentType,
+        fileType: processedDoc.fileType,
         pages: processedDoc.pages || 1,
         extractedTextLength: processedDoc.extractedText?.length || 0
       }
