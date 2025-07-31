@@ -27,10 +27,19 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { AutoStories, Psychology, Groups, Assessment, Save, Download, CloudUpload, DeleteOutline, TableView } from '@mui/icons-material';
+import { 
+  AutoStories, 
+  Psychology, 
+  Assessment, 
+  Save, 
+  Download, 
+  Settings
+} from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { documentsAPI } from '../../services/api';
+import { schemesAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import TemplateManager from '../../components/TemplateManager/TemplateManager';
+import ExportDialog from '../../components/ExportDialog/ExportDialog';
 
 interface SchemeOfWork {
   subject: string;
@@ -63,11 +72,10 @@ const SchemeOfWorkGenerator: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const [uploadingTemplate, setUploadingTemplate] = useState(false);
-  const [templateFile, setTemplateFile] = useState<File | null>(null);
-  const [uploadedTemplate, setUploadedTemplate] = useState<any>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [generatedScheme, setGeneratedScheme] = useState<any>(null);
+  const [templateManagerOpen, setTemplateManagerOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [schemeOfWork, setSchemeOfWork] = useState<SchemeOfWork>({
     subject: '',
     grade: '',
@@ -154,64 +162,35 @@ const SchemeOfWorkGenerator: React.FC = () => {
         type: 'scheme-of-work'
       };
 
-      // If we have a template, add it to the context
-      if (uploadedTemplate) {
-        contextData.context = `Please follow the format and structure from the uploaded template document: ${uploadedTemplate.filename}. Use the same sections, formatting style, and criteria as shown in the template for the scheme of work.`;
-      }
-
-      // For now, we'll simulate the AI response since the actual API endpoint needs to be implemented
-      // In production, you would call: const response = await schemesAPI.generateWithAI(contextData);
-      
-      // Simulated response structure
-      const mockResponse = {
-        data: {
-          success: true,
-          data: {
-            title: `${schemeOfWork.subject} - ${schemeOfWork.grade} - ${schemeOfWork.term} Scheme of Work`,
-            subject: schemeOfWork.subject,
-            grade: schemeOfWork.grade,
-            term: schemeOfWork.term,
-            strand: schemeOfWork.strand,
-            subStrand: schemeOfWork.subStrand,
-            duration: schemeOfWork.duration,
-            weeks: schemeOfWork.weeks,
-            generalObjectives: [
-              'Develop understanding of key concepts',
-              'Apply knowledge in practical situations',
-              'Demonstrate critical thinking skills'
-            ],
-            weeklyPlans: Array.from({ length: schemeOfWork.weeks }, (_, i) => ({
-              week: i + 1,
-              topic: `Week ${i + 1} Topic: Core Concepts ${i + 1}`,
-              specificObjectives: [
-                `By the end of week ${i + 1}, learners should be able to understand basic concepts`,
-                `Apply knowledge gained in week ${i + 1} activities`
-              ],
-              keyInquiryQuestions: [
-                `What are the main concepts in week ${i + 1}?`,
-                `How can we apply these concepts practically?`
-              ],
-              learningExperiences: [
-                'Interactive discussions and group work',
-                'Hands-on activities and experiments',
-                'Individual and collaborative projects'
-              ],
-              coreCompetencies: ['Communication', 'Critical Thinking', 'Creativity'],
-              values: ['Responsibility', 'Integrity', 'Respect'],
-              resources: ['Textbooks', 'Charts', 'Digital resources'],
-              assessmentMethods: ['Observation', 'Oral questions', 'Written tasks']
-            }))
+      // If we have a selected template, fetch its content and add to context
+      if (selectedTemplate) {
+        try {
+          const templateResponse = await schemesAPI.getTemplate(selectedTemplate.id);
+          if (templateResponse.data.success) {
+            const templateData = templateResponse.data.data;
+            contextData.templateContent = {
+              extractedText: templateData.extractedText,
+              filename: templateData.originalName
+            };
+            contextData.context = `Please follow the format and structure from the uploaded template document: ${templateData.originalName}. Use the same sections, formatting style, and criteria as shown in the template for the scheme of work.`;
           }
+        } catch (templateError) {
+          console.warn('Could not fetch template content, proceeding without template:', templateError);
         }
-      };
-
-      if (mockResponse.data.success) {
-        setGeneratedScheme(mockResponse.data.data);
-        toast.success('AI scheme of work generated successfully!');
-        setActiveStep(steps.length); // Move to a completion step
-      } else {
-        toast.error('Failed to generate scheme of work');
       }
+
+      // Call the AI generation API
+      const response = await schemesAPI.generateWithAI(contextData);
+      
+      if (response.data.success) {
+        const generatedData = response.data.data;
+        setGeneratedScheme(generatedData);
+        setActiveStep(3); // Move to export step
+        toast.success('Scheme of work generated successfully!');
+      } else {
+        throw new Error(response.data.message || 'Failed to generate scheme of work');
+      }
+
     } catch (error) {
       console.error('Error generating scheme of work:', error);
       toast.error('Failed to generate scheme of work. Please try again.');
@@ -238,11 +217,14 @@ const SchemeOfWorkGenerator: React.FC = () => {
 
     setSaving(true);
     try {
-      // This would be implemented with the schemes API
-      // const response = await schemesAPI.create(generatedScheme);
+      // Save the generated scheme using the API
+      const response = await schemesAPI.create(generatedScheme);
       
-      // Simulated save
-      toast.success('Scheme of work saved successfully!');
+      if (response.data.success) {
+        toast.success('Scheme of work saved successfully!');
+      } else {
+        throw new Error(response.data.message || 'Failed to save scheme of work');
+      }
     } catch (error) {
       console.error('Error saving scheme of work:', error);
       toast.error('Failed to save scheme of work. Please try again.');
@@ -252,144 +234,20 @@ const SchemeOfWorkGenerator: React.FC = () => {
   };
 
   const handleExportToExcel = async () => {
-    if (!generatedScheme) {
-      toast.error('Please generate a scheme of work first');
-      return;
-    }
-
-    setExporting(true);
-    try {
-      // Create CSV content that can be opened in Excel
-      const headers = [
-        'Week',
-        'Topic',
-        'Specific Objectives',
-        'Key Inquiry Questions',
-        'Learning Experiences',
-        'Core Competencies',
-        'Values',
-        'Resources',
-        'Assessment Methods'
-      ];
-
-      const csvContent = [
-        // Title rows
-        [`${generatedScheme.title}`],
-        [`Subject: ${generatedScheme.subject}, Grade: ${generatedScheme.grade}, Term: ${generatedScheme.term}`],
-        [`Strand: ${generatedScheme.strand}, Sub-Strand: ${generatedScheme.subStrand}`],
-        [`Duration: ${generatedScheme.duration}, Total Weeks: ${generatedScheme.weeks}`],
-        [''], // Empty row
-        ['General Objectives:'],
-        ...generatedScheme.generalObjectives.map((obj: string) => [`• ${obj}`]),
-        [''], // Empty row
-        headers, // Column headers
-        // Weekly data
-        ...generatedScheme.weeklyPlans.map((week: WeeklyPlan) => [
-          week.week.toString(),
-          week.topic,
-          week.specificObjectives.join('; '),
-          week.keyInquiryQuestions.join('; '),
-          week.learningExperiences.join('; '),
-          week.coreCompetencies.join(', '),
-          week.values.join(', '),
-          week.resources.join(', '),
-          week.assessmentMethods.join(', ')
-        ])
-      ];
-
-      // Convert to CSV format
-      const csv = csvContent.map(row =>
-        row.map((cell: any) => `"${cell?.toString().replace(/"/g, '""') || ''}"`).join(',')
-      ).join('\n');      // Create and download the file
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${generatedScheme.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_scheme_of_work.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.success('Scheme of work exported to CSV successfully! You can open it in Excel.');
-    } catch (error) {
-      console.error('Error exporting scheme of work:', error);
-      toast.error('Failed to export scheme of work. Please try again.');
-    } finally {
-      setExporting(false);
-    }
+    setExportDialogOpen(true);
   };
 
-  const handleTemplateFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Define supported file types
-      const supportedTypes = [
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'text/plain',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'text/csv'
-      ];
-      
-      const supportedExtensions = ['.pdf', '.doc', '.docx', '.txt', '.xls', '.xlsx', '.csv'];
-      
-      // Validate file type
-      const isValidType = supportedTypes.includes(file.type) || 
-                         supportedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
-      
-      if (!isValidType) {
-        toast.error('Please upload a PDF, Word document, text file, Excel file, or CSV file');
-        return;
-      }
-      
-      // Validate file size (10MB max)
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('File size should be less than 10MB');
-        return;
-      }
-      setTemplateFile(file);
-    }
-  };
-
-  const handleUploadTemplate = async () => {
-    if (!templateFile) {
-      toast.error('Please select a template file first');
-      return;
-    }
-
-    setUploadingTemplate(true);
-    try {
-      const formData = new FormData();
-      formData.append('document', templateFile);
-      formData.append('type', 'scheme-of-work-template');
-      formData.append('description', 'Scheme of work template for AI generation');
-
-      const response = await documentsAPI.upload(formData);
-
-      if (response.data.success) {
-        setUploadedTemplate(response.data.data);
-        toast.success('Template uploaded successfully! It will be used for future generations.');
-        setTemplateFile(null);
-        // Reset file input
-        const fileInput = document.getElementById('template-upload') as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
-      } else {
-        toast.error('Failed to upload template');
-      }
-    } catch (error) {
-      console.error('Error uploading template:', error);
-      toast.error('Failed to upload template. Please try again.');
-    } finally {
-      setUploadingTemplate(false);
+  const handleTemplateSelect = (template: any) => {
+    setSelectedTemplate(template);
+    if (template) {
+      toast.success(`Template "${template.originalName}" selected!`);
+    } else {
+      toast.info('Template selection cleared');
     }
   };
 
   const handleRemoveTemplate = () => {
-    setUploadedTemplate(null);
-    setTemplateFile(null);
+    setSelectedTemplate(null);
     toast.info('Template removed. AI will use default format.');
   };
 
@@ -675,11 +533,11 @@ const SchemeOfWorkGenerator: React.FC = () => {
               <Button 
                 variant="contained" 
                 color="secondary"
-                startIcon={exporting ? <CircularProgress size={20} /> : <TableView />}
+                startIcon={<Download />}
                 onClick={handleExportToExcel}
-                disabled={exporting}
+                disabled={false}
               >
-                {exporting ? 'Exporting...' : 'Export to Excel (CSV)'}
+                Export Scheme
               </Button>
               <Button variant="outlined" onClick={() => {
                 setGeneratedScheme(null);
@@ -709,83 +567,51 @@ const SchemeOfWorkGenerator: React.FC = () => {
           Create comprehensive schemes of work aligned with CBC curriculum standards
         </Typography>
 
-        {/* Template Upload Section */}
+        {/* Template Management Section */}
         <Card sx={{ mb: 4, border: '2px dashed #1976d2', backgroundColor: '#f8f9ff' }}>
           <CardContent>
             <Typography variant="h6" gutterBottom color="primary">
-              📊 Upload Scheme of Work Template (Optional)
+              📊 Template Management (Optional)
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Upload a sample scheme of work in PDF, Word, Excel, CSV, or text format to ensure all generated schemes follow the same format and criteria.
+              Select or upload a scheme of work template to ensure all generated schemes follow the same format and criteria.
             </Typography>
             
-            {!uploadedTemplate ? (
-              <Box>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
-                  <Box
-                    component="input"
-                    id="template-upload"
-                    type="file"
-                    accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.csv,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
-                    onChange={handleTemplateFileChange}
-                    sx={{ display: 'none' }}
-                  />
-                  <label htmlFor="template-upload">
-                    <Button
-                      variant="outlined"
-                      component="span"
-                      startIcon={<CloudUpload />}
-                    >
-                      Choose Template File
-                    </Button>
-                  </label>
-                  
-                  {templateFile && (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography variant="body2">
-                        {templateFile.name} ({(templateFile.size / 1024 / 1024).toFixed(2)} MB)
-                      </Typography>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={handleUploadTemplate}
-                        disabled={uploadingTemplate}
-                        startIcon={uploadingTemplate ? <CircularProgress size={16} /> : <CloudUpload />}
-                      >
-                        {uploadingTemplate ? 'Uploading...' : 'Upload'}
-                      </Button>
-                    </Box>
-                  )}
-                </Box>
-                
-                <Alert severity="info" sx={{ mt: 2 }}>
-                  <Typography variant="body2">
-                    <strong>Tip:</strong> Upload a well-structured scheme of work in Excel (.xlsx/.xls), CSV (.csv), PDF, Word (.doc/.docx), or text (.txt) format that includes weekly breakdowns, objectives, and assessment methods.
-                  </Typography>
-                </Alert>
-              </Box>
-            ) : (
-              <Box>
-                <Alert severity="success" sx={{ mb: 2 }}>
-                  <Typography variant="body2">
-                    ✅ Template uploaded: <strong>{uploadedTemplate.filename}</strong>
-                  </Typography>
-                </Alert>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
-                    All generated schemes of work will follow the format and criteria from your uploaded template.
-                  </Typography>
-                  <Button
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+              <Button
+                variant="outlined"
+                startIcon={<Settings />}
+                onClick={() => setTemplateManagerOpen(true)}
+              >
+                Manage Templates
+              </Button>
+              
+              {selectedTemplate && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Chip
+                    label={`Selected: ${selectedTemplate.originalName}`}
+                    color="primary"
                     variant="outlined"
-                    color="error"
-                    size="small"
-                    onClick={handleRemoveTemplate}
-                    startIcon={<DeleteOutline />}
-                  >
-                    Remove Template
-                  </Button>
+                    onDelete={handleRemoveTemplate}
+                  />
                 </Box>
-              </Box>
+              )}
+            </Box>
+            
+            {selectedTemplate ? (
+              <Alert severity="success">
+                <Typography variant="body2">
+                  ✅ Template selected: <strong>{selectedTemplate.originalName}</strong>
+                  {selectedTemplate.subject && ` (${selectedTemplate.subject})`}
+                  {selectedTemplate.grade && ` - ${selectedTemplate.grade}`}
+                </Typography>
+              </Alert>
+            ) : (
+              <Alert severity="info">
+                <Typography variant="body2">
+                  <strong>Tip:</strong> Select a template to guide AI generation, or upload a new one if needed. Templates can be in PDF, Word, Excel, CSV, or text format.
+                </Typography>
+              </Alert>
             )}
           </CardContent>
         </Card>
@@ -807,7 +633,7 @@ const SchemeOfWorkGenerator: React.FC = () => {
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography>
                   Ready to generate? You can create an AI-powered scheme of work now or continue customizing.
-                  {uploadedTemplate && ' 📊 Using your uploaded template format!'}
+                  {selectedTemplate && ' 📊 Using your selected template format!'}
                 </Typography>
                 <Button 
                   variant="contained" 
@@ -853,6 +679,22 @@ const SchemeOfWorkGenerator: React.FC = () => {
 
       {/* Display Generated Scheme of Work */}
       {renderGeneratedScheme()}
+
+      {/* Template Manager Dialog */}
+      <TemplateManager
+        open={templateManagerOpen}
+        onClose={() => setTemplateManagerOpen(false)}
+        onTemplateSelect={handleTemplateSelect}
+        selectedTemplate={selectedTemplate}
+        allowUpload={true}
+      />
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+        scheme={generatedScheme}
+      />
     </Container>
   );
 };

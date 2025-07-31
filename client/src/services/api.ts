@@ -118,7 +118,26 @@ export const schemesAPI = {
     weeks: number;
     duration: string;
     context?: string;
+    templateContent?: any;
   }) => api.post('/schemes/generate', data),
+  
+  uploadTemplate: (file: File, metadata?: { subject?: string; grade?: string }) => {
+    const formData = new FormData();
+    formData.append('template', file);
+    if (metadata?.subject) formData.append('subject', metadata.subject);
+    if (metadata?.grade) formData.append('grade', metadata.grade);
+    return api.post('/schemes/upload-template', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  
+  getTemplates: () => api.get('/schemes/templates'),
+  
+  getTemplate: (id: string) => api.get(`/schemes/templates/${id}`),
+  
+  deleteTemplate: (id: string) => api.delete(`/schemes/templates/${id}`),
   
   create: (scheme: any) => api.post('/schemes', scheme),
   

@@ -25,9 +25,10 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  lessonPlans   LessonPlan[]
-  schemesOfWork SchemeOfWork[]
-  documents     Document[]
+  lessonPlans     LessonPlan[]
+  schemesOfWork   SchemeOfWork[]
+  schemeTemplates SchemeTemplate[]
+  documents       Document[]
 
   @@map("users")
 }
@@ -112,6 +113,26 @@ model SchemeOfWork {
   user User @relation(fields: [createdBy], references: [id])
 
   @@map("schemes_of_work")
+}
+
+model SchemeTemplate {
+  id            String   @id @default(cuid())
+  filename      String
+  originalName  String
+  filePath      String
+  mimeType      String
+  fileSize      Int
+  extractedText String?  // Processed content from the template
+  subject       String?
+  grade         String?
+  uploadedBy    String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [uploadedBy], references: [id])
+
+  @@map("scheme_templates")
 }
 
 model Template {

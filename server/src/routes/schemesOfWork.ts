@@ -1,11 +1,59 @@
 import express from 'express';
+import multer from 'multer';
+import rateLimit from 'express-rate-limit';
 import { PrismaClient } from '../generated/prisma';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/authMiddleware';
 import { logger } from '../utils/logger';
 import OpenAI from 'openai';
+import { DocumentProcessor } from '../services/documentProcessor';
 
 const router = express.Router();
 const prisma = new PrismaClient();
+
+// Rate limiting for AI generation
+const aiGenerationLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 3, // 3 requests per minute per user
+  message: {
+    success: false,
+    message: 'Too many AI generation requests. Please wait a minute before trying again.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'uploads/schemes/');
+    },
+    filename: (req, file, cb) => {
+      const timestamp = Date.now();
+      const originalName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      cb(null, `${timestamp}-${originalName}`);
+    },
+  }),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'text/plain',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel'
+    ];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PDF, Word, Text, and Excel files are allowed.'));
+    }
+  },
+});
 
 // Initialize OpenAI (if available)
 let openai: OpenAI | null = null;
@@ -19,19 +67,68 @@ if (process.env.OPENAI_API_KEY) {
 router.get('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const userId = req.user?.userId;
-    
-    const schemes = await prisma.schemeOfWork.findMany({
-      where: {
-        createdBy: userId
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    });
+    const { 
+      page = 1, 
+      limit = 10, 
+      subject, 
+      grade, 
+      term, 
+      search 
+    } = req.query;
+
+    // Build where clause
+    const where: any = {
+      createdBy: userId
+    };
+
+    if (subject) where.subject = subject;
+    if (grade) where.grade = grade;
+    if (term) where.term = term;
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { subject: { contains: search, mode: 'insensitive' } },
+        { strand: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    const skip = (Number(page) - 1) * Number(limit);
+    const take = Number(limit);
+
+    const [schemes, total] = await Promise.all([
+      prisma.schemeOfWork.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc'
+        },
+        skip,
+        take,
+        select: {
+          id: true,
+          title: true,
+          subject: true,
+          grade: true,
+          term: true,
+          strand: true,
+          subStrand: true,
+          duration: true,
+          weeks: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      }),
+      prisma.schemeOfWork.count({ where })
+    ]);
 
     res.json({
       success: true,
-      data: schemes
+      data: schemes,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        pages: Math.ceil(total / Number(limit))
+      }
     });
   } catch (error) {
     logger.error('Error fetching schemes of work:', error);
@@ -92,6 +189,21 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
       weeklyPlans,
       resources
     } = req.body;
+
+    // Validation
+    if (!title || !subject || !grade || !term || !strand || !duration || !weeks) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: title, subject, grade, term, strand, duration, weeks'
+      });
+    }
+
+    if (isNaN(parseInt(weeks)) || parseInt(weeks) < 1 || parseInt(weeks) > 20) {
+      return res.status(400).json({
+        success: false,
+        message: 'Weeks must be a number between 1 and 20'
+      });
+    }
 
     const scheme = await prisma.schemeOfWork.create({
       data: {
@@ -242,8 +354,178 @@ router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res) 
   }
 });
 
+// Upload template for scheme of work generation
+router.post('/upload-template', authenticateToken, upload.single('template'), async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No template file uploaded'
+      });
+    }
+
+    const userId = req.user?.userId;
+    const { subject, grade } = req.body; // Optional metadata
+    
+    // Process the uploaded document
+    const documentProcessor = DocumentProcessor.getInstance();
+    const processingResult = await documentProcessor.processDocument(req.file.path);
+
+    // Save template to database
+    const template = await prisma.schemeTemplate.create({
+      data: {
+        filename: `${Date.now()}-${req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
+        originalName: req.file.originalname,
+        filePath: req.file.path,
+        mimeType: req.file.mimetype,
+        fileSize: req.file.size,
+        extractedText: processingResult.extractedText || '',
+        subject: subject || null,
+        grade: grade || null,
+        uploadedBy: userId!
+      }
+    });
+
+    logger.info(`Template uploaded and saved: ${req.file.originalname} by user ${userId}`);
+
+    res.json({
+      success: true,
+      message: 'Template uploaded successfully',
+      data: {
+        id: template.id,
+        filename: template.originalName,
+        size: template.fileSize,
+        subject: template.subject,
+        grade: template.grade,
+        uploadedAt: template.createdAt
+      }
+    });
+
+  } catch (error) {
+    logger.error('Error uploading template:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to upload template'
+    });
+  }
+});
+
+// Get user's templates
+router.get('/templates', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const userId = req.user?.userId;
+    
+    const templates = await prisma.schemeTemplate.findMany({
+      where: {
+        uploadedBy: userId
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      select: {
+        id: true,
+        originalName: true,
+        subject: true,
+        grade: true,
+        fileSize: true,
+        createdAt: true
+      }
+    });
+
+    res.json({
+      success: true,
+      data: templates
+    });
+  } catch (error) {
+    logger.error('Error fetching templates:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch templates'
+    });
+  }
+});
+
+// Get template by ID (for generation)
+router.get('/templates/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.userId;
+
+    const template = await prisma.schemeTemplate.findFirst({
+      where: {
+        id: id,
+        uploadedBy: userId
+      }
+    });
+
+    if (!template) {
+      return res.status(404).json({
+        success: false,
+        message: 'Template not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: template
+    });
+  } catch (error) {
+    logger.error('Error fetching template:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch template'
+    });
+  }
+});
+
+// Delete template
+router.delete('/templates/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.userId;
+
+    const template = await prisma.schemeTemplate.findFirst({
+      where: {
+        id: id,
+        uploadedBy: userId
+      }
+    });
+
+    if (!template) {
+      return res.status(404).json({
+        success: false,
+        message: 'Template not found'
+      });
+    }
+
+    // Delete file from filesystem
+    const fs = require('fs');
+    if (fs.existsSync(template.filePath)) {
+      fs.unlinkSync(template.filePath);
+    }
+
+    // Delete from database
+    await prisma.schemeTemplate.delete({
+      where: { id: id }
+    });
+
+    logger.info(`Template deleted: ${template.originalName} by user ${userId}`);
+
+    res.json({
+      success: true,
+      message: 'Template deleted successfully'
+    });
+  } catch (error) {
+    logger.error('Error deleting template:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete template'
+    });
+  }
+});
+
 // Generate scheme of work with AI
-router.post('/generate', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.post('/generate', authenticateToken, aiGenerationLimiter, async (req: AuthenticatedRequest, res) => {
   try {
     const {
       subject,
@@ -253,7 +535,8 @@ router.post('/generate', authenticateToken, async (req: AuthenticatedRequest, re
       subStrand,
       weeks,
       duration,
-      context
+      context,
+      templateContent // Add template content parameter
     } = req.body;
 
     if (!openai) {
@@ -263,7 +546,8 @@ router.post('/generate', authenticateToken, async (req: AuthenticatedRequest, re
       });
     }
 
-    const prompt = `
+    // Enhanced prompt with template integration
+    let prompt = `
 Generate a comprehensive CBC (Competency Based Curriculum) scheme of work with the following details:
 
 Subject: ${subject}
@@ -275,6 +559,14 @@ Duration: ${duration}
 Number of Weeks: ${weeks}
 
 ${context ? `Additional Context: ${context}` : ''}
+
+${templateContent ? `
+TEMPLATE REFERENCE:
+Use the following template content as a guide for structure, format, and style:
+${templateContent.extractedText || ''}
+
+Please follow the formatting patterns, section organization, and content depth shown in the template.
+` : ''}
 
 Please structure the scheme of work as follows:
 
