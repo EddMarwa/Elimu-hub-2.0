@@ -20,7 +20,6 @@ import {
   Divider,
   Card,
   CardContent,
-  CardActions,
 } from '@mui/material';
 import { AutoStories, Psychology, Groups, Assessment, Save, Download, CloudUpload, DeleteOutline } from '@mui/icons-material';
 import { toast } from 'react-toastify';
@@ -118,13 +117,7 @@ const LessonPlanGenerator: React.FC = () => {
 
     setLoading(true);
     try {
-      const contextData: {
-        subject: string;
-        grade: string;
-        topic: string;
-        duration: number;
-        context?: string;
-      } = {
+      const contextData: any = {
         subject: lessonPlan.subject,
         grade: lessonPlan.grade,
         topic: lessonPlan.topic,
@@ -275,11 +268,27 @@ ${generatedPlan.reflection || 'None provided'}
   const handleTemplateFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Define supported file types
+      const supportedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ];
+      
+      const supportedExtensions = ['.pdf', '.doc', '.docx', '.txt', '.xls', '.xlsx'];
+      
       // Validate file type
-      if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-        toast.error('Please upload a PDF file');
+      const isValidType = supportedTypes.includes(file.type) || 
+                         supportedExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+      
+      if (!isValidType) {
+        toast.error('Please upload a PDF, Word document, text file, or Excel file');
         return;
       }
+      
       // Validate file size (10MB max)
       if (file.size > 10 * 1024 * 1024) {
         toast.error('File size should be less than 10MB');
@@ -634,7 +643,7 @@ ${generatedPlan.reflection || 'None provided'}
               📄 Upload Lesson Plan Template (Optional)
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Upload a sample lesson plan PDF to ensure all generated plans follow the same format and criteria.
+              Upload a sample lesson plan in PDF, Word, text, or Excel format to ensure all generated plans follow the same format and criteria.
             </Typography>
             
             {!uploadedTemplate ? (
@@ -644,7 +653,7 @@ ${generatedPlan.reflection || 'None provided'}
                     component="input"
                     id="template-upload"
                     type="file"
-                    accept=".pdf"
+                    accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     onChange={handleTemplateFileChange}
                     sx={{ display: 'none' }}
                   />
@@ -654,7 +663,7 @@ ${generatedPlan.reflection || 'None provided'}
                       component="span"
                       startIcon={<CloudUpload />}
                     >
-                      Choose PDF Template
+                      Choose Template File
                     </Button>
                   </label>
                   
@@ -678,7 +687,7 @@ ${generatedPlan.reflection || 'None provided'}
                 
                 <Alert severity="info" sx={{ mt: 2 }}>
                   <Typography variant="body2">
-                    <strong>Tip:</strong> Upload a well-structured lesson plan PDF that includes all the sections you want in your generated plans (learning outcomes, activities, assessments, etc.)
+                    <strong>Tip:</strong> Upload a well-structured lesson plan in PDF, Word (.doc/.docx), text (.txt), or Excel (.xls/.xlsx) format that includes all the sections you want in your generated plans (learning outcomes, activities, assessments, etc.)
                   </Typography>
                 </Alert>
               </Box>
