@@ -61,21 +61,21 @@ interface LibrarySection {
   id: string;
   name: string;
   description?: string;
-  order: number;
-  isActive: boolean;
-  _count: {
+  order?: number;
+  isActive?: boolean;
+  _count?: {
     files: number;
   };
-  subfolders: LibrarySubfolder[];
+  subfolders?: LibrarySubfolder[];
 }
 
 interface LibrarySubfolder {
   id: string;
   name: string;
-  sectionId: string;
+  sectionId?: string;
   metadata?: any;
-  order: number;
-  _count: {
+  order?: number;
+  _count?: {
     files: number;
   };
 }
@@ -95,8 +95,14 @@ interface LibraryFile {
     lastName: string;
     email: string;
   };
-  section: LibrarySection;
-  subfolder?: LibrarySubfolder;
+  section: {
+    id: string;
+    name: string;
+  };
+  subfolder?: {
+    id: string;
+    name: string;
+  };
 }
 
 const LessonPlans: React.FC = () => {
@@ -173,7 +179,7 @@ const LessonPlans: React.FC = () => {
   const handleSectionClick = (section: LibrarySection) => {
     setCurrentSection(section);
     setCurrentSubfolder(null);
-    if (section.subfolders.length === 0) {
+    if (!section.subfolders || section.subfolders.length === 0) {
       loadFiles(section.id);
     }
   };
@@ -281,7 +287,7 @@ const LessonPlans: React.FC = () => {
           variant="body1"
           onClick={() => {
             setCurrentSubfolder(null);
-            if (currentSection.subfolders.length === 0) {
+            if (!currentSection.subfolders || currentSection.subfolders.length === 0) {
               loadFiles(currentSection.id);
             }
           }}
@@ -319,12 +325,12 @@ const LessonPlans: React.FC = () => {
               )}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Chip
-                  label={`${section._count.files} files`}
+                  label={`${section._count?.files || 0} files`}
                   size="small"
                   color="primary"
                   variant="outlined"
                 />
-                {section.subfolders.length > 0 && (
+                {section.subfolders && section.subfolders.length > 0 && (
                   <Chip
                     label={`${section.subfolders.length} folders`}
                     size="small"
@@ -362,7 +368,7 @@ const LessonPlans: React.FC = () => {
 
   const renderSubfolders = () => (
     <Grid container spacing={2}>
-      {currentSection?.subfolders.map((subfolder) => (
+      {currentSection?.subfolders?.map((subfolder) => (
         <Grid item xs={12} sm={6} md={3} key={subfolder.id}>
           <Card
             sx={{
@@ -376,7 +382,7 @@ const LessonPlans: React.FC = () => {
               <Folder color="secondary" sx={{ fontSize: 40, mb: 1 }} />
               <Typography variant="subtitle1">{subfolder.name}</Typography>
               <Chip
-                label={`${subfolder._count.files} files`}
+                label={`${subfolder._count?.files || 0} files`}
                 size="small"
                 variant="outlined"
               />
@@ -575,8 +581,8 @@ const LessonPlans: React.FC = () => {
       {renderBreadcrumbs()}
 
       {!currentSection && renderSections()}
-      {currentSection && !currentSubfolder && currentSection.subfolders.length > 0 && renderSubfolders()}
-      {((currentSection && currentSubfolder) || (currentSection && currentSection.subfolders.length === 0)) && (
+      {currentSection && !currentSubfolder && currentSection.subfolders && currentSection.subfolders.length > 0 && renderSubfolders()}
+      {((currentSection && currentSubfolder) || (currentSection && (!currentSection.subfolders || currentSection.subfolders.length === 0))) && (
         <>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h6">
