@@ -43,13 +43,14 @@ import {
   CheckCircle,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { UserRole } from '../../types';
 
 interface User {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: 'teacher' | 'admin' | 'super_admin';
+  role: UserRole;
   school?: string;
   county?: string;
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
@@ -69,14 +70,14 @@ const UserManagement: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
 
   useEffect(() => {
-    // Simulate loading users
+    // Simulate loading users - updated for UserRole enum
     const mockUsers: User[] = [
       {
         id: '1',
         firstName: 'John',
         lastName: 'Doe',
         email: 'john.doe@school.edu',
-        role: 'teacher',
+        role: UserRole.TEACHER,
         school: 'Nairobi Primary School',
         county: 'Nairobi',
         status: 'ACTIVE',
@@ -88,7 +89,7 @@ const UserManagement: React.FC = () => {
         firstName: 'Jane',
         lastName: 'Smith',
         email: 'jane.smith@education.go.ke',
-        role: 'admin',
+        role: UserRole.ADMIN,
         school: 'Ministry of Education',
         county: 'Nairobi',
         status: 'ACTIVE',
@@ -100,7 +101,7 @@ const UserManagement: React.FC = () => {
         firstName: 'Mary',
         lastName: 'Johnson',
         email: 'mary.johnson@school.edu',
-        role: 'teacher',
+        role: UserRole.TEACHER,
         school: 'Mombasa Secondary School',
         county: 'Mombasa',
         status: 'INACTIVE',
@@ -190,12 +191,12 @@ const UserManagement: React.FC = () => {
   const userStats = {
     total: users.length,
     active: users.filter(u => u.status === 'ACTIVE').length,
-    teachers: users.filter(u => u.role === 'teacher').length,
-    admins: users.filter(u => u.role === 'admin' || u.role === 'super_admin').length,
+    teachers: users.filter(u => u.role === UserRole.TEACHER).length,
+    admins: users.filter(u => u.role === UserRole.ADMIN || u.role === UserRole.SUPER_ADMIN).length,
   };
 
   // Check if current user has permission to manage users
-  if (!currentUser || !['admin', 'super_admin'].includes(currentUser.role || '')) {
+  if (!currentUser || ![UserRole.ADMIN, UserRole.SUPER_ADMIN].includes(currentUser.role || '' as UserRole)) {
     return (
       <Container maxWidth="lg" sx={{ py: 3 }}>
         <Alert severity="error">
@@ -434,7 +435,7 @@ const UserManagement: React.FC = () => {
           <Block sx={{ mr: 1 }} />
           {selectedUser?.status === 'ACTIVE' ? 'Suspend' : 'Activate'}
         </MenuItem>
-                            {currentUser?.role === 'super_admin' && (
+                            {currentUser?.role === UserRole.SUPER_ADMIN && (
           <MenuItem onClick={handleDeleteUser} sx={{ color: 'error.main' }}>
             <Delete sx={{ mr: 1 }} />
             Delete User
@@ -476,14 +477,14 @@ const UserManagement: React.FC = () => {
                 <FormControl fullWidth>
                   <InputLabel>Role</InputLabel>
                   <Select
-                    defaultValue={selectedUser?.role || 'teacher'}
+                    defaultValue={selectedUser?.role || UserRole.TEACHER}
                     input={<OutlinedInput label="Role" />}
                   >
-                    <MenuItem value="teacher">Teacher</MenuItem>
-                    {currentUser?.role === 'super_admin' && (
+                    <MenuItem value={UserRole.TEACHER}>Teacher</MenuItem>
+                    {currentUser?.role === UserRole.SUPER_ADMIN && (
                       <>
-                        <MenuItem value="admin">Admin</MenuItem>
-                        <MenuItem value="super_admin">Super Admin</MenuItem>
+                        <MenuItem value={UserRole.ADMIN}>Admin</MenuItem>
+                        <MenuItem value={UserRole.SUPER_ADMIN}>Super Admin</MenuItem>
                       </>
                     )}
                   </Select>
