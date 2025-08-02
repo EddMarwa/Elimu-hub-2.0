@@ -19,6 +19,8 @@ import lessonPlanRoutes from './routes/lessonPlans';
 import schemeRoutes from './routes/schemesOfWork';
 import templateRoutes from './routes/templates';
 import userRoutes from './routes/users';
+import libraryRoutes from './routes/library';
+import adminUserRoutes from './routes/admin/users';
 
 // Load environment variables
 dotenv.config();
@@ -73,6 +75,8 @@ app.use('/api/lesson-plans', lessonPlanRoutes);
 app.use('/api/schemes', schemeRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/library', libraryRoutes);
+app.use('/api/admin/users', adminUserRoutes);
 
 // API info endpoint
 app.get('/api', (req, res) => {
@@ -86,7 +90,9 @@ app.get('/api', (req, res) => {
       lessonPlans: '/api/lesson-plans',
       schemes: '/api/schemes',
       templates: '/api/templates',
-      users: '/api/users'
+      users: '/api/users',
+      library: '/api/library',
+      adminUsers: '/api/admin/users'
     }
   });
 });

@@ -8,10 +8,14 @@ export interface CreateSchemeOfWorkData {
   subject: string;
   grade: string;
   term: number;
+  strand?: string;
+  subStrand?: string;
+  duration?: string;
   weeks: any[];
   overallObjectives: string[];
-  coreCompetencies: string[];
-  values: string[];
+  coreCompetencies?: string[];
+  values?: string[];
+  resources?: string[];
   createdBy: string;
 }
 
@@ -34,11 +38,14 @@ export class SchemeOfWorkService {
           title: data.title,
           subject: data.subject,
           grade: data.grade,
-          term: data.term,
-          weeks: JSON.stringify(data.weeks),
-          overallObjectives: JSON.stringify(data.overallObjectives),
-          coreCompetencies: JSON.stringify(data.coreCompetencies),
-          values: JSON.stringify(data.values),
+          term: String(data.term),
+          strand: data.strand || '',
+          subStrand: data.subStrand,
+          duration: data.duration || '1 term',
+          weeks: typeof data.weeks === 'number' ? data.weeks : (Array.isArray(data.weeks) ? data.weeks.length : 12),
+          generalObjectives: JSON.stringify(data.overallObjectives || []),
+          weeklyPlans: JSON.stringify(data.weeks || []),
+          resources: JSON.stringify(data.resources || []),
           createdBy: data.createdBy,
         },
         include: {
