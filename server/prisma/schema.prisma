@@ -21,6 +21,7 @@ model User {
   county    String?
   subjects  String?  // JSON string array
   password  String   // hashed password
+  status    UserStatus @default(ACTIVE)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -29,6 +30,8 @@ model User {
   schemesOfWork   SchemeOfWork[]
   schemeTemplates SchemeTemplate[]
   documents       Document[]
+  libraryFiles    LibraryFile[]
+  auditLogs       AuditLog[]
 
   @@map("users")
 }
@@ -156,6 +159,12 @@ enum UserRole {
   SUPER_ADMIN
 }
 
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
 enum DocumentType {
   CURRICULUM_DESIGN
   TEACHERS_GUIDE
@@ -174,4 +183,109 @@ enum TemplateType {
   LESSON_PLAN
   SCHEME_OF_WORK
   ASSESSMENT
+}
+
+enum LibraryFileStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+enum LibraryFileType {
+  PDF
+  VIDEO
+  AUDIO
+  IMAGE
+  DOCUMENT
+}
+
+enum AuditAction {
+  CREATE_USER
+  UPDATE_USER
+  DELETE_USER
+  UPLOAD_FILE
+  APPROVE_FILE
+  DECLINE_FILE
+  DELETE_FILE
+  CREATE_SECTION
+  CREATE_SUBFOLDER
+}
+
+// Library System Models
+model LibrarySection {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  subfolders LibrarySubfolder[]
+  files      LibraryFile[]
+
+  @@map("library_sections")
+}
+
+model LibrarySubfolder {
+  id        String   @id @default(cuid())
+  name      String
+  sectionId String
+  metadata  String?  // JSON for flexible data (e.g., grade, subject, year)
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  section LibrarySection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  files   LibraryFile[]
+
+  @@unique([sectionId, name])
+  @@map("library_subfolders")
+}
+
+model LibraryFile {
+  id           String            @id @default(cuid())
+  filename     String
+  originalName String
+  filePath     String
+  fileType     LibraryFileType
+  fileSize     Int
+  mimeType     String
+  status       LibraryFileStatus @default(PENDING)
+  sectionId    String
+  subfolderId  String?
+  uploadedBy   String
+  approvedBy   String?
+  metadata     String?           // JSON for additional file info
+  description  String?
+  tags         String?           // JSON array of tags
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  // Relations
+  section    LibrarySection     @relation(fields: [sectionId], references: [id])
+  subfolder  LibrarySubfolder?  @relation(fields: [subfolderId], references: [id])
+  uploader   User               @relation(fields: [uploadedBy], references: [id])
+
+  @@map("library_files")
+}
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  action      AuditAction
+  entityType  String      // Type of entity (User, LibraryFile, etc.)
+  entityId    String      // ID of the entity
+  userId      String      // User who performed the action
+  details     String?     // JSON with additional details
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime    @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
 }
