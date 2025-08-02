@@ -48,6 +48,7 @@ import {
   Schedule,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { UserRole } from '../../types';
 
 interface SystemSetting {
   id: string;
@@ -274,7 +275,7 @@ const SystemSettings: React.FC = () => {
   const filteredSettings = settings.filter(setting => setting.category === selectedCategory);
 
   // Check if current user has permission
-  if (!currentUser || currentUser.role !== 'super_admin') {
+  if (!currentUser || currentUser.role !== UserRole.SUPER_ADMIN) {
     return (
       <Container maxWidth="lg" sx={{ py: 3 }}>
         <Alert severity="error">

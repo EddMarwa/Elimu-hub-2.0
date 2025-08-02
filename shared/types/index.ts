@@ -14,9 +14,9 @@ export interface User {
 }
 
 export enum UserRole {
-  TEACHER = 'teacher',
-  ADMIN = 'admin',
-  SUPER_ADMIN = 'super_admin'
+  TEACHER = 'TEACHER',
+  ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN'
 }
 
 export interface LessonPlan {
