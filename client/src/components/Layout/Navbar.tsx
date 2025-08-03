@@ -33,11 +33,11 @@ import {
   AdminPanelSettings,
   AutoAwesome,
   AutoFixHigh,
-  CloudUpload,
   MenuBook,
   Transform,
   Home,
   MoreVert,
+  Psychology,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -94,7 +94,7 @@ const Navbar: React.FC = () => {
     { text: 'Lesson Plan Generator', icon: <AutoAwesome />, path: '/lesson-plan-generator', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Schemes of Work', icon: <Description />, path: '/schemes-of-work', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Scheme Generator', icon: <AutoFixHigh />, path: '/scheme-generator', roles: ['teacher', 'admin', 'super_admin'] },
-    { text: 'Upload', icon: <CloudUpload />, path: '/upload', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Elimu Hub AI', icon: <Psychology />, path: '/ai-assistant', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Reference', icon: <MenuBook />, path: '/reference', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'CBC Transition', icon: <Transform />, path: '/cbc-transition', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Documents', icon: <School />, path: '/documents', roles: ['teacher', 'admin', 'super_admin'] },
