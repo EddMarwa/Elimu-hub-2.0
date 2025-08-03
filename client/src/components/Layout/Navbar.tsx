@@ -31,19 +31,28 @@ import {
   Notifications,
   SupervisorAccount,
   AdminPanelSettings,
+  AutoAwesome,
+  AutoFixHigh,
+  CloudUpload,
+  MenuBook,
+  Transform,
+  Home,
+  MoreVert,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notificationAnchor, setNotificationAnchor] = useState<null | HTMLElement>(null);
+  const [moreMenuAnchor, setMoreMenuAnchor] = useState<null | HTMLElement>(null);
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -61,6 +70,14 @@ const Navbar: React.FC = () => {
     setNotificationAnchor(null);
   };
 
+  const handleMoreMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setMoreMenuAnchor(event.currentTarget);
+  };
+
+  const handleMoreMenuClose = () => {
+    setMoreMenuAnchor(null);
+  };
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -72,11 +89,14 @@ const Navbar: React.FC = () => {
   };
 
   const navigationItems = [
-    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard', roles: ['teacher', 'admin', 'super_admin'], isHome: true },
     { text: 'Lesson Plans', icon: <Assignment />, path: '/lesson-plans', roles: ['teacher', 'admin', 'super_admin'] },
-    { text: 'Lesson Plan Generator', icon: <Assignment />, path: '/lesson-plan-generator', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Lesson Plan Generator', icon: <AutoAwesome />, path: '/lesson-plan-generator', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Schemes of Work', icon: <Description />, path: '/schemes-of-work', roles: ['teacher', 'admin', 'super_admin'] },
-    { text: 'Scheme Generator', icon: <Description />, path: '/scheme-generator', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Scheme Generator', icon: <AutoFixHigh />, path: '/scheme-generator', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Upload', icon: <CloudUpload />, path: '/upload', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Reference', icon: <MenuBook />, path: '/reference', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'CBC Transition', icon: <Transform />, path: '/cbc-transition', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Documents', icon: <School />, path: '/documents', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'User Management', icon: <SupervisorAccount />, path: '/admin/users', roles: ['admin', 'super_admin'] },
     { text: 'System Settings', icon: <AdminPanelSettings />, path: '/admin/settings', roles: ['super_admin'] },
@@ -88,7 +108,19 @@ const Navbar: React.FC = () => {
 
   const drawer = (
     <Box sx={{ width: 250 }} onClick={handleDrawerToggle}>
-      <Box sx={{ p: 2, textAlign: 'center', bgcolor: 'primary.main', color: 'white' }}>
+      <Box 
+        sx={{ 
+          p: 2, 
+          textAlign: 'center', 
+          bgcolor: 'primary.main', 
+          color: 'white',
+          cursor: 'pointer',
+          '&:hover': {
+            bgcolor: 'primary.dark',
+          },
+        }}
+        onClick={() => navigate('/dashboard')}
+      >
         <Typography variant="h6" noWrap>
           ElimuHub 2.0
         </Typography>
@@ -98,28 +130,45 @@ const Navbar: React.FC = () => {
       </Box>
       <Divider />
       <List>
-        {filteredNavigationItems.map((item) => (
-          <ListItem
-            key={item.text}
-            onClick={() => navigate(item.path)}
-            sx={{
-              cursor: 'pointer',
-              '&:hover': {
-                bgcolor: 'primary.light',
-                color: 'white',
-                '& .MuiListItemIcon-root': {
+        {filteredNavigationItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <ListItem
+              key={item.text}
+              onClick={() => navigate(item.path)}
+              sx={{
+                cursor: 'pointer',
+                bgcolor: isActive ? 'rgba(25, 118, 210, 0.15)' : 'transparent',
+                borderLeft: isActive ? '4px solid' : 'none',
+                borderLeftColor: isActive ? 'primary.main' : 'transparent',
+                fontWeight: isActive ? 'bold' : 'normal',
+                '&:hover': {
+                  bgcolor: 'primary.light',
                   color: 'white',
+                  '& .MuiListItemIcon-root': {
+                    color: 'white',
+                  },
                 },
-              },
-              transition: 'all 0.2s ease-in-out',
-            }}
-          >
-            <ListItemIcon sx={{ color: 'primary.main' }}>
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
+                transition: 'all 0.2s ease-in-out',
+              }}
+            >
+              <ListItemIcon sx={{ 
+                color: isActive ? 'primary.main' : 'primary.main',
+                fontWeight: isActive ? 'bold' : 'normal',
+              }}>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText 
+                primary={item.text}
+                sx={{
+                  '& .MuiTypography-root': {
+                    fontWeight: isActive ? 'bold' : 'normal',
+                  },
+                }}
+              />
+            </ListItem>
+          );
+        })}
       </List>
       <Divider />
       <List>
@@ -188,27 +237,79 @@ const Navbar: React.FC = () => {
             </IconButton>
           )}
           
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
+          <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ 
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              '&:hover': {
+                color: 'secondary.main',
+              },
+              transition: 'color 0.2s ease-in-out',
+            }}
+            onClick={() => navigate('/dashboard')}
+          >
             ElimuHub 2.0
           </Typography>
 
+          {/* Home button for easy navigation */}
+          <IconButton
+            color="inherit"
+            onClick={() => navigate('/dashboard')}
+            sx={{
+              ml: 1,
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.1)',
+              },
+            }}
+            title="Home"
+          >
+            <Home />
+          </IconButton>
+
+          <Box sx={{ flexGrow: 1 }} />
+
           {!isMobile && (
             <Box sx={{ display: 'flex', gap: 1, mr: 2 }}>
-              {filteredNavigationItems.slice(0, 4).map((item) => (
-                <Button
-                  key={item.text}
+              {filteredNavigationItems.slice(1, 5).map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <Button
+                    key={item.text}
+                    color="inherit"
+                    onClick={() => navigate(item.path)}
+                    startIcon={item.icon}
+                    sx={{
+                      bgcolor: isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                      borderBottom: isActive ? '2px solid' : 'none',
+                      borderBottomColor: isActive ? 'secondary.main' : 'transparent',
+                      borderRadius: isActive ? '4px 4px 0 0' : '4px',
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 255, 255, 0.1)',
+                      },
+                      transition: 'all 0.2s ease-in-out',
+                    }}
+                  >
+                    {item.text}
+                  </Button>
+                );
+              })}
+              
+              {/* More menu for additional items */}
+              {filteredNavigationItems.length > 5 && (
+                <IconButton
                   color="inherit"
-                  onClick={() => navigate(item.path)}
-                  startIcon={item.icon}
+                  onClick={handleMoreMenuClick}
                   sx={{
                     '&:hover': {
                       bgcolor: 'rgba(255, 255, 255, 0.1)',
                     },
                   }}
                 >
-                  {item.text}
-                </Button>
-              ))}
+                  <MoreVert />
+                </IconButton>
+              )}
             </Box>
           )}
 
@@ -343,6 +444,44 @@ const Navbar: React.FC = () => {
             View All Notifications
           </Typography>
         </MenuItem>
+      </Menu>
+
+      {/* More Navigation Menu */}
+      <Menu
+        anchorEl={moreMenuAnchor}
+        open={Boolean(moreMenuAnchor)}
+        onClose={handleMoreMenuClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        PaperProps={{
+          sx: {
+            mt: 1,
+            minWidth: 200,
+            boxShadow: theme.shadows[8],
+          },
+        }}
+      >
+        {filteredNavigationItems.slice(5).map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <MenuItem 
+              key={item.text}
+              onClick={() => { 
+                navigate(item.path); 
+                handleMoreMenuClose(); 
+              }}
+              sx={{
+                bgcolor: isActive ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+                fontWeight: isActive ? 'bold' : 'normal',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {item.icon}
+                {item.text}
+              </Box>
+            </MenuItem>
+          );
+        })}
       </Menu>
     </>
   );
