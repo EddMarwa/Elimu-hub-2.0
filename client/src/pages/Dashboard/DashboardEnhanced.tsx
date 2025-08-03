@@ -39,7 +39,7 @@ import {
   PendingActions,
   SupervisorAccount,
   AdminPanelSettings,
-  Upload,
+  Psychology,
   MenuBook,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
@@ -133,7 +133,7 @@ const DashboardNew: React.FC = () => {
   const quickActions = [
     { title: 'Create Lesson Plan', icon: <Assignment />, path: '/lesson-plan-generator', color: '#1e3a8a', hoverColor: '#3b82f6' },
     { title: 'New Scheme of Work', icon: <Description />, path: '/scheme-editor', color: '#f59e0b', hoverColor: '#fbbf24' },
-    { title: 'Upload Document', icon: <Upload />, path: '/upload', color: '#10b981', hoverColor: '#34d399' },
+    { title: 'Elimu Hub AI', icon: <Psychology />, path: '/ai-assistant', color: '#10b981', hoverColor: '#34d399' },
     { title: 'Library', icon: <MenuBook />, path: '/lesson-plans', color: '#8b5cf6', hoverColor: '#a78bfa' },
   ];
 
@@ -488,11 +488,11 @@ const DashboardNew: React.FC = () => {
               </Box>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="textSecondary">
-                  Documents Uploaded
+                  AI Interactions
                 </Typography>
                 <LinearProgress 
                   variant="determinate" 
-                  value={50} 
+                  value={75} 
                   sx={{ 
                     mt: 1,
                     '& .MuiLinearProgress-bar': {
@@ -500,7 +500,7 @@ const DashboardNew: React.FC = () => {
                     }
                   }} 
                 />
-                <Typography variant="caption">2 of 4 completed</Typography>
+                <Typography variant="caption">15 of 20 daily interactions</Typography>
               </Box>
             </Paper>
 
@@ -512,7 +512,7 @@ const DashboardNew: React.FC = () => {
                 💡 Use the AI lesson plan generator to create CBC-aligned content quickly.
               </Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                📚 Upload your existing materials to build a comprehensive resource library.
+                🤖 Chat with Elimu Hub AI for personalized teaching assistance and ideas.
               </Typography>
               <Typography variant="body2">
                 🤝 Collaborate with other teachers to share best practices.
