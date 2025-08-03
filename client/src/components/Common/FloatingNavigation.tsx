@@ -12,8 +12,8 @@ import {
   KeyboardArrowUp,
   Assignment,
   AutoAwesome,
-  CloudUpload,
   Description,
+  Psychology,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -56,9 +56,9 @@ const FloatingNavigation: React.FC<FloatingNavigationProps> = (props) => {
       action: () => navigate('/scheme-generator'),
     },
     {
-      icon: <CloudUpload />,
-      name: 'Upload Document',
-      action: () => navigate('/upload'),
+      icon: <Psychology />,
+      name: 'AI Assistant',
+      action: () => navigate('/ai-assistant'),
     },
     {
       icon: <AutoAwesome />,
