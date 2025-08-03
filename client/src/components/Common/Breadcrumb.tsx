@@ -15,7 +15,7 @@ const routeMap: Record<string, string> = {
   'schemes-of-work': 'Schemes of Work',
   'scheme-generator': 'Scheme Generator',
   'scheme-editor': 'Scheme Editor',
-  upload: 'Upload',
+  'ai-assistant': 'Elimu Hub AI',
   reference: 'Reference',
   'cbc-transition': 'CBC Transition',
   documents: 'Documents',
