@@ -18,7 +18,7 @@ import Documents from './pages/Documents/Documents';
 import LessonPlans from './pages/LessonPlans/LessonPlans';
 import SchemesOfWork from './pages/SchemesOfWork/SchemesOfWork';
 import Profile from './pages/Profile/Profile';
-import Upload from './pages/Upload/Upload';
+import AIAssistant from './pages/AIAssistant/AIAssistant';
 import Reference from './pages/Reference/Reference';
 import LessonPlanGenerator from './pages/LessonPlanGenerator/LessonPlanGenerator';
 import SchemeOfWorkGenerator from './pages/SchemeOfWorkGenerator/SchemeOfWorkGenerator';
@@ -96,7 +96,7 @@ const App: React.FC = () => {
           />
           
           {/* Regular app routes */}
-          <Route path="upload" element={<Upload />} />
+          <Route path="ai-assistant" element={<AIAssistant />} />
           <Route path="reference" element={<Reference />} />
           <Route path="lesson-plan-generator" element={<LessonPlanGenerator />} />
           <Route path="scheme-generator" element={<SchemeOfWorkGenerator />} />
