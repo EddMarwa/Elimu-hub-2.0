@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Divider,
 } from '@mui/material';
 import {
   Psychology,
@@ -39,6 +40,8 @@ import {
   ThumbDown,
   Menu,
   Close,
+  SmartToy,
+  AutoAwesome,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -278,58 +281,85 @@ const AIAssistant: React.FC = () => {
 
   const SuggestionsPanel = () => (
     <Paper sx={{ 
-      p: { xs: 2, md: 3 }, 
-      height: isMobile ? 'auto' : 'fit-content',
-      maxHeight: isMobile ? '60vh' : 'none',
-      overflow: 'auto'
+      p: 2, 
+      height: '100%',
+      borderRadius: 2,
+      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      display: 'flex',
+      flexDirection: 'column',
     }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <Psychology color="primary" sx={{ mr: 1 }} />
-        <Typography variant="h6" fontWeight="bold">
-          AI Assistance Options
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ 
+          bgcolor: 'primary.main', 
+          borderRadius: '50%', 
+          p: 0.8, 
+          mr: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <AutoAwesome sx={{ color: 'white', fontSize: 16 }} />
+        </Box>
+        <Typography variant="h6" fontWeight="bold" sx={{ color: 'primary.main', fontSize: '1rem' }}>
+          AI Tools
         </Typography>
       </Box>
 
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Click on any option below to get started with AI-powered educational assistance.
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2, lineHeight: 1.4, fontSize: '0.8rem' }}>
+        Quick access to AI-powered educational assistance
       </Typography>
 
-      <Grid container spacing={2}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
         {suggestions.map((suggestion) => (
-          <Grid item xs={12} sm={6} md={12} key={suggestion.id}>
-            <Card
-              variant="outlined"
-              sx={{
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                '&:hover': {
-                  boxShadow: 2,
-                  borderColor: 'primary.main',
-                },
-              }}
-              onClick={() => handleSuggestionClick(suggestion)}
-            >
-              <CardContent sx={{ p: { xs: 1.5, md: 2 } }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+          <Card
+            key={suggestion.id}
+            variant="outlined"
+            sx={{
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              border: '1px solid rgba(0,0,0,0.1)',
+              borderRadius: 1.5,
+              '&:hover': {
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                borderColor: 'primary.main',
+                bgcolor: 'rgba(25, 118, 210, 0.04)',
+              },
+            }}
+            onClick={() => handleSuggestionClick(suggestion)}
+          >
+            <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ 
+                  bgcolor: 'primary.light', 
+                  borderRadius: 0.8, 
+                  p: 0.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 28,
+                  height: 28
+                }}>
                   {suggestion.icon}
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle2" fontWeight="bold">
-                      {suggestion.title}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {suggestion.description}
-                    </Typography>
-                  </Box>
                 </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 0.25, fontSize: '0.75rem' }}>
+                    {suggestion.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', lineHeight: 1.2 }}>
+                    {suggestion.description}
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
         ))}
-      </Grid>
+      </Box>
 
-      <Alert severity="info" sx={{ mt: 3 }}>
-        <Typography variant="body2">
-          <strong>Pro Tip:</strong> Be specific with your requests to get the most relevant and helpful AI-generated content.
+      <Alert severity="info" sx={{ mt: 2, borderRadius: 1.5, py: 0.5 }}>
+        <Typography variant="body2" sx={{ fontSize: '0.7rem' }}>
+          <strong>💡 Pro Tip:</strong> Be specific with your requests for better AI responses.
         </Typography>
       </Alert>
     </Paper>
@@ -340,73 +370,118 @@ const AIAssistant: React.FC = () => {
       display: 'flex', 
       flexDirection: 'column', 
       height: '100vh',
-      position: 'relative'
+      position: 'relative',
+      bgcolor: '#f8fafc'
     }}>
       {/* Main Content Area */}
       <Box sx={{ 
         flex: 1, 
         overflow: 'hidden',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        pb: { xs: '65px', md: '75px' } // Reduced padding bottom
       }}>
         <Container maxWidth="xl" sx={{ 
-          py: { xs: 1, md: 3 }, 
-          px: { xs: 1, md: 3 },
+          py: { xs: 1, md: 2 }, 
+          px: { xs: 1, md: 2 },
           height: '100%',
           display: 'flex',
           flexDirection: 'column'
         }}>
-          <Grid container spacing={{ xs: 1, md: 3 }} sx={{ height: '100%' }}>
+          <Grid container spacing={{ xs: 1, md: 2 }} sx={{ height: '100%' }}>
             {/* AI Suggestions Panel - Desktop */}
             {!isMobile && (
-              <Grid item xs={12} md={4} sx={{ height: '100%' }}>
-                <Box sx={{ height: '100%', overflow: 'auto' }}>
+              <Grid item xs={12} md={3} sx={{ height: '100%' }}>
+                <Box sx={{ height: '100%' }}>
                   <SuggestionsPanel />
                 </Box>
               </Grid>
             )}
 
             {/* Chat Interface */}
-            <Grid item xs={12} md={isMobile ? 12 : 8} sx={{ height: '100%' }}>
+            <Grid item xs={12} md={isMobile ? 12 : 9} sx={{ height: '100%' }}>
               <Paper sx={{ 
                 display: 'flex', 
                 flexDirection: 'column', 
                 height: '100%',
-                minHeight: { xs: '500px', md: '600px' }
+                minHeight: { xs: '500px', md: '600px' },
+                borderRadius: 3,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                overflow: 'hidden',
+                border: '1px solid rgba(0,0,0,0.08)'
               }}>
                 {/* Chat Header */}
                 <Box sx={{ 
-                  p: { xs: 1.5, md: 2 }, 
+                  p: { xs: 1, md: 1.5 }, 
                   borderBottom: 1, 
                   borderColor: 'divider',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  flexShrink: 0
+                  flexShrink: 0,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  minHeight: { xs: '60px', md: '70px' }
                 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Avatar sx={{ bgcolor: 'primary.main', mr: 2, width: { xs: 32, md: 40 }, height: { xs: 32, md: 40 } }}>
-                      <Psychology />
+                  <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                    <Avatar sx={{ 
+                      bgcolor: 'rgba(255,255,255,0.2)', 
+                      mr: 1.5, 
+                      width: { xs: 32, md: 40 }, 
+                      height: { xs: 32, md: 40 },
+                      border: '2px solid rgba(255,255,255,0.3)'
+                    }}>
+                      <SmartToy sx={{ fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                     </Avatar>
-                    <Box>
-                      <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography variant="h6" fontWeight="bold" sx={{ 
+                        fontSize: { xs: '0.9rem', md: '1.1rem' },
+                        color: 'white',
+                        lineHeight: 1.2,
+                        mb: 0.5
+                      }}>
                         Elimu Hub AI Assistant
                       </Typography>
-                      <Chip label="Online" color="success" size="small" />
+                      <Chip 
+                        label="Online" 
+                        color="success" 
+                        size="small"
+                        sx={{ 
+                          bgcolor: 'rgba(76, 175, 80, 0.9)',
+                          color: 'white',
+                          fontWeight: 'bold',
+                          fontSize: '0.7rem',
+                          height: '20px'
+                        }}
+                      />
                     </Box>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
                     {isMobile && (
                       <IconButton 
                         onClick={() => setSuggestionsOpen(true)}
                         size="small"
                         title="Show Suggestions"
+                        sx={{ 
+                          color: 'white',
+                          p: 0.5,
+                          '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
+                        }}
                       >
-                        <Menu />
+                        <Menu sx={{ fontSize: '1.2rem' }} />
                       </IconButton>
                     )}
-                    <IconButton onClick={handleClearChat} title="Clear Chat" size="small">
-                      <Clear />
+                    <IconButton 
+                      onClick={handleClearChat} 
+                      title="Clear Chat" 
+                      size="small"
+                      sx={{ 
+                        color: 'white',
+                        p: 0.5,
+                        '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
+                      }}
+                    >
+                      <Clear sx={{ fontSize: '1.2rem' }} />
                     </IconButton>
                   </Box>
                 </Box>
@@ -415,9 +490,10 @@ const AIAssistant: React.FC = () => {
                 <Box sx={{ 
                   flex: 1, 
                   overflow: 'auto', 
-                  p: { xs: 1, md: 2 },
+                  p: { xs: 1.5, md: 2 },
                   display: 'flex',
-                  flexDirection: 'column'
+                  flexDirection: 'column',
+                  bgcolor: '#fafbfc'
                 }}>
                   <List sx={{ flex: 1 }}>
                     {messages.map((message) => (
@@ -435,43 +511,108 @@ const AIAssistant: React.FC = () => {
                             p: { xs: 1.5, md: 2 },
                             maxWidth: { xs: '90%', sm: '85%', md: '80%' },
                             minWidth: { xs: '60%', sm: '50%' },
-                            bgcolor: message.sender === 'user' ? 'primary.main' : 'grey.100',
+                            bgcolor: message.sender === 'user' 
+                              ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                              : 'white',
                             color: message.sender === 'user' ? 'white' : 'text.primary',
                             wordBreak: 'break-word',
+                            borderRadius: 3,
+                            boxShadow: message.sender === 'user' 
+                              ? '0 4px 15px rgba(102, 126, 234, 0.3)'
+                              : '0 2px 8px rgba(0,0,0,0.1)',
+                            border: message.sender === 'user' 
+                              ? 'none'
+                              : '1px solid rgba(0,0,0,0.08)',
+                            position: 'relative',
+                            '&::before': message.sender === 'user' ? {
+                              content: '""',
+                              position: 'absolute',
+                              right: -8,
+                              top: 12,
+                              width: 0,
+                              height: 0,
+                              borderLeft: '8px solid #667eea',
+                              borderTop: '8px solid transparent',
+                              borderBottom: '8px solid transparent',
+                            } : {
+                              content: '""',
+                              position: 'absolute',
+                              left: -8,
+                              top: 12,
+                              width: 0,
+                              height: 0,
+                              borderRight: '8px solid white',
+                              borderTop: '8px solid transparent',
+                              borderBottom: '8px solid transparent',
+                            }
                           }}
                         >
-                          <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                          <Typography variant="body2" sx={{ 
+                            fontSize: { xs: '0.875rem', md: '1rem' },
+                            lineHeight: 1.6
+                          }}>
                             {message.content}
                           </Typography>
                           {message.sender === 'ai' && (
-                            <Box sx={{ display: 'flex', gap: 0.5, mt: 1, flexWrap: 'wrap' }}>
+                            <Box sx={{ display: 'flex', gap: 0.5, mt: 1.5, flexWrap: 'wrap' }}>
                               <IconButton
                                 size="small"
                                 onClick={() => copyToClipboard(message.content)}
-                                sx={{ color: 'text.secondary', p: 0.5 }}
+                                sx={{ 
+                                  color: 'text.secondary', 
+                                  p: 0.5,
+                                  '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+                                }}
                               >
                                 <ContentCopy fontSize="small" />
                               </IconButton>
-                              <IconButton size="small" sx={{ color: 'text.secondary', p: 0.5 }}>
+                              <IconButton size="small" sx={{ 
+                                color: 'text.secondary', 
+                                p: 0.5,
+                                '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+                              }}>
                                 <ThumbUp fontSize="small" />
                               </IconButton>
-                              <IconButton size="small" sx={{ color: 'text.secondary', p: 0.5 }}>
+                              <IconButton size="small" sx={{ 
+                                color: 'text.secondary', 
+                                p: 0.5,
+                                '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+                              }}>
                                 <ThumbDown fontSize="small" />
                               </IconButton>
                             </Box>
                           )}
                         </Paper>
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ 
+                          mt: 0.5, 
+                          fontSize: { xs: '0.75rem', md: '0.875rem' },
+                          opacity: 0.7
+                        }}>
                           {message.timestamp.toLocaleTimeString()}
                         </Typography>
                       </ListItem>
                     ))}
                     {isLoading && (
                       <ListItem sx={{ justifyContent: 'flex-start', px: 0 }}>
-                        <Paper sx={{ p: { xs: 1.5, md: 2 }, bgcolor: 'grey.100' }}>
-                          <Typography variant="body2" color="text.secondary">
-                            AI is thinking...
-                          </Typography>
+                        <Paper sx={{ 
+                          p: { xs: 1.5, md: 2 }, 
+                          bgcolor: 'white',
+                          borderRadius: 3,
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          border: '1px solid rgba(0,0,0,0.08)'
+                        }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Box sx={{ 
+                              width: 16, 
+                              height: 16, 
+                              borderRadius: '50%', 
+                              bgcolor: 'primary.main',
+                              animation: 'pulse 1.5s ease-in-out infinite'
+                            }} />
+                            <Typography variant="body2" color="text.secondary">
+                              AI is thinking...
+                            </Typography>
+                          </Box>
                         </Paper>
                       </ListItem>
                     )}
@@ -484,21 +625,31 @@ const AIAssistant: React.FC = () => {
         </Container>
       </Box>
 
-      {/* Fixed Input Area at Bottom */}
+      {/* Fixed Input Area at Bottom - Only for Chat Area */}
       <Box sx={{ 
         position: 'fixed',
         bottom: 0,
-        left: 0,
+        left: isMobile ? 0 : '25%', // Start after sidebar on desktop
         right: 0,
-        bgcolor: 'background.paper',
+        bgcolor: 'white',
         borderTop: 1,
         borderColor: 'divider',
         zIndex: 1000,
-        p: { xs: 1.5, md: 2 },
-        boxShadow: 3
+        p: { xs: 0.5, md: 0.75 }, // Further reduced padding
+        boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)'
       }}>
-        <Container maxWidth="xl">
-          <Box sx={{ display: 'flex', gap: { xs: 1, md: 2 }, alignItems: 'flex-end' }}>
+        <Container maxWidth="xl" sx={{ pl: 0, pr: 0 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 0.75, // Further reduced gap
+            alignItems: 'flex-end',
+            bgcolor: 'white',
+            borderRadius: 2,
+            p: 0.5, // Further reduced padding
+            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+            border: '1px solid rgba(0,0,0,0.08)'
+          }}>
             <TextField
               fullWidth
               placeholder="Ask me anything about lesson planning, curriculum, or teaching strategies..."
@@ -506,11 +657,18 @@ const AIAssistant: React.FC = () => {
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
               multiline
-              maxRows={3}
-              size={isSmallMobile ? "small" : "medium"}
+              maxRows={2}
+              size="small"
               sx={{
                 '& .MuiInputBase-root': {
-                  fontSize: { xs: '0.875rem', md: '1rem' }
+                  fontSize: { xs: '0.75rem', md: '0.8rem' }, // Smaller font
+                  borderRadius: 1.5,
+                  minHeight: '36px', // Smaller fixed height
+                  '&:hover': {
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'primary.main',
+                    }
+                  }
                 }
               }}
             />
@@ -520,12 +678,24 @@ const AIAssistant: React.FC = () => {
               disabled={!inputMessage.trim() || isLoading}
               sx={{ 
                 minWidth: 'auto', 
-                px: { xs: 1.5, md: 2 },
-                py: { xs: 1, md: 1.5 },
-                height: 'fit-content'
+                px: 1, // Reduced padding
+                py: 0.5, // Reduced padding
+                height: '36px', // Smaller fixed height
+                borderRadius: 1.5,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
+                },
+                '&:disabled': {
+                  background: 'rgba(0,0,0,0.12)',
+                  transform: 'none',
+                  boxShadow: 'none',
+                }
               }}
             >
-              <Send />
+              <Send sx={{ fontSize: '1rem' }} />
             </Button>
           </Box>
         </Container>
@@ -539,16 +709,17 @@ const AIAssistant: React.FC = () => {
           onClose={() => setSuggestionsOpen(false)}
           PaperProps={{
             sx: {
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
               maxHeight: '80vh',
+              background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
             }
           }}
         >
           <Box sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6" fontWeight="bold">
-                AI Assistance Options
+              <Typography variant="h6" fontWeight="bold" sx={{ color: 'primary.main' }}>
+                AI Tools
               </Typography>
               <IconButton onClick={() => setSuggestionsOpen(false)}>
                 <Close />
@@ -567,14 +738,28 @@ const AIAssistant: React.FC = () => {
           onClick={() => setSuggestionsOpen(true)}
           sx={{
             position: 'fixed',
-            bottom: 100,
+            bottom: 75, // Further adjusted position
             right: 16,
             zIndex: 1000,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+              transform: 'scale(1.1)',
+            }
           }}
         >
-          <Psychology />
+          <AutoAwesome />
         </Fab>
       )}
+
+      <style>
+        {`
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+          }
+        `}
+      </style>
     </Box>
   );
 };
