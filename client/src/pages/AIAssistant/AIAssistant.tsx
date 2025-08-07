@@ -80,9 +80,7 @@ const AIAssistant: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // API Configuration
-  // IMPORTANT: Set REACT_APP_GROQ_API_KEY and REACT_APP_GROQ_API_URL in your .env file (never commit secrets)
-  const API_KEY = process.env.REACT_APP_GROQ_API_KEY || '';
-  const API_URL = process.env.REACT_APP_GROQ_API_URL || '';
+  // (Removed Groq API integration. Add your new API integration here.)
 
   const suggestions: AISuggestion[] = [
     {
@@ -136,14 +134,14 @@ const AIAssistant: React.FC = () => {
 
   const callAIAPI = async (prompt: string): Promise<string> => {
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${API_KEY}`,
+          'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'llama3-8b-8192',
+          model: 'gpt-3.5-turbo',
           messages: [
             {
               role: 'system',
