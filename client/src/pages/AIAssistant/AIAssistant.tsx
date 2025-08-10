@@ -1,45 +1,70 @@
+// Import React hooks and core functionality
 import React, { useState, useRef, useEffect } from 'react';
+
+// Import Material-UI components for building the interface
 import {
   Container, Paper, Typography, Box, TextField, Button, Grid, Card, CardContent,
   Avatar, Chip, Alert, List, ListItem, IconButton, useTheme, useMediaQuery,
   Drawer, Fab, Dialog, DialogTitle, DialogContent, DialogActions, Divider,
   AppBar, Toolbar, Badge, Tooltip, LinearProgress, Fade, Slide, Zoom,
 } from '@mui/material';
+
+// Import Material-UI icons for various UI elements
 import {
   Psychology, Send, School, Assignment, Description, Lightbulb, Quiz, MenuBook,
   Clear, ContentCopy, ThumbUp, ThumbDown, Menu, Close, SmartToy, AutoAwesome,
   Assessment, Search, Download, OpenInNew, Refresh, Settings, Help,
   Notifications, Person, DarkMode, LightMode,
 } from '@mui/icons-material';
+
+// Import custom hooks and services
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 
+// Interface defining the structure of chat messages
 interface Message {
-  id: string;
-  content: string;
-  sender: 'user' | 'ai';
-  timestamp: Date;
-  type?: 'text' | 'suggestion';
+  id: string;                    // Unique identifier for each message
+  content: string;               // The actual message text content
+  sender: 'user' | 'ai';        // Who sent the message (user or AI)
+  timestamp: Date;               // When the message was sent
+  type?: 'text' | 'suggestion'; // Optional message type for different content
 }
 
+// Interface defining the structure of AI tool suggestions
 interface AISuggestion {
-  id: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  action: string;
-  color?: string;
+  id: string;                    // Unique identifier for each suggestion
+  title: string;                 // Display name of the AI tool
+  description: string;           // Brief description of what the tool does
+  icon: React.ReactNode;         // Icon component to display
+  action: string;                // Action identifier for handling clicks
+  color?: string;                // Optional color theme for the tool
 }
 
+// Main AI Assistant component
 const AIAssistant: React.FC = () => {
+  // Get current authenticated user from context
   const { user } = useAuth();
+  
+  // Get current theme for responsive design
   const theme = useTheme();
+  
+  // Check if device is mobile for responsive behavior
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // Reference to scroll to bottom of messages
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // State management
-  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  // ===== STATE MANAGEMENT =====
+  
+  // UI State - Controls visibility of various components
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);           // Mobile suggestions drawer
+  const [referencesDrawerOpen, setReferencesDrawerOpen] = useState(false); // References panel
+  const [questionDialogOpen, setQuestionDialogOpen] = useState(false);     // Question generation dialog
+  const [rubricDialogOpen, setRubricDialogOpen] = useState(false);         // Rubric generation dialog
+  
+  // Chat State - Manages conversation flow
   const [messages, setMessages] = useState<Message[]>([
+    // Welcome message from AI
     {
       id: '1',
       content: `Hello ${user?.firstName || 'there'}! I'm your Elimu Hub AI Assistant. I'm here to help you with lesson planning, curriculum development, and educational content creation. How can I assist you today?`,
@@ -47,64 +72,116 @@ const AIAssistant: React.FC = () => {
       timestamp: new Date(),
     },
   ]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [referencesDrawerOpen, setReferencesDrawerOpen] = useState(false);
-  const [references, setReferences] = useState<any[]>([]);
-  const [questionDialogOpen, setQuestionDialogOpen] = useState(false);
-  const [rubricDialogOpen, setRubricDialogOpen] = useState(false);
-  const [formSubject, setFormSubject] = useState('');
-  const [formGrade, setFormGrade] = useState('');
-  const [formTopic, setFormTopic] = useState('');
-  const [formNumQuestions, setFormNumQuestions] = useState(10);
-  const [darkMode, setDarkMode] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [inputMessage, setInputMessage] = useState('');                    // Current input text
+  const [isLoading, setIsLoading] = useState(false);                       // AI response loading state
+  
+  // Data State - Stores various content and references
+  const [references, setReferences] = useState<any[]>([]);                 // Educational references
+  const [searchQuery, setSearchQuery] = useState('');                      // Search query for references
+  
+  // Form State - Manages dialog form inputs
+  const [formSubject, setFormSubject] = useState('');                      // Subject for questions/rubrics
+  const [formGrade, setFormGrade] = useState('');                          // Grade level for questions/rubrics
+  const [formTopic, setFormTopic] = useState('');                          // Topic for questions/rubrics
+  const [formNumQuestions, setFormNumQuestions] = useState(10);            // Number of questions to generate
+  
+  // Theme State
+  const [darkMode, setDarkMode] = useState(false);                         // Dark/light mode toggle
 
+  // ===== AI TOOL SUGGESTIONS =====
+  // Array of available AI-powered educational tools with their configurations
   const suggestions: AISuggestion[] = [
     {
-      id: '1', title: 'Lesson Plans', description: 'Generate comprehensive CBC-aligned lesson plans',
-      icon: <Assignment />, action: 'lesson-plan', color: '#2196F3',
+      id: '1', 
+      title: 'Lesson Plans', 
+      description: 'Generate comprehensive CBC-aligned lesson plans',
+      icon: <Assignment />, 
+      action: 'lesson-plan', 
+      color: '#2196F3', // Blue
     },
     {
-      id: '2', title: 'Scheme of Work', description: 'Create structured schemes aligned with CBC curriculum',
-      icon: <Description />, action: 'scheme-of-work', color: '#4CAF50',
+      id: '2', 
+      title: 'Scheme of Work', 
+      description: 'Create structured schemes aligned with CBC curriculum',
+      icon: <Description />, 
+      action: 'scheme-of-work', 
+      color: '#4CAF50', // Green
     },
     {
-      id: '3', title: 'Assessment Ideas', description: 'Get creative assessment and evaluation methods',
-      icon: <Quiz />, action: 'assessment', color: '#FF9800',
+      id: '3', 
+      title: 'Assessment Ideas', 
+      description: 'Get creative assessment and evaluation methods',
+      icon: <Quiz />, 
+      action: 'assessment', 
+      color: '#FF9800', // Orange
     },
     {
-      id: '4', title: 'Learning Activities', description: 'Discover engaging activities and teaching strategies',
-      icon: <Lightbulb />, action: 'activities', color: '#9C27B0',
+      id: '4', 
+      title: 'Learning Activities', 
+      description: 'Discover engaging activities and teaching strategies',
+      icon: <Lightbulb />, 
+      action: 'activities', 
+      color: '#9C27B0', // Purple
     },
     {
-      id: '5', title: 'Curriculum Alignment', description: 'Ensure content aligns with CBC learning objectives',
-      icon: <School />, action: 'curriculum', color: '#607D8B',
+      id: '5', 
+      title: 'Curriculum Alignment', 
+      description: 'Ensure content aligns with CBC learning objectives',
+      icon: <School />, 
+      action: 'curriculum', 
+      color: '#607D8B', // Blue-Grey
     },
     {
-      id: '6', title: 'Resource Suggestions', description: 'Get recommendations for teaching materials',
-      icon: <MenuBook />, action: 'resources', color: '#795548',
+      id: '6', 
+      title: 'Resource Suggestions', 
+      description: 'Get recommendations for teaching materials',
+      icon: <MenuBook />, 
+      action: 'resources', 
+      color: '#795548', // Brown
     },
     {
-      id: '7', title: 'Generate Questions', description: 'Create exam-style questions with answers',
-      icon: <AutoAwesome />, action: 'generate-questions', color: '#E91E63',
+      id: '7', 
+      title: 'Generate Questions', 
+      description: 'Create exam-style questions with answers',
+      icon: <AutoAwesome />, 
+      action: 'generate-questions', 
+      color: '#E91E63', // Pink
     },
     {
-      id: '8', title: 'Grading Rubric', description: 'Get CBC-aligned grading rubrics',
-      icon: <Assessment />, action: 'grading-rubric', color: '#00BCD4',
+      id: '8', 
+      title: 'Grading Rubric', 
+      description: 'Get CBC-aligned grading rubrics',
+      icon: <Assessment />, 
+      action: 'grading-rubric', 
+      color: '#00BCD4', // Cyan
     },
     {
-      id: '9', title: 'References', description: 'Find relevant notes and documents',
-      icon: <MenuBook />, action: 'references', color: '#3F51B5',
+      id: '9', 
+      title: 'References', 
+      description: 'Find relevant notes and documents',
+      icon: <MenuBook />, 
+      action: 'references', 
+      color: '#3F51B5', // Indigo
     },
   ];
 
+  // ===== EFFECTS =====
+  
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // ===== AI API INTEGRATION =====
+  
+  /**
+   * Calls OpenAI API to generate educational content
+   * @param prompt - The user's question or request
+   * @returns Promise<string> - AI-generated response
+   */
   const callAIAPI = async (prompt: string): Promise<string> => {
     try {
+      // Make request to OpenAI Chat Completions API
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -112,7 +189,7 @@ const AIAssistant: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
+          model: 'gpt-3.5-turbo',           // Use GPT-3.5 for cost-effective responses
           messages: [
             {
               role: 'system',
@@ -120,12 +197,15 @@ const AIAssistant: React.FC = () => {
             },
             { role: 'user', content: prompt }
           ],
-          max_tokens: 2000,
-          temperature: 0.7,
+          max_tokens: 2000,                  // Limit response length for cost control
+          temperature: 0.7,                   // Balance creativity with consistency
         }),
       });
 
+      // Handle API errors
       if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+      
+      // Parse and return AI response
       const data = await response.json();
       return data.choices[0]?.message?.content || 'Sorry, I encountered an error. Please try again.';
     } catch (error) {
@@ -134,9 +214,17 @@ const AIAssistant: React.FC = () => {
     }
   };
 
+  // ===== MESSAGE HANDLING =====
+  
+  /**
+   * Handles sending user messages and receiving AI responses
+   * Manages the complete message flow from user input to AI response
+   */
   const handleSendMessage = async () => {
+    // Prevent sending empty messages
     if (!inputMessage.trim()) return;
 
+    // Create and add user message to chat
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputMessage,
@@ -144,12 +232,16 @@ const AIAssistant: React.FC = () => {
       timestamp: new Date(),
     };
 
+    // Update messages state and clear input
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
 
     try {
+      // Get AI response from OpenAI API
       const aiResponse = await callAIAPI(inputMessage);
+      
+      // Create and add AI message to chat
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: aiResponse,
@@ -158,6 +250,7 @@ const AIAssistant: React.FC = () => {
       };
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
+      // Add error message if AI call fails
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: 'Sorry, I encountered an error. Please try again.',
