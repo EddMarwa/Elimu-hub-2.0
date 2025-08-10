@@ -333,62 +333,48 @@ const AIAssistant: React.FC = () => {
               sx={{
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
-                borderRadius: 4,
+                borderRadius: 3,
                 border: `2px solid ${suggestion.color}20`,
                 bgcolor: 'white',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                minHeight: 80,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                minHeight: 60,
                 '&:hover': {
-                  transform: 'translateX(6px)',
-                  boxShadow: `0 8px 25px ${suggestion.color}30`,
+                  transform: 'translateX(4px)',
+                  boxShadow: `0 6px 20px ${suggestion.color}30`,
                   borderColor: suggestion.color,
                   bgcolor: `${suggestion.color}05`,
                 },
               }}
               onClick={() => handleSuggestionClick(suggestion)}
             >
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <CardContent sx={{ p: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Box sx={{ 
                     bgcolor: suggestion.color, 
-                    borderRadius: 3, 
-                    p: 1.5,
-                    mr: 3,
+                    borderRadius: 2, 
+                    p: 1,
+                    mr: 2,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: 'white',
-                    minWidth: 48,
-                    height: 48,
-                    boxShadow: `0 4px 12px ${suggestion.color}40`
+                    minWidth: 36,
+                    height: 36,
+                    boxShadow: `0 2px 8px ${suggestion.color}40`
                   }}>
                     {suggestion.icon}
                   </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography 
-                      variant="h6" 
-                      fontWeight="bold" 
-                      sx={{ 
-                        mb: 1,
-                        color: suggestion.color,
-                        fontSize: '1.1rem',
-                        textShadow: '0 1px 2px rgba(0,0,0,0.1)'
-                      }}
-                    >
-                      {suggestion.title}
-                    </Typography>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        fontSize: '0.9rem',
-                        color: '#2a2a2a',
-                        lineHeight: 1.5,
-                        fontWeight: 500
-                      }}
-                    >
-                      {suggestion.description}
-                    </Typography>
-                  </Box>
+                  <Typography 
+                    variant="subtitle1" 
+                    fontWeight="bold" 
+                    sx={{ 
+                      color: suggestion.color,
+                      fontSize: '1rem',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                    }}
+                  >
+                    {suggestion.title}
+                  </Typography>
                 </Box>
               </CardContent>
             </Card>
@@ -585,23 +571,23 @@ const AIAssistant: React.FC = () => {
 
           {/* Input Area */}
       <Box sx={{ 
-            p: 3, 
+            p: 2, 
             borderTop: '1px solid rgba(0,0,0,0.08)',
             bgcolor: 'white',
-            boxShadow: '0 -4px 20px rgba(0,0,0,0.05)'
+            boxShadow: '0 -2px 10px rgba(0,0,0,0.03)'
           }}>
           <Box sx={{ 
             display: 'flex', 
-            gap: 2,
+            gap: 1.5,
             alignItems: 'flex-end',
             bgcolor: '#f8fafc',
-            borderRadius: 4,
-            p: 2,
-            border: '2px solid rgba(0,0,0,0.06)',
+            borderRadius: 3,
+            p: 1.5,
+            border: '1px solid rgba(0,0,0,0.06)',
             transition: 'all 0.3s ease',
             '&:focus-within': {
               borderColor: 'primary.main',
-              boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
+              boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.1)',
               bgcolor: 'white'
             }
           }}>
@@ -613,18 +599,18 @@ const AIAssistant: React.FC = () => {
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                 multiline
-                maxRows={4}
+                maxRows={3}
                 variant="standard"
                 sx={{
                   '& .MuiInputBase-root': {
-                    fontSize: '1rem',
+                    fontSize: '0.9rem',
                     fontWeight: 500,
                     '&:before': { borderBottom: 'none' },
                     '&:after': { borderBottom: 'none' },
                     '&:hover:before': { borderBottom: 'none' }
                   },
                   '& .MuiInputBase-input': {
-                    padding: '12px 0',
+                    padding: '8px 0',
                     color: '#1a1a1a'
                   }
                 }}
@@ -632,14 +618,14 @@ const AIAssistant: React.FC = () => {
               {inputMessage.length > 0 && (
                 <Box sx={{ 
                   position: 'absolute', 
-                  bottom: -20, 
+                  bottom: -18, 
                   right: 0,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 1
                 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    {inputMessage.length} characters
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                    {inputMessage.length} chars
                   </Typography>
                   <Button
                     size="small"
@@ -662,16 +648,16 @@ const AIAssistant: React.FC = () => {
               disabled={!inputMessage.trim() || isLoading}
               sx={{ 
                 minWidth: 'auto', 
-                px: 3,
-                py: 1.5,
-                borderRadius: 3,
+                px: 2,
+                py: 1,
+                borderRadius: 2,
                 bgcolor: 'primary.main',
-                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
                   bgcolor: 'primary.dark',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
                 },
                 '&:disabled': {
                   bgcolor: 'grey.400',
@@ -680,24 +666,23 @@ const AIAssistant: React.FC = () => {
                 }
               }}
             >
-              <Send sx={{ mr: 1 }} />
-              Send
+              <Send sx={{ fontSize: '1.2rem' }} />
             </Button>
           </Box>
           
           {/* Quick Action Buttons */}
           <Box sx={{ 
             display: 'flex', 
-            gap: 1, 
-            mt: 2, 
+            gap: 0.8, 
+            mt: 1.5, 
             flexWrap: 'wrap',
             justifyContent: 'center'
           }}>
             {[
-              { text: 'Help with lesson plan', icon: <Assignment fontSize="small" /> },
-              { text: 'Generate questions', icon: <Quiz fontSize="small" /> },
-              { text: 'Curriculum advice', icon: <School fontSize="small" /> },
-              { text: 'Assessment ideas', icon: <Assessment fontSize="small" /> }
+              { text: 'Lesson plan', icon: <Assignment fontSize="small" /> },
+              { text: 'Questions', icon: <Quiz fontSize="small" /> },
+              { text: 'Curriculum', icon: <School fontSize="small" /> },
+              { text: 'Assessment', icon: <Assessment fontSize="small" /> }
             ].map((action, index) => (
               <Button
                 key={index}
@@ -706,10 +691,10 @@ const AIAssistant: React.FC = () => {
                 startIcon={action.icon}
                 onClick={() => setInputMessage(action.text)}
                 sx={{
-                  borderRadius: 20,
-                  px: 2,
-                  py: 0.5,
-                  fontSize: '0.8rem',
+                  borderRadius: 16,
+                  px: 1.5,
+                  py: 0.4,
+                  fontSize: '0.75rem',
                   borderColor: 'primary.light',
                   color: 'primary.main',
                   '&:hover': {
