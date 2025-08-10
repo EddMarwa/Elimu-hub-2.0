@@ -15,7 +15,7 @@ import { notFoundHandler } from './middleware/notFoundHandler';
 // Import routes
 import authRoutes from './routes/auth';
 import documentRoutes from './routes/documents';
-import lessonPlanRoutes from './routes/lessonPlans';
+
 import schemeRoutes from './routes/schemesOfWork';
 import templateRoutes from './routes/templates';
 import userRoutes from './routes/users';
@@ -72,7 +72,7 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
-app.use('/api/lesson-plans', lessonPlanRoutes);
+
 app.use('/api/schemes', schemeRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/users', userRoutes);
@@ -89,7 +89,7 @@ app.get('/api', (req, res) => {
     endpoints: {
       auth: '/api/auth',
       documents: '/api/documents',
-      lessonPlans: '/api/lesson-plans',
+
       schemes: '/api/schemes',
       templates: '/api/templates',
       users: '/api/users',

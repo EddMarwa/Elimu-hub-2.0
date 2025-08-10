@@ -92,35 +92,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Get all lesson plans
-app.get('/api/lesson-plans', async (req, res) => {
-  try {
-    const lessonPlans = await prisma.lessonPlan.findMany({
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-    
-    res.json({
-      success: true,
-      data: lessonPlans
-    });
-  } catch (error) {
-    console.error('Get lesson plans error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch lesson plans'
-    });
-  }
-});
+
 
 // Get all users
 app.get('/api/users', async (req, res) => {
@@ -195,7 +167,7 @@ app.listen(PORT, () => {
   console.log(`🚀 ElimuHub 2.0 Backend Server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
   console.log(`🔐 Login endpoint: http://localhost:${PORT}/api/auth/login`);
-  console.log(`📚 Lesson plans: http://localhost:${PORT}/api/lesson-plans`);
+
   console.log(`👥 Users: http://localhost:${PORT}/api/users`);
   console.log(`📄 Templates: http://localhost:${PORT}/api/templates`);
 });

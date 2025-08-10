@@ -47,8 +47,8 @@ const FloatingNavigation: React.FC<FloatingNavigationProps> = (props) => {
   const speedDialActions = [
     {
       icon: <Assignment />,
-      name: 'New Lesson Plan',
-      action: () => navigate('/lesson-plan-generator'),
+      name: 'New Scheme of Work',
+      action: () => navigate('/scheme-generator'),
     },
     {
       icon: <Description />,
@@ -63,7 +63,7 @@ const FloatingNavigation: React.FC<FloatingNavigationProps> = (props) => {
     {
       icon: <AutoAwesome />,
       name: 'Quick Generate',
-      action: () => navigate('/lesson-plan-generator'),
+      action: () => navigate('/ai-assistant'),
     },
   ];
 

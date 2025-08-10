@@ -15,12 +15,11 @@ import DashboardEnhanced from './pages/Dashboard/DashboardEnhanced';
 import UserManagement from './pages/Admin/UserManagement';
 import SystemSettings from './pages/Admin/SystemSettings';
 import Documents from './pages/Documents/Documents';
-import LessonPlans from './pages/LessonPlans/LessonPlans';
 import SchemesOfWork from './pages/SchemesOfWork/SchemesOfWork';
 import Profile from './pages/Profile/Profile';
 import AIAssistant from './pages/AIAssistant/AIAssistant';
 import Reference from './pages/Reference/Reference';
-import LessonPlanGenerator from './pages/LessonPlanGenerator/LessonPlanGenerator';
+import BlankPage from './pages/BlankPage/BlankPage';
 import SchemeOfWorkGenerator from './pages/SchemeOfWorkGenerator/SchemeOfWorkGenerator';
 import SchemeOfWorkEditor from './pages/SchemeOfWorkEditor/SchemeOfWorkEditor';
 import CBCTransition from './pages/CBCTransition/CBCTransition';
@@ -98,12 +97,10 @@ const App: React.FC = () => {
           {/* Regular app routes */}
           <Route path="ai-assistant" element={<AIAssistant />} />
           <Route path="reference" element={<Reference />} />
-          <Route path="lesson-plan-generator" element={<LessonPlanGenerator />} />
           <Route path="scheme-generator" element={<SchemeOfWorkGenerator />} />
           <Route path="scheme-editor" element={<SchemeOfWorkEditor />} />
           <Route path="cbc-transition" element={<CBCTransition />} />
           <Route path="documents" element={<Documents />} />
-          <Route path="lesson-plans" element={<LessonPlans />} />
           <Route path="schemes-of-work" element={<SchemesOfWork />} />
           <Route path="profile" element={<Profile />} />
         </Route>

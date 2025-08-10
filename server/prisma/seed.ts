@@ -41,46 +41,7 @@ async function main() {
     },
   });
 
-  // Create default templates
-  const lessonPlanTemplate = await prisma.template.upsert({
-    where: { id: 'default-lesson-plan' },
-    update: {},
-    create: {
-      id: 'default-lesson-plan',
-      name: 'CBC Lesson Plan Template',
-      type: TemplateType.LESSON_PLAN,
-      content: JSON.stringify({
-        structure: [
-          'Learning Outcomes',
-          'Core Competencies',
-          'Values',
-          'Key Inquiry Questions',
-          'Learning Experiences',
-          'Assessment Criteria',
-          'Resources'
-        ],
-        coreCompetencies: [
-          'Communication and Collaboration',
-          'Critical Thinking and Problem Solving',
-          'Imagination and Creativity',
-          'Citizenship',
-          'Digital Literacy',
-          'Learning to Learn',
-          'Self-Efficacy'
-        ],
-        values: [
-          'Love',
-          'Responsibility',
-          'Respect',
-          'Unity',
-          'Peace',
-          'Patriotism',
-          'Social Justice'
-        ]
-      }),
-      isDefault: true,
-    },
-  });
+
 
   const schemeOfWorkTemplate = await prisma.template.upsert({
     where: { id: 'default-scheme' },
@@ -113,62 +74,14 @@ async function main() {
     },
   });
 
-  // Create sample lesson plan
-  const sampleLessonPlan = await prisma.lessonPlan.create({
-    data: {
-      title: 'Introduction to Fractions',
-      subject: 'Mathematics',
-      grade: 'Grade 4',
-      duration: 40,
-      learningOutcomes: JSON.stringify([
-        'Define what a fraction is',
-        'Identify numerator and denominator',
-        'Represent fractions using diagrams'
-      ]),
-      coreCompetencies: JSON.stringify([
-        'Critical Thinking and Problem Solving',
-        'Communication and Collaboration'
-      ]),
-      values: JSON.stringify(['Responsibility', 'Respect']),
-      keyInquiryQuestions: JSON.stringify([
-        'What is a fraction?',
-        'How can we represent parts of a whole?',
-        'When do we use fractions in real life?'
-      ]),
-      learningExperiences: JSON.stringify([
-        {
-          activity: 'Fraction pizza activity',
-          duration: 15,
-          methodology: 'Hands-on manipulation',
-          resources: ['Paper circles', 'Colored pencils'],
-          assessment: 'Observation'
-        }
-      ]),
-      assessmentCriteria: JSON.stringify([
-        {
-          criterion: 'Understanding fractions',
-          exceeding: 'Explains fractions and creates own examples',
-          meeting: 'Identifies and explains basic fractions',
-          approaching: 'Recognizes fractions with support',
-          below: 'Struggles to identify fractions'
-        }
-      ]),
-      resources: JSON.stringify([
-        'Mathematics textbook Grade 4',
-        'Fraction manipulatives',
-        'Whiteboard and markers'
-      ]),
-      reflection: 'Students showed good understanding of basic fraction concepts.',
-      createdBy: teacherUser.id,
-    },
-  });
+
 
   console.log('✅ Database seeded successfully!');
   console.log(`👤 Admin user: ${adminUser.email}`);
   console.log(`👨‍🏫 Teacher user: ${teacherUser.email}`);
-  console.log(`📋 Lesson plan template: ${lessonPlanTemplate.name}`);
+
   console.log(`📅 Scheme template: ${schemeOfWorkTemplate.name}`);
-  console.log(`📖 Sample lesson plan: ${sampleLessonPlan.title}`);
+
 }
 
 main()

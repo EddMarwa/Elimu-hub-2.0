@@ -47,14 +47,7 @@ const Dashboard: React.FC = () => {
       route: '/reference',
       action: 'Search'
     },
-    {
-      title: 'Generate Lesson Plan',
-      description: 'Create CBC-compliant lesson plans',
-      icon: <AssignmentIcon fontSize="large" />,
-      color: '#ed6c02',
-      route: '/lesson-plan-generator',
-      action: 'Generate'
-    },
+
     {
       title: 'Create Scheme of Work',
       description: 'Build comprehensive schemes of work',

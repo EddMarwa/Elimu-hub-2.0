@@ -6,17 +6,10 @@ export interface AIGenerationRequest {
   context?: string;
   subject?: string;
   grade?: string;
-  type: 'lesson_plan' | 'scheme_of_work' | 'search_query' | 'content_analysis';
+  type: 'scheme_of_work' | 'search_query' | 'content_analysis';
 }
 
-export interface LessonPlanGenerationData {
-  subject: string;
-  grade: string;
-  topic: string;
-  duration: number;
-  learningOutcomes?: string[];
-  context?: string;
-}
+
 
 export interface SchemeOfWorkGenerationData {
   subject: string;
@@ -49,16 +42,7 @@ export class AIService {
     return AIService.instance;
   }
 
-  async generateLessonPlan(data: LessonPlanGenerationData): Promise<any> {
-    try {
-      const prompt = this.buildLessonPlanPrompt(data);
-      const response = await this.callGrokAPI(prompt);
-      return this.parseLessonPlanResponse(response);
-    } catch (error) {
-      logger.error('Error generating lesson plan with AI:', error);
-      return this.generateFallbackLessonPlan(data);
-    }
-  }
+
 
   async generateSchemeOfWork(data: SchemeOfWorkGenerationData): Promise<any> {
     try {
@@ -89,54 +73,7 @@ export class AIService {
     }
   }
 
-  private buildLessonPlanPrompt(data: LessonPlanGenerationData): string {
-    return `
-      Generate a detailed CBC-compliant lesson plan for:
-      - Subject: ${data.subject}
-      - Grade: ${data.grade}
-      - Topic: ${data.topic}
-      - Duration: ${data.duration} minutes
-      ${data.context ? `- Additional Context: ${data.context}` : ''}
 
-      The lesson plan must include:
-      1. Learning Outcomes (3-5 specific, measurable outcomes)
-      2. Core Competencies (from CBC framework)
-      3. Values (from CBC values framework)
-      4. Key Inquiry Questions (3-4 questions)
-      5. Learning Experiences (detailed activities with timing)
-      6. Assessment Criteria (formative and summative)
-      7. Resources needed
-      8. Reflection notes
-
-      Format the response as JSON with the following structure:
-      {
-        "title": "lesson title",
-        "learningOutcomes": ["outcome1", "outcome2", ...],
-        "coreCompetencies": ["competency1", "competency2", ...],
-        "values": ["value1", "value2", ...],
-        "keyInquiryQuestions": ["question1", "question2", ...],
-        "learningExperiences": [
-          {
-            "activity": "activity description",
-            "duration": "time in minutes",
-            "methodology": "teaching method",
-            "materials": ["material1", "material2"]
-          }
-        ],
-        "assessmentCriteria": [
-          {
-            "type": "formative/summative",
-            "method": "assessment method",
-            "criteria": "success criteria"
-          }
-        ],
-        "resources": ["resource1", "resource2", ...],
-        "reflection": "reflection notes for teacher"
-      }
-
-      Ensure all content is appropriate for ${data.grade} level and follows CBC guidelines.
-    `;
-  }
 
   private buildSchemeOfWorkPrompt(data: SchemeOfWorkGenerationData): string {
     return `

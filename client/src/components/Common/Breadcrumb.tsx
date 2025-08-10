@@ -10,8 +10,7 @@ interface BreadcrumbItem {
 
 const routeMap: Record<string, string> = {
   dashboard: 'Dashboard',
-  'lesson-plans': 'Lesson Plans',
-  'lesson-plan-generator': 'Lesson Plans Generator', 
+ 
   'schemes-of-work': 'Schemes Of Work',
   'scheme-generator': 'Scheme Generator',
   'scheme-editor': 'Scheme Editor',

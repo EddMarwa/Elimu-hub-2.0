@@ -91,14 +91,7 @@ const AIAssistant: React.FC = () => {
   // ===== AI TOOL SUGGESTIONS =====
   // Array of available AI-powered educational tools with their configurations
   const suggestions: AISuggestion[] = [
-    {
-      id: '1', 
-      title: 'Lesson Plans', 
-      description: 'Generate comprehensive CBC-aligned lesson plans',
-      icon: <Assignment />, 
-      action: 'lesson-plan', 
-      color: '#2196F3', // Blue
-    },
+
     {
       id: '2', 
       title: 'Scheme of Work', 
@@ -289,9 +282,7 @@ const AIAssistant: React.FC = () => {
       
       // Generate specific prompts based on the selected tool
       switch (suggestion.action) {
-        case 'lesson-plan':
-          prompt = "I need help creating a lesson plan. Please provide guidance on: 1) How to structure a CBC-aligned lesson plan, 2) Key components to include, 3) Assessment strategies, 4) Learning activities. Give me a comprehensive overview.";
-          break;
+
         case 'scheme-of-work':
           prompt = "I need help developing a scheme of work. Please explain: 1) How to structure a CBC scheme of work, 2) Key learning areas to cover, 3) Progression planning, 4) Assessment criteria. Provide detailed guidance.";
           break;
@@ -459,7 +450,7 @@ const AIAssistant: React.FC = () => {
       const res = await api.get('/ai/references', { 
         params: { 
           q: query, 
-          tags: 'library,lesson-plan,scheme' 
+          tags: 'library,scheme' 
         } 
       });
       

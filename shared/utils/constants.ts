@@ -96,14 +96,7 @@ export const API_ENDPOINTS = {
     DELETE: '/api/documents/:id',
     PROCESS: '/api/documents/:id/process'
   },
-  LESSON_PLANS: {
-    CREATE: '/api/lesson-plans',
-    LIST: '/api/lesson-plans',
-    GET: '/api/lesson-plans/:id',
-    UPDATE: '/api/lesson-plans/:id',
-    DELETE: '/api/lesson-plans/:id',
-    GENERATE: '/api/lesson-plans/generate'
-  },
+
   SCHEMES: {
     CREATE: '/api/schemes',
     LIST: '/api/schemes',

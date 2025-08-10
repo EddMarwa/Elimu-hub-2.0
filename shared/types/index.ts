@@ -19,42 +19,9 @@ export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN'
 }
 
-export interface LessonPlan {
-  id: string;
-  title: string;
-  subject: string;
-  grade: string;
-  duration: number; // in minutes
-  learningOutcomes: string[];
-  coreCompetencies: string[];
-  values: string[];
-  keyInquiryQuestions: string[];
-  learningExperiences: LearningExperience[];
-  assessmentCriteria: AssessmentCriteria[];
-  resources: string[];
-  reflection: string;
-  createdBy: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
-export interface LearningExperience {
-  id: string;
-  activity: string;
-  duration: number;
-  methodology: string;
-  resources: string[];
-  assessment: string;
-}
 
-export interface AssessmentCriteria {
-  id: string;
-  criterion: string;
-  exceeding: string;
-  meeting: string;
-  approaching: string;
-  below: string;
-}
+
 
 export interface SchemeOfWork {
   id: string;
@@ -165,7 +132,7 @@ export interface PaginatedResponse<T> {
 
 export interface GenerationRequest {
   documentId: string;
-  type: 'lesson_plan' | 'scheme_of_work';
+  type: 'scheme_of_work';
   subject: string;
   grade: string;
   topic?: string;
@@ -176,7 +143,7 @@ export interface GenerationRequest {
 
 export interface GenerationResponse {
   id: string;
-  content: LessonPlan | SchemeOfWork;
+  content: SchemeOfWork;
   status: 'generating' | 'completed' | 'failed';
   progress: number;
   estimatedTime?: number;

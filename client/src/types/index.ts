@@ -19,24 +19,7 @@ export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN'
 }
 
-export interface LessonPlan {
-  id: string;
-  title: string;
-  subject: string;
-  grade: string;
-  duration: number; // in minutes
-  learningOutcomes: string[];
-  coreCompetencies: string[];
-  values: string[];
-  keyInquiryQuestions: string[];
-  learningExperiences: LearningExperience[];
-  assessmentCriteria: AssessmentCriteria[];
-  resources: string[];
-  reflection: string;
-  createdBy: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+
 
 export interface LearningExperience {
   id: string;
@@ -116,7 +99,6 @@ export interface Template {
 }
 
 export enum TemplateType {
-  LESSON_PLAN = 'lesson_plan',
   SCHEME_OF_WORK = 'scheme_of_work',
   ASSESSMENT = 'assessment'
 }
@@ -174,7 +156,6 @@ export interface RegisterRequest {
 }
 
 export interface DashboardStats {
-  lessonPlans: number;
   schemesOfWork: number;
   documents: number;
   collaborations: number;

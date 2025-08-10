@@ -131,10 +131,9 @@ const DashboardNew: React.FC = () => {
   };
 
   const quickActions = [
-    { title: 'Create Lesson Plan', icon: <Assignment />, path: '/lesson-plan-generator', color: '#1e3a8a', hoverColor: '#3b82f6' },
     { title: 'New Scheme of Work', icon: <Description />, path: '/scheme-editor', color: '#f59e0b', hoverColor: '#fbbf24' },
     { title: 'Upload Document', icon: <Upload />, path: '/upload', color: '#10b981', hoverColor: '#34d399' },
-    { title: 'Library', icon: <MenuBook />, path: '/lesson-plans', color: '#8b5cf6', hoverColor: '#a78bfa' },
+    { title: 'AI Assistant', icon: <Psychology />, path: '/ai-assistant', color: '#8b5cf6', hoverColor: '#a78bfa' },
   ];
 
   const adminActions = [

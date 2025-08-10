@@ -271,13 +271,7 @@ const DashboardEnhanced: React.FC = () => {
       color: '#10b981',
       description: 'Chat with AI assistant'
     },
-    { 
-      title: 'Lesson Plans', 
-      icon: <Assignment />, 
-      path: '/lesson-plan-generator', 
-      color: '#1e3a8a',
-      description: 'Generate and manage lesson plans'
-    },
+
     { 
       title: 'Schemes Of Work', 
       icon: <Description />, 
@@ -285,13 +279,7 @@ const DashboardEnhanced: React.FC = () => {
       color: '#f59e0b',
       description: 'Build comprehensive schemes'
     },
-    { 
-      title: 'Library', 
-      icon: <MenuBook />, 
-      path: '/lesson-plans', 
-      color: '#8b5cf6',
-      description: 'Access teaching materials'
-    },
+
   ];
 
   const adminActions = user?.role && ['ADMIN', 'SUPER_ADMIN'].includes(user.role) ? [

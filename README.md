@@ -147,7 +147,7 @@ npm run client:dev  # Frontend on :3000
 - Use results to inform lesson planning
 
 ### 3. Generate Lesson Plans
-- Visit `/lesson-plan-generator`
+
 - Fill in basic information (subject, grade, topic)
 - Click "Generate CBC-Compliant Lesson Plan"
 - Review and edit generated content
