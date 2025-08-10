@@ -801,20 +801,24 @@ const AIAssistant: React.FC = () => {
 
           {/* Input Area - User message input and controls */}
           <Box sx={{ 
-            p: 1.5, 
+            p: 1, 
             borderTop: '1px solid rgba(0,0,0,0.08)',
             bgcolor: 'white',
-            boxShadow: '0 -2px 10px rgba(0,0,0,0.03)'
+            boxShadow: '0 -2px 10px rgba(0,0,0,0.03)',
+            display: 'flex',
+            justifyContent: 'center'
           }}>
           <Box sx={{ 
             display: 'flex', 
-            gap: 1.2,
+            gap: 1,
             alignItems: 'flex-end',
             bgcolor: '#f8fafc',
             borderRadius: 2,
-            p: 1.2,
+            p: 1,
             border: '1px solid rgba(0,0,0,0.06)',
             transition: 'all 0.3s ease',
+            maxWidth: '80%',
+            width: '100%',
             '&:focus-within': {
               borderColor: 'primary.main',
               boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.1)',
@@ -829,18 +833,18 @@ const AIAssistant: React.FC = () => {
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                 multiline
-                maxRows={3}
+                maxRows={2}
                 variant="standard"
                 sx={{
                   '& .MuiInputBase-root': {
-                    fontSize: '0.9rem',
+                    fontSize: '0.85rem',
                     fontWeight: 500,
                     '&:before': { borderBottom: 'none' },
                     '&:after': { borderBottom: 'none' },
                     '&:hover:before': { borderBottom: 'none' }
                   },
                   '& .MuiInputBase-input': {
-                    padding: '8px 0',
+                    padding: '6px 0',
                     color: '#1a1a1a'
                   }
                 }}
@@ -848,13 +852,13 @@ const AIAssistant: React.FC = () => {
               {inputMessage.length > 0 && (
                 <Box sx={{ 
                   position: 'absolute', 
-                  bottom: -18, 
+                  bottom: -16, 
                   right: 0,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 1
+                  gap: 0.8
                 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
                     {inputMessage.length} chars
                   </Typography>
                   <Button
@@ -862,7 +866,7 @@ const AIAssistant: React.FC = () => {
                     onClick={() => setInputMessage('')}
                     sx={{ 
                       minWidth: 'auto', 
-                      p: 0.5,
+                      p: 0.4,
                       color: 'text.secondary',
                       '&:hover': { color: 'error.main' }
                     }}
@@ -878,8 +882,8 @@ const AIAssistant: React.FC = () => {
               disabled={!inputMessage.trim() || isLoading}
               sx={{ 
                 minWidth: 'auto', 
-                px: 1.5,
-                py: 0.8,
+                px: 1.2,
+                py: 0.6,
                 borderRadius: 2,
                 bgcolor: 'primary.main',
                 boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)',
@@ -896,15 +900,15 @@ const AIAssistant: React.FC = () => {
                 }
               }}
             >
-              <Send sx={{ fontSize: '1rem' }} />
+              <Send sx={{ fontSize: '0.9rem' }} />
             </Button>
           </Box>
           
           {/* Quick Action Buttons */}
           <Box sx={{ 
             display: 'flex', 
-            gap: 0.6, 
-            mt: 1.2, 
+            gap: 0.5, 
+            mt: 1, 
             flexWrap: 'wrap',
             justifyContent: 'center'
           }}>
