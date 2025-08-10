@@ -506,20 +506,20 @@ const AIAssistant: React.FC = () => {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header Section - Gradient background with AI Tools title */}
       <Box sx={{ 
-        p: 3, 
+        p: 2, 
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         color: 'white',
-        borderRadius: '16px 16px 0 0'
+        borderRadius: '12px 12px 0 0'
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', mr: 2 }}>
-            <AutoAwesome />
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', mr: 1.5, width: 32, height: 32 }}>
+            <AutoAwesome sx={{ fontSize: '1.1rem' }} />
           </Avatar>
           <Box>
-            <Typography variant="h6" fontWeight="bold" sx={{ color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+            <Typography variant="subtitle1" fontWeight="bold" sx={{ color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.3)', fontSize: '1rem' }}>
               AI Tools
             </Typography>
-            <Typography variant="body2" sx={{ color: 'white', opacity: 0.95, textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
+            <Typography variant="caption" sx={{ color: 'white', opacity: 0.95, textShadow: '0 1px 2px rgba(0,0,0,0.2)', fontSize: '0.75rem' }}>
               Quick access to educational assistance
             </Typography>
           </Box>
