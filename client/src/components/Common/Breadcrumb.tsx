@@ -11,8 +11,8 @@ interface BreadcrumbItem {
 const routeMap: Record<string, string> = {
   dashboard: 'Dashboard',
   'lesson-plans': 'Lesson Plans',
-  'lesson-plan-generator': 'Lesson Plan Generator', 
-  'schemes-of-work': 'Schemes of Work',
+  'lesson-plan-generator': 'Lesson Plans Generator', 
+  'schemes-of-work': 'Schemes Of Work',
   'scheme-generator': 'Scheme Generator',
   'scheme-editor': 'Scheme Editor',
   'ai-assistant': 'Elimu Hub AI',

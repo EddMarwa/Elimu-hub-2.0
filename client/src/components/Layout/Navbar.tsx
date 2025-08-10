@@ -91,8 +91,8 @@ const Navbar: React.FC = () => {
   const navigationItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard', roles: ['teacher', 'admin', 'super_admin'], isHome: true },
     { text: 'Lesson Plans', icon: <Assignment />, path: '/lesson-plans', roles: ['teacher', 'admin', 'super_admin'] },
-    { text: 'Lesson Plan Generator', icon: <AutoAwesome />, path: '/lesson-plan-generator', roles: ['teacher', 'admin', 'super_admin'] },
-    { text: 'Schemes of Work', icon: <Description />, path: '/schemes-of-work', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Lesson Plans Generator', icon: <AutoAwesome />, path: '/lesson-plan-generator', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Schemes Of Work', icon: <Description />, path: '/schemes-of-work', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Scheme Generator', icon: <AutoFixHigh />, path: '/scheme-generator', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Elimu Hub AI', icon: <Psychology />, path: '/ai-assistant', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Reference', icon: <MenuBook />, path: '/reference', roles: ['teacher', 'admin', 'super_admin'] },

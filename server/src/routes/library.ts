@@ -241,6 +241,24 @@ router.post('/upload', upload.single('file'), asyncHandler(async (req: Request, 
   // Auto-approve for admins, pending for regular users
   const initialStatus = ['ADMIN', 'SUPER_ADMIN'].includes(userRole) ? 'APPROVED' : 'PENDING';
 
+  // Determine default tags by section name (if available)
+  let defaultTags: string[] = [];
+  try {
+    const section = await libraryService.getSectionById(sectionId);
+    const sectionName = section?.name?.toLowerCase() || '';
+    if (sectionName.includes('scheme')) defaultTags.push('scheme');
+    if (sectionName.includes('lesson')) defaultTags.push('lesson-plan');
+    if (sectionName.includes('library')) defaultTags.push('library');
+  } catch {}
+
+  let parsedTags: string[] | undefined;
+  try {
+    if (tags) {
+      const t = JSON.parse(tags);
+      if (Array.isArray(t)) parsedTags = t.map((x) => String(x));
+    }
+  } catch {}
+
   const fileData = {
     filename: req.file.filename,
     originalName: req.file.originalname,
@@ -252,7 +270,7 @@ router.post('/upload', upload.single('file'), asyncHandler(async (req: Request, 
     subfolderId: subfolderId || undefined,
     uploadedBy: userId,
     description,
-    tags: tags ? JSON.parse(tags) : undefined,
+    tags: Array.from(new Set([...(parsedTags || []), ...defaultTags])),
   };
 
   const uploadedFile = await libraryService.uploadFile(fileData);
@@ -273,11 +291,13 @@ router.post('/upload', upload.single('file'), asyncHandler(async (req: Request, 
 // @route   GET /api/library/files
 // @access  Public (filtered by user role)
 router.get('/files', asyncHandler(async (req: Request, res: Response) => {
-  const { sectionId, subfolderId, status, limit = '20', offset = '0' } = req.query;
+  const { sectionId, subfolderId, status, limit = '20', offset = '0', tags, q } = req.query;
   const userRole = req.headers['x-user-role'] as string;
 
   const limitNum = parseInt(limit as string);
   const offsetNum = parseInt(offset as string);
+  const tagArray = typeof tags === 'string' && tags.length > 0 ? (tags as string).split(',').map(t => t.trim()).filter(Boolean) : undefined;
+  const searchQuery = typeof q === 'string' ? q : undefined;
 
   let result;
 
@@ -287,14 +307,18 @@ router.get('/files', asyncHandler(async (req: Request, res: Response) => {
       subfolderId as string,
       userRole,
       limitNum,
-      offsetNum
+      offsetNum,
+      tagArray,
+      searchQuery
     );
   } else {
     result = await libraryService.getAllFiles(
       userRole,
       status as string,
       limitNum,
-      offsetNum
+      offsetNum,
+      tagArray,
+      searchQuery
     );
   }
 

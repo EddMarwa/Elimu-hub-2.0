@@ -272,21 +272,21 @@ const DashboardEnhanced: React.FC = () => {
       description: 'Chat with AI assistant'
     },
     { 
-      title: 'Create Lesson Plan', 
+      title: 'Lesson Plans', 
       icon: <Assignment />, 
       path: '/lesson-plan-generator', 
       color: '#1e3a8a',
-      description: 'Generate CBC-aligned lessons'
+      description: 'Generate and manage lesson plans'
     },
     { 
-      title: 'New Scheme of Work', 
+      title: 'Schemes Of Work', 
       icon: <Description />, 
       path: '/scheme-editor', 
       color: '#f59e0b',
       description: 'Build comprehensive schemes'
     },
     { 
-      title: 'Browse Library', 
+      title: 'Library', 
       icon: <MenuBook />, 
       path: '/lesson-plans', 
       color: '#8b5cf6',

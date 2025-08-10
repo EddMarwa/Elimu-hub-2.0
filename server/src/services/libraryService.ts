@@ -43,6 +43,23 @@ export interface LibraryStats {
 }
 
 export class LibraryService {
+  async getSectionById(id: string) {
+    try {
+      return await prisma.librarySection.findUnique({ where: { id } });
+    } catch (error) {
+      logger.error('Error fetching library section by id:', error);
+      throw error;
+    }
+  }
+
+  async getSubfolderById(id: string) {
+    try {
+      return await prisma.librarySubfolder.findUnique({ where: { id } });
+    } catch (error) {
+      logger.error('Error fetching library subfolder by id:', error);
+      throw error;
+    }
+  }
   // Section Management
   async createSection(data: CreateLibrarySectionData) {
     try {
@@ -225,7 +242,9 @@ export class LibraryService {
     subfolderId?: string,
     userRole?: string,
     limit?: number,
-    offset?: number
+    offset?: number,
+    tags?: string[],
+    searchQuery?: string
   ) {
     try {
       const where: any = { sectionId };
@@ -237,6 +256,24 @@ export class LibraryService {
       // Normal users can only see approved files
       if (userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
         where.status = 'APPROVED';
+      }
+
+      // Filter by tags (stored as JSON string); use substring contains for each tag
+      if (tags && tags.length > 0) {
+        where.AND = (where.AND || []).concat(tags.map((tag) => ({
+          tags: { contains: `"${tag}"` }
+        })));
+      }
+
+      if (searchQuery && searchQuery.trim().length > 0) {
+        const q = searchQuery.trim();
+        where.AND = (where.AND || []).concat({
+          OR: [
+            { originalName: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+            { tags: { contains: q } },
+          ]
+        });
       }
 
       const files = await prisma.libraryFile.findMany({
@@ -271,7 +308,9 @@ export class LibraryService {
     userRole?: string,
     status?: string,
     limit?: number,
-    offset?: number
+    offset?: number,
+    tags?: string[],
+    searchQuery?: string
   ) {
     try {
       const where: any = {};
@@ -280,6 +319,23 @@ export class LibraryService {
         where.status = status;
       } else if (userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
         where.status = 'APPROVED';
+      }
+
+      if (tags && tags.length > 0) {
+        where.AND = (where.AND || []).concat(tags.map((tag) => ({
+          tags: { contains: `"${tag}"` }
+        })));
+      }
+
+      if (searchQuery && searchQuery.trim().length > 0) {
+        const q = searchQuery.trim();
+        where.AND = (where.AND || []).concat({
+          OR: [
+            { originalName: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+            { tags: { contains: q } },
+          ]
+        });
       }
 
       const files = await prisma.libraryFile.findMany({

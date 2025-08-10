@@ -1,0 +1,104 @@
+import express, { Request, Response } from 'express';
+import { asyncHandler } from '../middleware/errorHandler';
+import AIService from '../services/aiService';
+import libraryService from '../services/libraryService';
+
+const router = express.Router();
+
+// Generate questions for a topic
+router.post('/questions', asyncHandler(async (req: Request, res: Response) => {
+  const { subject, grade, topic, numQuestions = 10, difficulty = 'mixed', questionTypes } = req.body || {};
+  if (!subject || !grade || !topic) {
+    return res.status(400).json({ success: false, message: 'subject, grade, and topic are required' });
+  }
+
+  const prompt = `
+Generate ${numQuestions} ${difficulty} difficulty questions for the Kenyan CBC curriculum.
+Subject: ${subject}
+Grade: ${grade}
+Topic: ${topic}
+${Array.isArray(questionTypes) && questionTypes.length ? `Include types: ${questionTypes.join(', ')}.` : ''}
+
+Return JSON with fields: questions: [ { number, type, question, options?, answer, markingScheme } ].`;
+
+  const response = await AIService['callGrokAPI'](prompt);
+  // Try to extract JSON
+  let data: any = null;
+  try {
+    const m = response.match(/\{[\s\S]*\}/);
+    data = m ? JSON.parse(m[0]) : null;
+  } catch {}
+  if (!data) data = { questions: [] };
+  return res.json({ success: true, data });
+}));
+
+// Generate grading rubric
+router.post('/grading-rubric', asyncHandler(async (req: Request, res: Response) => {
+  const { subject, grade, topic, criteria } = req.body || {};
+  if (!subject || !grade || !topic) {
+    return res.status(400).json({ success: false, message: 'subject, grade, and topic are required' });
+  }
+  const prompt = `
+Create an assessment grading rubric for CBC.
+Subject: ${subject}
+Grade: ${grade}
+Topic: ${topic}
+${criteria ? `Include criteria focus: ${criteria}` : ''}
+Return JSON as: { rubric: [ { criterion, levels: [ { level: 'Exceeding', descriptors }, { level: 'Meeting', descriptors }, { level: 'Approaching', descriptors }, { level: 'Below', descriptors } ] } ] }.`;
+  const response = await AIService['callGrokAPI'](prompt);
+  let data: any = null;
+  try {
+    const m = response.match(/\{[\s\S]*\}/);
+    data = m ? JSON.parse(m[0]) : null;
+  } catch {}
+  if (!data) data = { rubric: [] };
+  return res.json({ success: true, data });
+}));
+
+// Assessment suggestions (methods and strategies)
+router.post('/assessment', asyncHandler(async (req: Request, res: Response) => {
+  const { subject, grade, topic, learningOutcomes } = req.body || {};
+  if (!subject || !grade || !topic) {
+    return res.status(400).json({ success: false, message: 'subject, grade, and topic are required' });
+  }
+  const prompt = `
+Suggest assessment methods and grading strategies aligned to CBC.
+Subject: ${subject}
+Grade: ${grade}
+Topic: ${topic}
+${Array.isArray(learningOutcomes) && learningOutcomes.length ? `Learning outcomes: ${learningOutcomes.join('; ')}` : ''}
+Return JSON: { formative: [ ... ], summative: [ ... ], gradingStrategies: [ ... ] }.`;
+  const response = await AIService['callGrokAPI'](prompt);
+  let data: any = null;
+  try {
+    const m = response.match(/\{[\s\S]*\}/);
+    data = m ? JSON.parse(m[0]) : null;
+  } catch {}
+  if (!data) data = { formative: [], summative: [], gradingStrategies: [] };
+  return res.json({ success: true, data });
+}));
+
+// References from library
+router.get('/references', asyncHandler(async (req: Request, res: Response) => {
+  const { q = '', tags, limit = '10' } = req.query;
+  const userRole = 'TEACHER'; // default visibility (approved only)
+  const tagArray = typeof tags === 'string' && tags.length > 0 ? (tags as string).split(',').map(t => t.trim()).filter(Boolean) : undefined;
+  const limitNum = parseInt(limit as string);
+  const { files } = await libraryService.getAllFiles(userRole, undefined, limitNum, 0, tagArray, typeof q === 'string' ? q : undefined);
+  const items = files.map((f) => ({
+    id: f.id,
+    title: f.originalName,
+    type: f.fileType,
+    size: f.fileSize,
+    url: `/uploads/library/${f.filename}`,
+    description: f.description || '',
+    section: f.section?.name,
+    subfolder: f.subfolder?.name,
+    uploadedAt: f.createdAt,
+  }));
+  return res.json({ success: true, data: items });
+}));
+
+export default router;
+
+

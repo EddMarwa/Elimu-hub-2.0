@@ -7,6 +7,10 @@ const api: AxiosInstance = axios.create({
   timeout: 30000,
 });
 
+// Expose API base URL and server origin (useful for building non-API links like file downloads)
+export const API_BASE_URL: string = api.defaults.baseURL || 'http://localhost:5000/api';
+export const SERVER_BASE_ORIGIN: string = API_BASE_URL.replace(/\/?api\/?$/, '');
+
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
@@ -220,213 +224,82 @@ export const adminUsersAPI = {
 
 // Library API
 export const libraryAPI = {
-  getSections: () => Promise.resolve({
-    data: [
-      {
-        id: '1',
-        name: 'Mathematics',
-        description: 'Mathematical resources and teaching materials',
-        order: 1,
-        isActive: true,
-        _count: { files: 25 },
-        subfolders: [
-          { id: '1a', name: 'Grade 1-3', sectionId: '1', order: 1, _count: { files: 8 } },
-          { id: '1b', name: 'Grade 4-6', sectionId: '1', order: 2, _count: { files: 12 } },
-          { id: '1c', name: 'Grade 7-8', sectionId: '1', order: 3, _count: { files: 5 } },
-        ]
-      },
-      {
-        id: '2',
-        name: 'Science',
-        description: 'Science curriculum and experiment guides',
-        order: 2,
-        isActive: true,
-        _count: { files: 18 },
-        subfolders: [
-          { id: '2a', name: 'Physics', sectionId: '2', order: 1, _count: { files: 6 } },
-          { id: '2b', name: 'Chemistry', sectionId: '2', order: 2, _count: { files: 7 } },
-          { id: '2c', name: 'Biology', sectionId: '2', order: 3, _count: { files: 5 } },
-        ]
-      },
-      {
-        id: '3',
-        name: 'Languages',
-        description: 'English, Kiswahili and other language resources',
-        order: 3,
-        isActive: true,
-        _count: { files: 32 },
-        subfolders: [
-          { id: '3a', name: 'English', sectionId: '3', order: 1, _count: { files: 20 } },
-          { id: '3b', name: 'Kiswahili', sectionId: '3', order: 2, _count: { files: 12 } },
-        ]
-      },
-      {
-        id: '4',
-        name: 'Social Studies',
-        description: 'History, Geography, and Civic Education materials',
-        order: 4,
-        isActive: true,
-        _count: { files: 15 },
-        subfolders: []
-      },
-      {
-        id: '5',
-        name: 'Creative Arts',
-        description: 'Music, Art, and Physical Education resources',
-        order: 5,
-        isActive: true,
-        _count: { files: 12 },
-        subfolders: [
-          { id: '5a', name: 'Music', sectionId: '5', order: 1, _count: { files: 4 } },
-          { id: '5b', name: 'Visual Arts', sectionId: '5', order: 2, _count: { files: 5 } },
-          { id: '5c', name: 'Physical Education', sectionId: '5', order: 3, _count: { files: 3 } },
-        ]
-      }
-    ]
-  }),
-
-  getFiles: (params?: { sectionId?: string; subfolderId?: string; status?: string }) => {
-    const mockFiles = [
-      {
-        id: '1',
-        filename: 'math_fractions_lesson.pdf',
-        originalName: 'Understanding Fractions - Grade 4.pdf',
-        fileType: 'PDF' as const,
-        fileSize: 2450000,
-        status: 'APPROVED' as const,
-        description: 'Comprehensive lesson plan for teaching fractions to Grade 4 students',
-        tags: ['fractions', 'grade4', 'mathematics'],
-        createdAt: '2025-08-01T10:30:00Z',
-        uploader: {
-          firstName: 'Mary',
-          lastName: 'Wanjiku',
-          email: 'mary.wanjiku@school.ke'
-        },
-        section: { id: '1', name: 'Mathematics' },
-        subfolder: { id: '1b', name: 'Grade 4-6' }
-      },
-      {
-        id: '2',
-        filename: 'science_experiment_video.mp4',
-        originalName: 'Simple Chemistry Experiments.mp4',
-        fileType: 'VIDEO' as const,
-        fileSize: 15800000,
-        status: 'PENDING' as const,
-        description: 'Video demonstration of safe chemistry experiments for primary school',
-        tags: ['chemistry', 'experiments', 'video'],
-        createdAt: '2025-08-02T08:15:00Z',
-        uploader: {
-          firstName: 'John',
-          lastName: 'Kimani',
-          email: 'john.kimani@school.ke'
-        },
-        section: { id: '2', name: 'Science' },
-        subfolder: { id: '2b', name: 'Chemistry' }
-      },
-      {
-        id: '3',
-        filename: 'english_pronunciation.mp3',
-        originalName: 'Phonics and Pronunciation Guide.mp3',
-        fileType: 'AUDIO' as const,
-        fileSize: 8500000,
-        status: 'APPROVED' as const,
-        description: 'Audio guide for teaching English pronunciation and phonics',
-        tags: ['english', 'phonics', 'pronunciation'],
-        createdAt: '2025-07-30T14:20:00Z',
-        uploader: {
-          firstName: 'Grace',
-          lastName: 'Achieng',
-          email: 'grace.achieng@school.ke'
-        },
-        section: { id: '3', name: 'Languages' },
-        subfolder: { id: '3a', name: 'English' }
-      },
-      {
-        id: '4',
-        filename: 'kenya_map.jpg',
-        originalName: 'Physical Map of Kenya.jpg',
-        fileType: 'IMAGE' as const,
-        fileSize: 3200000,
-        status: 'APPROVED' as const,
-        description: 'High-resolution physical map of Kenya for geography lessons',
-        tags: ['geography', 'kenya', 'map'],
-        createdAt: '2025-07-28T11:45:00Z',
-        uploader: {
-          firstName: 'Peter',
-          lastName: 'Muthui',
-          email: 'peter.muthui@school.ke'
-        },
-        section: { id: '4', name: 'Social Studies' }
-      },
-      {
-        id: '5',
-        filename: 'art_activities.docx',
-        originalName: 'Creative Art Activities for Children.docx',
-        fileType: 'DOCUMENT' as const,
-        fileSize: 1200000,
-        status: 'DECLINED' as const,
-        description: 'Collection of age-appropriate art activities and projects',
-        tags: ['art', 'activities', 'creative'],
-        createdAt: '2025-07-25T09:30:00Z',
-        uploader: {
-          firstName: 'Sarah',
-          lastName: 'Njeri',
-          email: 'sarah.njeri@school.ke'
-        },
-        section: { id: '5', name: 'Creative Arts' },
-        subfolder: { id: '5b', name: 'Visual Arts' }
-      }
-    ];
-
-    // Filter based on parameters
-    let filteredFiles = mockFiles;
-    
-    if (params?.sectionId) {
-      filteredFiles = filteredFiles.filter(file => file.section.id === params.sectionId);
+  async getSections() {
+    try {
+      const res = await api.get('/library/sections');
+      return { data: res.data.data };
+    } catch {
+      // Fallback mock
+      return Promise.resolve({ data: [] });
     }
-    
-    if (params?.subfolderId) {
-      filteredFiles = filteredFiles.filter(file => file.subfolder?.id === params.subfolderId);
-    }
-    
-    if (params?.status) {
-      filteredFiles = filteredFiles.filter(file => file.status === params.status);
-    }
-
-    return Promise.resolve({ data: filteredFiles });
   },
 
-  uploadFile: (formData: FormData, onProgress?: (progress: number) => void) => {
-    return new Promise((resolve) => {
-      // Simulate upload progress
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 10;
-        if (onProgress) onProgress(progress);
-        if (progress >= 100) {
-          clearInterval(interval);
-          resolve({ data: { id: 'new-file-id', message: 'File uploaded successfully' } });
-        }
-      }, 200);
-    });
+  async getFiles(params?: { sectionId?: string; subfolderId?: string; status?: string }, admin?: { userId: string; role: string }) {
+    try {
+      const res = await api.get('/library/files', {
+        params,
+        headers: admin ? { 'x-user-id': admin.userId, 'x-user-role': admin.role } : undefined,
+      });
+      return { data: res.data.data };
+    } catch {
+      return Promise.resolve({ data: [] });
+    }
   },
 
-  approveFile: (fileId: string) => Promise.resolve({ data: { message: 'File approved' } }),
+  async uploadFile(formData: FormData, onProgress?: (progress: number) => void, auth?: { userId: string; role: string }) {
+    try {
+      const res = await api.post('/library/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          ...(auth ? { 'x-user-id': auth.userId, 'x-user-role': auth.role } : {}),
+        },
+        onUploadProgress: (evt) => {
+          if (onProgress && evt.total) {
+            onProgress(Math.round((evt.loaded * 100) / evt.total));
+          }
+        },
+      });
+      return { data: res.data.data };
+    } catch {
+      return Promise.resolve({ data: { id: 'new-file-id' } });
+    }
+  },
+
+  async approveFile(fileId: string, admin?: { userId: string; role: string }) {
+    const headers = admin ? { 'x-user-id': admin.userId, 'x-user-role': admin.role } : undefined;
+    const res = await api.post(`/library/files/${fileId}/approve`, undefined, { headers });
+    return { data: res.data };
+  },
   
-  declineFile: (fileId: string) => Promise.resolve({ data: { message: 'File declined' } }),
+  async declineFile(fileId: string, admin?: { userId: string; role: string }) {
+    const headers = admin ? { 'x-user-id': admin.userId, 'x-user-role': admin.role } : undefined;
+    const res = await api.post(`/library/files/${fileId}/decline`, undefined, { headers });
+    return { data: res.data };
+  },
 
-  getStats: () => Promise.resolve({
-    data: {
-      totalUploads: 102,
-      pendingDocuments: 15,
-      approvedDocuments: 78,
-      declinedDocuments: 9,
-      totalUsers: 45,
-      activeUsers: 32,
-      documentsThisMonth: 23,
-      uploadsToday: 3
-    }
-  })
+  async getStats(admin?: { userId: string; role: string }) {
+    const headers = admin ? { 'x-user-id': admin.userId, 'x-user-role': admin.role } : undefined;
+    const res = await api.get('/library/stats', { headers });
+    return { data: res.data.data };
+  },
+
+  async createSection(data: { name: string; description?: string; order?: number }, admin: { userId: string; role: string }) {
+    const headers = { 'x-user-id': admin.userId, 'x-user-role': admin.role };
+    const res = await api.post('/library/sections', data, { headers });
+    return { data: res.data.data };
+  },
+
+  async createSubfolder(data: { name: string; sectionId: string; metadata?: any; order?: number }, admin: { userId: string; role: string }) {
+    const headers = { 'x-user-id': admin.userId, 'x-user-role': admin.role };
+    const res = await api.post('/library/subfolders', data, { headers });
+    return { data: res.data.data };
+  },
+
+  async deleteFile(fileId: string, auth?: { userId: string; role: string }) {
+    const headers = auth ? { 'x-user-id': auth.userId, 'x-user-role': auth.role } : undefined;
+    const res = await api.delete(`/library/files/${fileId}`, { headers });
+    return { data: res.data };
+  }
 };
 
 export default api;

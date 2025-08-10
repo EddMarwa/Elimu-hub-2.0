@@ -30,6 +30,8 @@ import {
   CircularProgress,
   Alert,
   Divider,
+  Autocomplete,
+  DialogContentText,
 } from '@mui/material';
 import {
   Folder,
@@ -53,7 +55,7 @@ import {
   AdminPanelSettings,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { libraryAPI } from '../../services/api';
+import { libraryAPI, SERVER_BASE_ORIGIN } from '../../services/api';
 import { toast } from 'react-toastify';
 import { UserRole } from '../../types';
 
@@ -113,12 +115,20 @@ const LessonPlans: React.FC = () => {
   const [currentSubfolder, setCurrentSubfolder] = useState<LibrarySubfolder | null>(null);
   const [files, setFiles] = useState<LibraryFile[]>([]);
   const [tabValue, setTabValue] = useState(0);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [sectionDialogOpen, setSectionDialogOpen] = useState(false);
   const [subfolderDialogOpen, setSubfolderDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [newSectionName, setNewSectionName] = useState<string>('');
+  const [newSectionDescription, setNewSectionDescription] = useState<string>('');
+  const [newSectionOrder, setNewSectionOrder] = useState<number>(0);
+  const [newSubfolderName, setNewSubfolderName] = useState<string>('');
+  const [newSubfolderOrder, setNewSubfolderOrder] = useState<number>(0);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<LibraryFile | null>(null);
 
   // Admin states
   const [pendingFiles, setPendingFiles] = useState<LibraryFile[]>([]);
@@ -149,7 +159,8 @@ const LessonPlans: React.FC = () => {
   const loadFiles = async (sectionId: string, subfolderId?: string) => {
     try {
       setLoading(true);
-      const response = await libraryAPI.getFiles({ sectionId, subfolderId });
+      const tagParam = selectedTags.length ? { tags: selectedTags.join(',') } : undefined;
+      const response = await libraryAPI.getFiles({ sectionId, subfolderId, ...(tagParam as any) }, isAdmin && user ? { userId: user.id, role: user.role } : undefined);
       setFiles(response.data);
     } catch (error) {
       toast.error('Failed to load files');
@@ -160,7 +171,7 @@ const LessonPlans: React.FC = () => {
 
   const loadPendingFiles = async () => {
     try {
-      const response = await libraryAPI.getFiles({ status: 'PENDING' });
+      const response = await libraryAPI.getFiles({ status: 'PENDING' }, isAdmin && user ? { userId: user.id, role: user.role } : undefined);
       setPendingFiles(response.data);
     } catch (error) {
       console.error('Failed to load pending files:', error);
@@ -169,7 +180,7 @@ const LessonPlans: React.FC = () => {
 
   const loadStats = async () => {
     try {
-      const response = await libraryAPI.getStats();
+      const response = await libraryAPI.getStats(isAdmin && user ? { userId: user.id, role: user.role } : undefined);
       setStats(response.data);
     } catch (error) {
       console.error('Failed to load stats:', error);
@@ -189,6 +200,44 @@ const LessonPlans: React.FC = () => {
     loadFiles(currentSection!.id, subfolder.id);
   };
 
+  const handleCreateSection = async () => {
+    if (!user || !isAdmin || !newSectionName.trim()) return;
+    try {
+      await libraryAPI.createSection({
+        name: newSectionName.trim(),
+        description: newSectionDescription.trim() || undefined,
+        order: newSectionOrder || 0,
+      }, { userId: user.id, role: user.role });
+      toast.success('Section created');
+      setSectionDialogOpen(false);
+      setNewSectionName('');
+      setNewSectionDescription('');
+      setNewSectionOrder(0);
+      loadSections();
+    } catch (e) {
+      toast.error('Failed to create section');
+    }
+  };
+
+  const handleCreateSubfolder = async () => {
+    if (!user || !isAdmin || !currentSection || !newSubfolderName.trim()) return;
+    try {
+      await libraryAPI.createSubfolder({
+        name: newSubfolderName.trim(),
+        sectionId: currentSection.id,
+        order: newSubfolderOrder || 0,
+      }, { userId: user.id, role: user.role });
+      toast.success('Subfolder created');
+      setSubfolderDialogOpen(false);
+      setNewSubfolderName('');
+      setNewSubfolderOrder(0);
+      // Reload sections to reflect new subfolder
+      loadSections();
+    } catch (e) {
+      toast.error('Failed to create subfolder');
+    }
+  };
+
   const handleFileUpload = async (sectionId: string, subfolderId?: string) => {
     if (!selectedFile || !user) return;
 
@@ -204,7 +253,7 @@ const LessonPlans: React.FC = () => {
 
       await libraryAPI.uploadFile(formData, (progress) => {
         setUploadProgress(progress);
-      });
+      }, user ? { userId: user.id, role: user.role } : undefined);
 
       toast.success(isAdmin ? 'File uploaded and approved!' : 'File uploaded successfully! Awaiting admin approval.');
       setUploadDialogOpen(false);
@@ -228,7 +277,7 @@ const LessonPlans: React.FC = () => {
 
   const handleApproveFile = async (fileId: string) => {
     try {
-      await libraryAPI.approveFile(fileId);
+      await libraryAPI.approveFile(fileId, isAdmin && user ? { userId: user.id, role: user.role } : undefined);
       toast.success('File approved successfully');
       loadPendingFiles();
       loadStats();
@@ -239,7 +288,7 @@ const LessonPlans: React.FC = () => {
 
   const handleDeclineFile = async (fileId: string) => {
     try {
-      await libraryAPI.declineFile(fileId);
+      await libraryAPI.declineFile(fileId, isAdmin && user ? { userId: user.id, role: user.role } : undefined);
       toast.success('File declined successfully');
       loadPendingFiles();
       loadStats();
@@ -446,14 +495,27 @@ const LessonPlans: React.FC = () => {
               </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" startIcon={<Visibility />}>
+              <Button 
+                size="small" 
+                startIcon={<Visibility />} 
+                component="a" 
+                href={`${SERVER_BASE_ORIGIN}/uploads/library/${file.filename}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
                 View
               </Button>
-              <Button size="small" startIcon={<Download />}>
+              <Button 
+                size="small" 
+                startIcon={<Download />} 
+                component="a" 
+                href={`${SERVER_BASE_ORIGIN}/uploads/library/${file.filename}`} 
+                download
+              >
                 Download
               </Button>
-              {(isAdmin || file.uploader.email === user?.email) && (
-                <IconButton size="small" color="error">
+              {isAdmin && (
+                <IconButton size="small" color="error" onClick={() => { setFileToDelete(file); setDeleteConfirmOpen(true); }}>
                   <Delete />
                 </IconButton>
               )}
@@ -580,6 +642,32 @@ const LessonPlans: React.FC = () => {
 
       {renderBreadcrumbs()}
 
+      {/* Tabs for All / Samples */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+        <Tabs value={tabValue} onChange={(_, v) => { setTabValue(v); setSelectedTags(v === 1 ? ['sample'] : []); if (currentSection) { loadFiles(currentSection.id, currentSubfolder?.id); } }}>
+          <Tab label="All" />
+          <Tab label="Samples" />
+        </Tabs>
+      </Box>
+
+      {/* Tag filter */}
+      <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Autocomplete
+          multiple
+          freeSolo
+          options={[]}
+          value={selectedTags}
+          onChange={(_, value) => { setSelectedTags(value); if (currentSection) { loadFiles(currentSection.id, currentSubfolder?.id); } }}
+          renderInput={(params) => (
+            <TextField {...params} label="Filter by tags" placeholder="Type and press Enter" />
+          )}
+          sx={{ maxWidth: 480 }}
+        />
+        {selectedTags.length > 0 && (
+          <Button onClick={() => { setSelectedTags([]); if (currentSection) { loadFiles(currentSection.id, currentSubfolder?.id); } }}>Clear</Button>
+        )}
+      </Box>
+
       {!currentSection && renderSections()}
       {currentSection && !currentSubfolder && currentSection.subfolders && currentSection.subfolders.length > 0 && renderSubfolders()}
       {((currentSection && currentSubfolder) || (currentSection && (!currentSection.subfolders || currentSection.subfolders.length === 0))) && (
@@ -643,6 +731,94 @@ const LessonPlans: React.FC = () => {
             disabled={!selectedFile || uploading}
           >
             Upload
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirm Dialog */}
+      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+        <DialogTitle>Delete File</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete "{fileToDelete?.originalName}"? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+          <Button color="error" variant="contained" onClick={async () => {
+            if (!fileToDelete) return;
+            try {
+              await libraryAPI.deleteFile(fileToDelete.id, user ? { userId: user.id, role: user.role } : undefined);
+              toast.success('File deleted');
+              setDeleteConfirmOpen(false);
+              setFileToDelete(null);
+              if (currentSection) loadFiles(currentSection.id, currentSubfolder?.id);
+            } catch (e) {
+              toast.error('Failed to delete file');
+            }
+          }}>Delete</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create Section Dialog (Admin) */}
+      <Dialog open={sectionDialogOpen} onClose={() => setSectionDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Create Section</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Section Name"
+            fullWidth
+            sx={{ mt: 1, mb: 2 }}
+            value={newSectionName}
+            onChange={(e) => setNewSectionName(e.target.value)}
+          />
+          <TextField
+            label="Description (optional)"
+            fullWidth
+            multiline
+            rows={3}
+            sx={{ mb: 2 }}
+            value={newSectionDescription}
+            onChange={(e) => setNewSectionDescription(e.target.value)}
+          />
+          <TextField
+            label="Order (optional)"
+            type="number"
+            fullWidth
+            value={newSectionOrder}
+            onChange={(e) => setNewSectionOrder(parseInt(e.target.value || '0'))}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSectionDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleCreateSection} variant="contained" disabled={!isAdmin || !user || !newSectionName.trim()}>
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create Subfolder Dialog (Admin) */}
+      <Dialog open={subfolderDialogOpen} onClose={() => setSubfolderDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Create Subfolder</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Subfolder Name"
+            fullWidth
+            sx={{ mt: 1, mb: 2 }}
+            value={newSubfolderName}
+            onChange={(e) => setNewSubfolderName(e.target.value)}
+          />
+          <TextField
+            label="Order (optional)"
+            type="number"
+            fullWidth
+            value={newSubfolderOrder}
+            onChange={(e) => setNewSubfolderOrder(parseInt(e.target.value || '0'))}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSubfolderDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleCreateSubfolder} variant="contained" disabled={!isAdmin || !user || !newSubfolderName.trim() || !currentSection}>
+            Create
           </Button>
         </DialogActions>
       </Dialog>

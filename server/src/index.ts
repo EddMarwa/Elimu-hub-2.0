@@ -21,6 +21,7 @@ import templateRoutes from './routes/templates';
 import userRoutes from './routes/users';
 import libraryRoutes from './routes/library';
 import adminUserRoutes from './routes/admin/users';
+import aiRoutes from './routes/ai';
 
 // Load environment variables
 dotenv.config();
@@ -77,6 +78,7 @@ app.use('/api/templates', templateRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/admin/users', adminUserRoutes);
+app.use('/api/ai', aiRoutes);
 
 // API info endpoint
 app.get('/api', (req, res) => {
