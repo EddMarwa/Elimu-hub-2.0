@@ -310,8 +310,12 @@ const AIAssistant: React.FC = () => {
             <AutoAwesome />
           </Avatar>
           <Box>
-            <Typography variant="h6" fontWeight="bold">AI Tools</Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9 }}>Quick access to educational assistance</Typography>
+            <Typography variant="h6" fontWeight="bold" sx={{ color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+              AI Tools
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'white', opacity: 0.95, textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
+              Quick access to educational assistance
+            </Typography>
           </Box>
         </Box>
       </Box>
@@ -329,37 +333,59 @@ const AIAssistant: React.FC = () => {
               sx={{
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
-                borderRadius: 3,
-                border: '1px solid rgba(0,0,0,0.08)',
+                borderRadius: 4,
+                border: `2px solid ${suggestion.color}20`,
+                bgcolor: 'white',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                minHeight: 80,
                 '&:hover': {
-                  transform: 'translateX(4px)',
-                  boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                  transform: 'translateX(6px)',
+                  boxShadow: `0 8px 25px ${suggestion.color}30`,
                   borderColor: suggestion.color,
+                  bgcolor: `${suggestion.color}05`,
                 },
               }}
               onClick={() => handleSuggestionClick(suggestion)}
             >
-              <CardContent sx={{ p: 2 }}>
+              <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Box sx={{ 
                     bgcolor: suggestion.color, 
-                    borderRadius: 2, 
-                    p: 1,
-                    mr: 2,
+                    borderRadius: 3, 
+                    p: 1.5,
+                    mr: 3,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: 'white',
-                    minWidth: 40,
-                    height: 40
+                    minWidth: 48,
+                    height: 48,
+                    boxShadow: `0 4px 12px ${suggestion.color}40`
                   }}>
                     {suggestion.icon}
                   </Box>
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 0.5 }}>
+                    <Typography 
+                      variant="h6" 
+                      fontWeight="bold" 
+                      sx={{ 
+                        mb: 1,
+                        color: suggestion.color,
+                        fontSize: '1.1rem',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                      }}
+                    >
                       {suggestion.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        fontSize: '0.9rem',
+                        color: '#2a2a2a',
+                        lineHeight: 1.5,
+                        fontWeight: 500
+                      }}
+                    >
                       {suggestion.description}
                     </Typography>
                   </Box>
@@ -426,7 +452,12 @@ const AIAssistant: React.FC = () => {
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* Suggestions Panel - Desktop */}
             {!isMobile && (
-          <Box sx={{ width: 320, borderRight: '1px solid rgba(0,0,0,0.08)' }}>
+          <Box sx={{ 
+            width: 320, 
+            borderRight: '1px solid rgba(0,0,0,0.08)',
+            bgcolor: '#fafbfc',
+            boxShadow: '2px 0 20px rgba(0,0,0,0.05)'
+          }}>
                   <SuggestionsPanel />
                 </Box>
         )}
@@ -554,51 +585,143 @@ const AIAssistant: React.FC = () => {
 
           {/* Input Area */}
       <Box sx={{ 
-            p: 2, 
+            p: 3, 
             borderTop: '1px solid rgba(0,0,0,0.08)',
-            bgcolor: 'white'
+            bgcolor: 'white',
+            boxShadow: '0 -4px 20px rgba(0,0,0,0.05)'
           }}>
           <Box sx={{ 
             display: 'flex', 
-              gap: 1,
+            gap: 2,
             alignItems: 'flex-end',
-              bgcolor: '#f8fafc',
-              borderRadius: 3,
-              p: 1,
-            border: '1px solid rgba(0,0,0,0.08)'
+            bgcolor: '#f8fafc',
+            borderRadius: 4,
+            p: 2,
+            border: '2px solid rgba(0,0,0,0.06)',
+            transition: 'all 0.3s ease',
+            '&:focus-within': {
+              borderColor: 'primary.main',
+              boxShadow: '0 0 0 3px rgba(25, 118, 210, 0.1)',
+              bgcolor: 'white'
+            }
           }}>
-            <TextField
-              fullWidth
-              placeholder="Ask me anything about lesson planning, curriculum, or teaching strategies..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-              multiline
-                maxRows={3}
+            <Box sx={{ flex: 1, position: 'relative' }}>
+              <TextField
+                fullWidth
+                placeholder="Ask me anything about lesson planning, curriculum, or teaching strategies..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                multiline
+                maxRows={4}
                 variant="standard"
-              sx={{
-                '& .MuiInputBase-root': {
-                    fontSize: '0.9rem',
-                }
-              }}
-            />
+                sx={{
+                  '& .MuiInputBase-root': {
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    '&:before': { borderBottom: 'none' },
+                    '&:after': { borderBottom: 'none' },
+                    '&:hover:before': { borderBottom: 'none' }
+                  },
+                  '& .MuiInputBase-input': {
+                    padding: '12px 0',
+                    color: '#1a1a1a'
+                  }
+                }}
+              />
+              {inputMessage.length > 0 && (
+                <Box sx={{ 
+                  position: 'absolute', 
+                  bottom: -20, 
+                  right: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }}>
+                  <Typography variant="caption" color="text.secondary">
+                    {inputMessage.length} characters
+                  </Typography>
+                  <Button
+                    size="small"
+                    onClick={() => setInputMessage('')}
+                    sx={{ 
+                      minWidth: 'auto', 
+                      p: 0.5,
+                      color: 'text.secondary',
+                      '&:hover': { color: 'error.main' }
+                    }}
+                  >
+                    <Clear fontSize="small" />
+                  </Button>
+                </Box>
+              )}
+            </Box>
             <Button
               variant="contained"
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isLoading}
               sx={{ 
                 minWidth: 'auto', 
-                  px: 2,
-                  py: 1,
-                  borderRadius: 2,
-                  bgcolor: 'primary.main',
+                px: 3,
+                py: 1.5,
+                borderRadius: 3,
+                bgcolor: 'primary.main',
+                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                transition: 'all 0.3s ease',
                 '&:hover': {
-                    bgcolor: 'primary.dark',
+                  bgcolor: 'primary.dark',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)',
+                },
+                '&:disabled': {
+                  bgcolor: 'grey.400',
+                  transform: 'none',
+                  boxShadow: 'none'
+                }
+              }}
+            >
+              <Send sx={{ mr: 1 }} />
+              Send
+            </Button>
+          </Box>
+          
+          {/* Quick Action Buttons */}
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 1, 
+            mt: 2, 
+            flexWrap: 'wrap',
+            justifyContent: 'center'
+          }}>
+            {[
+              { text: 'Help with lesson plan', icon: <Assignment fontSize="small" /> },
+              { text: 'Generate questions', icon: <Quiz fontSize="small" /> },
+              { text: 'Curriculum advice', icon: <School fontSize="small" /> },
+              { text: 'Assessment ideas', icon: <Assessment fontSize="small" /> }
+            ].map((action, index) => (
+              <Button
+                key={index}
+                size="small"
+                variant="outlined"
+                startIcon={action.icon}
+                onClick={() => setInputMessage(action.text)}
+                sx={{
+                  borderRadius: 20,
+                  px: 2,
+                  py: 0.5,
+                  fontSize: '0.8rem',
+                  borderColor: 'primary.light',
+                  color: 'primary.main',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                    bgcolor: 'primary.light',
+                    color: 'white'
                   }
                 }}
               >
-                <Send />
-            </Button>
+                {action.text}
+              </Button>
+            ))}
           </Box>
           </Box>
         </Box>
