@@ -673,7 +673,7 @@ const AIAssistant: React.FC = () => {
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           {/* Chat Header - Shows AI status and controls */}
           <Box sx={{ 
-            p: 2, 
+            p: 1.5, 
             borderBottom: '1px solid rgba(0,0,0,0.08)',
             bgcolor: 'white',
             display: 'flex',
@@ -718,7 +718,7 @@ const AIAssistant: React.FC = () => {
           <Box sx={{ 
             flex: 1, 
             overflow: 'auto', 
-            p: 2,
+            p: 1.5,
             bgcolor: '#fafbfc'
           }}>
             {/* Render each message in the conversation */}
@@ -728,7 +728,7 @@ const AIAssistant: React.FC = () => {
                 sx={{
                   display: 'flex',
                   justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
-                  mb: 2,
+                  mb: 1.5,
                 }}
               >
                 {/* Individual message bubble */}
@@ -776,18 +776,18 @@ const AIAssistant: React.FC = () => {
             
             {/* Loading indicator - Shows when AI is processing */}
             {isLoading && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
-                <Paper sx={{ p: 2, borderRadius: 3, bgcolor: 'white' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 1.5 }}>
+                <Paper sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {/* Animated loading dot */}
                     <Box sx={{ 
-                      width: 16, 
-                      height: 16, 
+                      width: 14, 
+                      height: 14, 
                       borderRadius: '50%', 
                       bgcolor: 'primary.main',
                       animation: 'pulse 1.5s ease-in-out infinite'
                     }} />
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
                       AI is thinking...
                     </Typography>
                   </Box>
@@ -801,18 +801,18 @@ const AIAssistant: React.FC = () => {
 
           {/* Input Area - User message input and controls */}
           <Box sx={{ 
-            p: 2, 
+            p: 1.5, 
             borderTop: '1px solid rgba(0,0,0,0.08)',
             bgcolor: 'white',
             boxShadow: '0 -2px 10px rgba(0,0,0,0.03)'
           }}>
           <Box sx={{ 
             display: 'flex', 
-            gap: 1.5,
+            gap: 1.2,
             alignItems: 'flex-end',
             bgcolor: '#f8fafc',
-            borderRadius: 3,
-            p: 1.5,
+            borderRadius: 2,
+            p: 1.2,
             border: '1px solid rgba(0,0,0,0.06)',
             transition: 'all 0.3s ease',
             '&:focus-within': {
@@ -878,8 +878,8 @@ const AIAssistant: React.FC = () => {
               disabled={!inputMessage.trim() || isLoading}
               sx={{ 
                 minWidth: 'auto', 
-                px: 2,
-                py: 1,
+                px: 1.5,
+                py: 0.8,
                 borderRadius: 2,
                 bgcolor: 'primary.main',
                 boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)',
@@ -896,15 +896,15 @@ const AIAssistant: React.FC = () => {
                 }
               }}
             >
-              <Send sx={{ fontSize: '1.2rem' }} />
+              <Send sx={{ fontSize: '1rem' }} />
             </Button>
           </Box>
           
           {/* Quick Action Buttons */}
           <Box sx={{ 
             display: 'flex', 
-            gap: 0.8, 
-            mt: 1.5, 
+            gap: 0.6, 
+            mt: 1.2, 
             flexWrap: 'wrap',
             justifyContent: 'center'
           }}>
@@ -921,10 +921,10 @@ const AIAssistant: React.FC = () => {
                 startIcon={action.icon}
                 onClick={() => setInputMessage(action.text)}
                 sx={{
-                  borderRadius: 16,
-                  px: 1.5,
-                  py: 0.4,
-                  fontSize: '0.75rem',
+                  borderRadius: 12,
+                  px: 1.2,
+                  py: 0.3,
+                  fontSize: '0.7rem',
                   borderColor: 'primary.light',
                   color: 'primary.main',
                   '&:hover': {
