@@ -263,7 +263,15 @@ const AIAssistant: React.FC = () => {
     }
   };
 
+  // ===== SUGGESTION HANDLING =====
+  
+  /**
+   * Handles clicks on AI tool suggestions
+   * Creates appropriate prompts based on the selected tool and generates AI responses
+   * @param suggestion - The selected AI tool suggestion
+   */
   const handleSuggestionClick = async (suggestion: AISuggestion) => {
+    // Create a user message indicating the selected tool
     const suggestionMessage: Message = {
       id: Date.now().toString(),
       content: `Help me with: ${suggestion.title}`,
@@ -271,12 +279,15 @@ const AIAssistant: React.FC = () => {
       timestamp: new Date(),
     };
 
+    // Add message to chat and show loading state
     setMessages(prev => [...prev, suggestionMessage]);
     setIsLoading(true);
     setSuggestionsOpen(false);
 
     try {
       let prompt = '';
+      
+      // Generate specific prompts based on the selected tool
       switch (suggestion.action) {
         case 'lesson-plan':
           prompt = "I need help creating a lesson plan. Please provide guidance on: 1) How to structure a CBC-aligned lesson plan, 2) Key components to include, 3) Assessment strategies, 4) Learning activities. Give me a comprehensive overview.";
@@ -285,16 +296,19 @@ const AIAssistant: React.FC = () => {
           prompt = "I need help developing a scheme of work. Please explain: 1) How to structure a CBC scheme of work, 2) Key learning areas to cover, 3) Progression planning, 4) Assessment criteria. Provide detailed guidance.";
           break;
         case 'generate-questions': {
+          // Open question generation dialog instead of API call
           setQuestionDialogOpen(true);
           setIsLoading(false);
           return;
         }
         case 'grading-rubric': {
+          // Open rubric generation dialog instead of API call
           setRubricDialogOpen(true);
           setIsLoading(false);
           return;
         }
         case 'references': {
+          // Open references panel instead of API call
           setReferencesDrawerOpen(true);
           setIsLoading(false);
           return;
@@ -315,6 +329,7 @@ const AIAssistant: React.FC = () => {
           prompt = "I need educational assistance. Please provide helpful guidance for teachers.";
       }
 
+      // Get AI response and add to chat
       const aiResponse = await callAIAPI(prompt);
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -324,6 +339,7 @@ const AIAssistant: React.FC = () => {
       };
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
+      // Handle errors gracefully
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: 'Sorry, I encountered an error. Please try again.',
@@ -336,45 +352,129 @@ const AIAssistant: React.FC = () => {
     }
   };
 
+  // ===== DIALOG HANDLERS =====
+  
+  /**
+   * Submits question generation form and calls AI API
+   * Generates educational questions based on form inputs
+   */
   const submitQuestions = async () => {
+    // Validate required form fields
     if (!formSubject || !formGrade || !formTopic) return;
+    
+    // Close dialog and show loading state
     setQuestionDialogOpen(false);
     setIsLoading(true);
+    
     try {
-      const res = await api.post('/ai/questions', { subject: formSubject, grade: formGrade, topic: formTopic, numQuestions: formNumQuestions, difficulty: 'mixed' });
+      // Call backend API to generate questions
+      const res = await api.post('/ai/questions', { 
+        subject: formSubject, 
+        grade: formGrade, 
+        topic: formTopic, 
+        numQuestions: formNumQuestions, 
+        difficulty: 'mixed' 
+      });
+      
+      // Extract and format response data
       const json = res.data?.data;
-      setMessages(prev => [...prev, { id: (Date.now() + 3).toString(), sender: 'ai', timestamp: new Date(), content: JSON.stringify(json, null, 2), type: 'text' }]);
+      
+      // Add generated questions to chat
+      setMessages(prev => [...prev, { 
+        id: (Date.now() + 3).toString(), 
+        sender: 'ai', 
+        timestamp: new Date(), 
+        content: JSON.stringify(json, null, 2), 
+        type: 'text' 
+      }]);
     } catch (e) {
-      setMessages(prev => [...prev, { id: (Date.now() + 3).toString(), sender: 'ai', timestamp: new Date(), content: 'Failed to generate questions.', type: 'text' }]);
+      // Handle errors gracefully
+      setMessages(prev => [...prev, { 
+        id: (Date.now() + 3).toString(), 
+        sender: 'ai', 
+        timestamp: new Date(), 
+        content: 'Failed to generate questions.', 
+        type: 'text' 
+      }]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  /**
+   * Submits rubric generation form and calls AI API
+   * Generates grading rubrics based on form inputs
+   */
   const submitRubric = async () => {
+    // Validate required form fields
     if (!formSubject || !formGrade || !formTopic) return;
+    
+    // Close dialog and show loading state
     setRubricDialogOpen(false);
     setIsLoading(true);
+    
     try {
-      const res = await api.post('/ai/grading-rubric', { subject: formSubject, grade: formGrade, topic: formTopic });
+      // Call backend API to generate grading rubric
+      const res = await api.post('/ai/grading-rubric', { 
+        subject: formSubject, 
+        grade: formGrade, 
+        topic: formTopic 
+      });
+      
+      // Extract and format response data
       const json = res.data?.data;
-      setMessages(prev => [...prev, { id: (Date.now() + 4).toString(), sender: 'ai', timestamp: new Date(), content: JSON.stringify(json, null, 2), type: 'text' }]);
+      
+      // Add generated rubric to chat
+      setMessages(prev => [...prev, { 
+        id: (Date.now() + 4).toString(), 
+        sender: 'ai', 
+        timestamp: new Date(), 
+        content: JSON.stringify(json, null, 2), 
+        type: 'text' 
+      }]);
     } catch (e) {
-      setMessages(prev => [...prev, { id: (Date.now() + 4).toString(), sender: 'ai', timestamp: new Date(), content: 'Failed to generate rubric.', type: 'text' }]);
+      // Handle errors gracefully
+      setMessages(prev => [...prev, { 
+        id: (Date.now() + 4).toString(), 
+        sender: 'ai', 
+        timestamp: new Date(), 
+        content: 'Failed to generate rubric.', 
+        type: 'text' 
+      }]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // ===== UTILITY FUNCTIONS =====
+  
+  /**
+   * Loads educational references from the backend
+   * Searches for relevant documents and materials
+   * @param query - Search query string
+   */
   const loadReferences = async (query: string) => {
     try {
-      const res = await api.get('/ai/references', { params: { q: query, tags: 'library,lesson-plan,scheme' } });
+      // Search for references with specific tags
+      const res = await api.get('/ai/references', { 
+        params: { 
+          q: query, 
+          tags: 'library,lesson-plan,scheme' 
+        } 
+      });
+      
+      // Update references state with search results
       setReferences(res.data?.data || []);
     } catch {
+      // Clear references on error
       setReferences([]);
     }
   };
 
+  /**
+   * Clears the chat history and resets to welcome message
+   * Provides a fresh start for new conversations
+   */
   const handleClearChat = () => {
     setMessages([
       {
@@ -386,19 +486,32 @@ const AIAssistant: React.FC = () => {
     ]);
   };
 
+  /**
+   * Copies text content to the user's clipboard
+   * Used for copying AI responses or generated content
+   * @param content - Text content to copy
+   */
   const copyToClipboard = (content: string) => {
     navigator.clipboard.writeText(content);
   };
 
+  // ===== UI COMPONENTS =====
+  
+  /**
+   * SuggestionsPanel Component
+   * Displays the sidebar with AI tool suggestions
+   * Shows available educational tools that users can click to get help
+   */
   const SuggestionsPanel = () => (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Header Section - Gradient background with AI Tools title */}
       <Box sx={{ 
         p: 3, 
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         color: 'white',
         borderRadius: '16px 16px 0 0'
-    }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', mr: 2 }}>
             <AutoAwesome />
           </Avatar>
@@ -413,6 +526,7 @@ const AIAssistant: React.FC = () => {
         </Box>
       </Box>
 
+      {/* Tools List Section - Scrollable list of AI tool suggestions */}
       <Box sx={{ p: 2, flex: 1, overflow: 'auto' }}>
         <Box sx={{ 
           display: 'flex', 
@@ -420,6 +534,7 @@ const AIAssistant: React.FC = () => {
           gap: 2,
           height: '100%'
         }}>
+          {/* Map through suggestions to create clickable tool cards */}
           {suggestions.map((suggestion) => (
             <Card
               key={suggestion.id}
@@ -477,17 +592,29 @@ const AIAssistant: React.FC = () => {
       </Box>
   );
 
+  // ===== MAIN RENDER =====
+  
+  /**
+   * Main component render
+   * Returns the complete AI Assistant interface with:
+   * - App bar with navigation and controls
+   * - Sidebar with AI tool suggestions (desktop)
+   * - Chat area with message history
+   * - Input section for user messages
+   * - Mobile-responsive design
+   */
   return (
     <Box sx={{ 
-      height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
+      height: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
       bgcolor: '#f8fafc',
       overflow: 'hidden'
     }}>
-      {/* App Bar */}
+      {/* App Bar - Top navigation with branding and controls */}
       <AppBar position="static" elevation={0} sx={{ bgcolor: 'white', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
+          {/* Left side - Branding */}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
               <SmartToy />
@@ -502,6 +629,7 @@ const AIAssistant: React.FC = () => {
             </Box>
           </Box>
           
+          {/* Right side - Action buttons */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Tooltip title="References">
               <IconButton onClick={() => { setReferencesDrawerOpen(true); loadReferences('cbc references'); }}>
@@ -527,143 +655,152 @@ const AIAssistant: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Main Content */}
+      {/* Main Content Area - Contains sidebar and chat */}
       <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {/* Suggestions Panel - Desktop */}
-            {!isMobile && (
+        {/* Suggestions Panel - Desktop sidebar with AI tools */}
+        {!isMobile && (
           <Box sx={{ 
             width: 320, 
             borderRight: '1px solid rgba(0,0,0,0.08)',
             bgcolor: '#fafbfc',
             boxShadow: '2px 0 20px rgba(0,0,0,0.05)'
           }}>
-                  <SuggestionsPanel />
-                </Box>
+            <SuggestionsPanel />
+          </Box>
         )}
 
-        {/* Chat Area */}
+        {/* Chat Area - Main conversation interface */}
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                {/* Chat Header */}
-                <Box sx={{ 
+          {/* Chat Header - Shows AI status and controls */}
+          <Box sx={{ 
             p: 2, 
             borderBottom: '1px solid rgba(0,0,0,0.08)',
             bgcolor: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
+            display: 'flex',
+            alignItems: 'center',
             justifyContent: 'space-between'
           }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
                 <SmartToy />
-                    </Avatar>
+              </Avatar>
               <Box>
                 <Typography variant="h6" fontWeight="bold">
                   AI Assistant
-                      </Typography>
-                      <Chip 
-                        label="Online" 
-                        color="success" 
-                        size="small"
+                </Typography>
+                <Chip 
+                  label="Online" 
+                  color="success" 
+                  size="small"
                   sx={{ height: 20, fontSize: '0.7rem' }}
-                      />
-                    </Box>
-                  </Box>
+                />
+              </Box>
+            </Box>
             
+            {/* Chat controls - Mobile menu and clear chat */}
             <Box sx={{ display: 'flex', gap: 1 }}>
-                    {isMobile && (
+              {isMobile && (
                 <Tooltip title="AI Tools">
                   <IconButton onClick={() => setSuggestionsOpen(true)}>
                     <Menu />
-                      </IconButton>
+                  </IconButton>
                 </Tooltip>
               )}
               <Tooltip title="Clear Chat">
                 <IconButton onClick={handleClearChat}>
                   <Clear />
-                    </IconButton>
+                </IconButton>
               </Tooltip>
-                  </Box>
-                </Box>
+            </Box>
+          </Box>
 
-          {/* Messages */}
-                <Box sx={{ 
-                  flex: 1, 
-                  overflow: 'auto', 
+          {/* Messages Section - Scrollable chat history */}
+          <Box sx={{ 
+            flex: 1, 
+            overflow: 'auto', 
             p: 2,
-                  bgcolor: '#fafbfc'
-                }}>
-                    {messages.map((message) => (
+            bgcolor: '#fafbfc'
+          }}>
+            {/* Render each message in the conversation */}
+            {messages.map((message) => (
               <Box
-                        key={message.id}
-                        sx={{
+                key={message.id}
+                sx={{
                   display: 'flex',
                   justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
-                          mb: 2,
-                        }}
-                      >
-                        <Paper
-                          sx={{
-                    p: 2,
+                  mb: 2,
+                }}
+              >
+                {/* Individual message bubble */}
+                <Paper
+                  sx={{
+                    p: 1.5,
                     maxWidth: '70%',
-                    borderRadius: 3,
-                            bgcolor: message.sender === 'user' 
+                    borderRadius: 2,
+                    bgcolor: message.sender === 'user' 
                       ? 'primary.main'
-                              : 'white',
-                            color: message.sender === 'user' ? 'white' : 'text.primary',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                            position: 'relative',
+                      : 'white',
+                    color: message.sender === 'user' ? 'white' : 'text.primary',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                    position: 'relative',
                   }}
                 >
-                  <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                            {message.content}
-                          </Typography>
+                  {/* Message content text */}
+                  <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize: '0.9rem' }}>
+                    {message.content}
+                  </Typography>
                   
-                          {message.sender === 'ai' && (
-                    <Box sx={{ display: 'flex', gap: 0.5, mt: 1.5 }}>
+                  {/* AI message actions - Copy, Like, Dislike */}
+                  {message.sender === 'ai' && (
+                    <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
                       <Tooltip title="Copy">
                         <IconButton size="small" onClick={() => copyToClipboard(message.content)}>
-                                <ContentCopy fontSize="small" />
-                              </IconButton>
+                          <ContentCopy fontSize="small" />
+                        </IconButton>
                       </Tooltip>
                       <Tooltip title="Like">
                         <IconButton size="small">
-                                <ThumbUp fontSize="small" />
-                              </IconButton>
+                          <ThumbUp fontSize="small" />
+                        </IconButton>
                       </Tooltip>
                       <Tooltip title="Dislike">
                         <IconButton size="small">
-                                <ThumbDown fontSize="small" />
-                              </IconButton>
+                          <ThumbDown fontSize="small" />
+                        </IconButton>
                       </Tooltip>
-                            </Box>
-                          )}
-                        </Paper>
+                    </Box>
+                  )}
+                </Paper>
               </Box>
             ))}
             
-                    {isLoading && (
+            {/* Loading indicator - Shows when AI is processing */}
+            {isLoading && (
               <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
                 <Paper sx={{ p: 2, borderRadius: 3, bgcolor: 'white' }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ 
-                              width: 16, 
-                              height: 16, 
-                              borderRadius: '50%', 
-                              bgcolor: 'primary.main',
-                              animation: 'pulse 1.5s ease-in-out infinite'
-                            }} />
-                            <Typography variant="body2" color="text.secondary">
-                              AI is thinking...
-                            </Typography>
-                          </Box>
-                        </Paper>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {/* Animated loading dot */}
+                    <Box sx={{ 
+                      width: 16, 
+                      height: 16, 
+                      borderRadius: '50%', 
+                      bgcolor: 'primary.main',
+                      animation: 'pulse 1.5s ease-in-out infinite'
+                    }} />
+                    <Typography variant="body2" color="text.secondary">
+                      AI is thinking...
+                    </Typography>
+                  </Box>
+                </Paper>
               </Box>
-                    )}
-                    <div ref={messagesEndRef} />
-      </Box>
+            )}
+            
+            {/* Invisible div for auto-scrolling to bottom */}
+            <div ref={messagesEndRef} />
+          </Box>
 
-          {/* Input Area */}
-      <Box sx={{ 
+          {/* Input Area - User message input and controls */}
+          <Box sx={{ 
             p: 2, 
             borderTop: '1px solid rgba(0,0,0,0.08)',
             bgcolor: 'white',
