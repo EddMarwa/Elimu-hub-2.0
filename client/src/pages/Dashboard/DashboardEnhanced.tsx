@@ -48,6 +48,7 @@ import {
   Person,
   AccessTime,
   CalendarToday,
+  Assignment,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -63,7 +64,7 @@ interface DashboardStats {
 
 interface RecentActivity {
   id: string;
-  type: 'scheme' | 'document' | 'collaboration' | 'ai_interaction';
+  type: 'scheme' | 'document' | 'collaboration' | 'ai_interaction' | 'lesson_plan';
   title: string;
   timestamp: string;
   status: 'completed' | 'in_progress' | 'pending';

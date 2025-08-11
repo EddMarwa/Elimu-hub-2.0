@@ -40,6 +40,8 @@ import {
   AdminPanelSettings,
   Upload,
   MenuBook,
+  Assignment,
+  Psychology,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -60,7 +62,7 @@ interface DashboardStats {
 
 interface RecentActivity {
   id: string;
-  type: 'scheme' | 'document' | 'collaboration';
+  type: 'scheme' | 'document' | 'collaboration' | 'lesson_plan';
   title: string;
   timestamp: string;
   status: 'completed' | 'in_progress' | 'pending';
