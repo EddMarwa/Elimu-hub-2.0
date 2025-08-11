@@ -132,7 +132,7 @@ const LoginNew: React.FC = () => {
                 Welcome to Kenya's Premier CBC Education Platform
               </Typography>
               <Typography variant="body1" sx={{ opacity: 0.8, mb: 4, lineHeight: 1.6 }}>
-                Generate CBC-compliant lesson plans, schemes of work, and educational content 
+                Generate CBC-compliant schemes of work and educational content 
                 with AI-powered tools designed specifically for Kenyan teachers.
               </Typography>
               

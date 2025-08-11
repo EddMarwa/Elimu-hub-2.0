@@ -1,6 +1,6 @@
-# ElimuHub 2.0 - CBC Lesson Planning System
+# ElimuHub 2.0 - CBC Scheme of Work Generation System
 
-A comprehensive web application for Kenyan teachers to generate CBC-compliant lesson plans and schemes of work with AI-powered curriculum reference integration.
+A comprehensive web application for Kenyan teachers to generate CBC-compliant schemes of work with AI-powered curriculum reference integration.
 
 ## 🌟 Features
 
@@ -14,12 +14,12 @@ A comprehensive web application for Kenyan teachers to generate CBC-compliant le
 - **AI-Powered Search**: Find relevant curriculum content using natural language queries
 - **Context-Aware Results**: Semantic search understands meaning, not just keywords
 - **Smart Filtering**: Filter by subject, grade, topic, and document type
-- **Reference Integration**: Search results directly inform lesson planning
+- **Reference Integration**: Search results directly inform scheme of work creation
 
-### 🧠 CBC Lesson Plan Generator
+### 🧠 CBC Scheme of Work Generator
 - **Curriculum-Aware Generation**: Uses uploaded curriculum documents as reference
 - **CBC Compliance**: Automatically includes core competencies and values
-- **Interactive Builder**: Step-by-step guided lesson plan creation
+- **Interactive Builder**: Step-by-step guided scheme of work creation
 - **Smart Suggestions**: AI-generated learning outcomes, activities, and resources
 - **Export Options**: Generate professional DOCX and PDF documents
 

@@ -85,7 +85,7 @@ app.get('/api', (req, res) => {
   res.json({
     name: 'ElimuHub 2.0 API',
     version: '1.0.0',
-    description: 'Backend API for CBC-compliant lesson plan and scheme of work generation',
+    description: 'Backend API for CBC-compliant scheme of work generation',
     endpoints: {
       auth: '/api/auth',
       documents: '/api/documents',

@@ -376,7 +376,6 @@ router.get('/export/csv', requireAdmin, asyncHandler(async (req: Request, res: R
     'School',
     'County',
     'Status',
-    'Lesson Plans',
     'Schemes of Work',
     'Library Files',
     'Created At'
@@ -391,7 +390,6 @@ router.get('/export/csv', requireAdmin, asyncHandler(async (req: Request, res: R
     user.school || '',
     user.county || '',
     user.status,
-    user._count.lessonPlans,
     user._count.schemesOfWork,
     user._count.libraryFiles || 0,
     user.createdAt.toISOString()

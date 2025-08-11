@@ -146,15 +146,15 @@ const SystemSettings: React.FC = () => {
         options: ['Grok', 'OpenAI', 'Local'],
         required: true,
       },
-      {
-        id: '8',
-        category: 'ai',
-        name: 'Max Lesson Plans per Day',
-        description: 'Maximum lesson plans a user can generate per day',
-        value: 10,
-        type: 'number',
-        required: true,
-      },
+     {
+  id: '8',
+  name: 'AI Response Limit', // Add missing name
+  description: 'Maximum number of AI responses per session', // Add missing description
+  category: 'ai',
+  value: 10,
+  type: 'number',
+  required: true,
+},
       {
         id: '9',
         category: 'ai',

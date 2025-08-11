@@ -410,7 +410,7 @@ const Navbar: React.FC = () => {
         <MenuItem>
           <Box>
             <Typography variant="body2" fontWeight="bold">
-              New lesson plan template available
+      
             </Typography>
             <Typography variant="caption" color="text.secondary">
               2 hours ago

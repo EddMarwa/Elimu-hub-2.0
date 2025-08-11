@@ -25,7 +25,6 @@ import {
   Tooltip,
 } from '@mui/material';
 import {
-  Assignment,
   Description,
   School,
   TrendingUp,
@@ -54,7 +53,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 interface DashboardStats {
-  lessonPlans: number;
+
   schemesOfWork: number;
   documents: number;
   collaborations: number;
@@ -64,7 +63,7 @@ interface DashboardStats {
 
 interface RecentActivity {
   id: string;
-  type: 'lesson_plan' | 'scheme' | 'document' | 'collaboration' | 'ai_interaction';
+  type: 'scheme' | 'document' | 'collaboration' | 'ai_interaction';
   title: string;
   timestamp: string;
   status: 'completed' | 'in_progress' | 'pending';
@@ -84,7 +83,7 @@ const DashboardEnhanced: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [stats, setStats] = useState<DashboardStats>({
-    lessonPlans: 0,
+
     schemesOfWork: 0,
     documents: 0,
     collaborations: 0,
@@ -125,7 +124,7 @@ const DashboardEnhanced: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setStats({
-        lessonPlans: 28,
+  
         schemesOfWork: 12,
         documents: 18,
         collaborations: 7,
@@ -233,13 +232,6 @@ const DashboardEnhanced: React.FC = () => {
   };
 
   const statsCards = [
-    { 
-      title: 'Lesson Plans', 
-      value: stats.lessonPlans, 
-      icon: <Assignment />, 
-      color: '#1e3a8a',
-      change: '+12%'
-    },
     { 
       title: 'Schemes of Work', 
       value: stats.schemesOfWork, 
@@ -731,7 +723,7 @@ const DashboardEnhanced: React.FC = () => {
                   🤖 Try Elimu Hub AI
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Use our AI assistant to generate lesson plans, get teaching tips, and create educational content faster.
+                  Use our AI assistant to generate schemes of work, get teaching tips, and create educational content faster.
                 </Typography>
               </Box>
               <Box sx={{ p: 2, bgcolor: '#f0fdf4', borderRadius: 2, border: '1px solid #dcfce7' }}>

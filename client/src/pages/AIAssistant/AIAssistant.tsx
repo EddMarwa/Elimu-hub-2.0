@@ -67,7 +67,7 @@ const AIAssistant: React.FC = () => {
     // Welcome message from AI
     {
       id: '1',
-      content: `Hello ${user?.firstName || 'there'}! I'm your Elimu Hub AI Assistant. I'm here to help you with lesson planning, curriculum development, and educational content creation. How can I assist you today?`,
+              content: `Hello ${user?.firstName || 'there'}! I'm your Elimu Hub AI Assistant. I'm here to help you with curriculum development, scheme of work creation, and educational content creation. How can I assist you today?`,
       sender: 'ai',
       timestamp: new Date(),
     },
@@ -470,7 +470,7 @@ const AIAssistant: React.FC = () => {
     setMessages([
       {
         id: '1',
-        content: `Hello ${user?.firstName || 'there'}! I'm your Elimu Hub AI Assistant. I'm here to help you with lesson planning, curriculum development, and educational content creation. How can I assist you today?`,
+        content: `Hello ${user?.firstName || 'there'}! I'm your Elimu Hub AI Assistant. I'm here to help you with curriculum development, scheme of work creation, and educational content creation. How can I assist you today?`,
         sender: 'ai',
         timestamp: new Date(),
       },
@@ -819,7 +819,7 @@ const AIAssistant: React.FC = () => {
             <Box sx={{ flex: 1, position: 'relative' }}>
               <TextField
                 fullWidth
-                placeholder="Ask me anything about lesson planning, curriculum, or teaching strategies..."
+                placeholder="Ask me anything about curriculum development, scheme of work creation, or teaching strategies..."
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
@@ -904,7 +904,7 @@ const AIAssistant: React.FC = () => {
             justifyContent: 'center'
           }}>
             {[
-              { text: 'Lesson plan', icon: <Assignment fontSize="small" /> },
+      
               { text: 'Questions', icon: <Quiz fontSize="small" /> },
               { text: 'Curriculum', icon: <School fontSize="small" /> },
               { text: 'Assessment', icon: <Assessment fontSize="small" /> }

@@ -137,19 +137,7 @@ export class AIService {
     }
   }
 
-  private parseLessonPlanResponse(response: string): any {
-    try {
-      // Try to extract JSON from the response
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
-      throw new Error('No valid JSON found in response');
-    } catch (error) {
-      logger.error('Error parsing lesson plan response:', error);
-      return null;
-    }
-  }
+
 
   private parseSchemeOfWorkResponse(response: string): any {
     try {
@@ -164,60 +152,7 @@ export class AIService {
     }
   }
 
-  private generateFallbackLessonPlan(data: LessonPlanGenerationData): any {
-    return {
-      title: `${data.subject} - ${data.topic}`,
-      learningOutcomes: [
-        `Understand the key concepts of ${data.topic}`,
-        `Apply knowledge of ${data.topic} in practical situations`,
-        `Demonstrate mastery of ${data.topic} through activities`
-      ],
-      coreCompetencies: [
-        'Critical Thinking and Problem Solving',
-        'Communication and Collaboration'
-      ],
-      values: ['Responsibility', 'Respect', 'Unity'],
-      keyInquiryQuestions: [
-        `What is ${data.topic}?`,
-        `How does ${data.topic} relate to real life?`,
-        `Why is ${data.topic} important?`
-      ],
-      learningExperiences: [
-        {
-          activity: `Introduction to ${data.topic}`,
-          duration: '10 minutes',
-          methodology: 'Discussion',
-          materials: ['Whiteboard', 'Markers']
-        },
-        {
-          activity: `Main activity on ${data.topic}`,
-          duration: `${data.duration - 20} minutes`,
-          methodology: 'Hands-on practice',
-          materials: ['Textbooks', 'Worksheets']
-        },
-        {
-          activity: 'Summary and reflection',
-          duration: '10 minutes',
-          methodology: 'Question and answer',
-          materials: ['Summary notes']
-        }
-      ],
-      assessmentCriteria: [
-        {
-          type: 'formative',
-          method: 'Observation',
-          criteria: 'Student participation and understanding'
-        },
-        {
-          type: 'summative',
-          method: 'Written assessment',
-          criteria: 'Demonstration of key concepts'
-        }
-      ],
-      resources: ['Textbook', 'Whiteboard', 'Learning materials'],
-      reflection: 'Monitor student engagement and adjust teaching methods as needed.'
-    };
-  }
+
 
   private generateFallbackSchemeOfWork(data: SchemeOfWorkGenerationData): any {
     const weeks: any[] = [];

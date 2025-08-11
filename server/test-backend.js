@@ -20,16 +20,7 @@ async function testBackend() {
     });
     console.log('');
     
-    // Test 3: Check lesson plans
-    console.log('3. Testing Lesson Plan Data...');
-    const lessonPlans = await prisma.lessonPlan.findMany({
-      include: { user: true }
-    });
-    console.log(`✅ Found ${lessonPlans.length} lesson plans in database`);
-    lessonPlans.forEach(plan => {
-      console.log(`   - "${plan.title}" by ${plan.user.firstName} ${plan.user.lastName}`);
-    });
-    console.log('');
+
     
     // Test 4: Check templates
     console.log('4. Testing Template Data...');
@@ -64,7 +55,6 @@ async function testBackend() {
     console.log('\n📊 Backend Summary:');
     console.log(`   • Database: SQLite with Prisma ORM`);
     console.log(`   • Users: ${users.length} registered`);
-    console.log(`   • Lesson Plans: ${lessonPlans.length} available`);
     console.log(`   • Templates: ${templates.length} available`);
     console.log(`   • Authentication: JWT-based with bcrypt`);
     

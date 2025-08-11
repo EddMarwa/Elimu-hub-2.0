@@ -36,9 +36,7 @@ async function checkDatabase() {
       }
     }
 
-    // Check lesson plans
-    const lessonPlanCount = await prisma.lessonPlan.count();
-    console.log(`\n📚 Total Lesson Plans: ${lessonPlanCount}`);
+    
 
     // Check schemes of work
     const schemeCount = await prisma.schemeOfWork.count();

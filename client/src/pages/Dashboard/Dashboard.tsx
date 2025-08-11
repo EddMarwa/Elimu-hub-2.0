@@ -60,7 +60,7 @@ const Dashboard: React.FC = () => {
 
   const recentActivity = [
     { action: 'Uploaded Mathematics Grade 4 Teachers Guide', time: '2 hours ago' },
-    { action: 'Generated Lesson Plan for Science - Plants', time: '5 hours ago' },
+    
     { action: 'Created Scheme of Work for English Term 1', time: '1 day ago' },
     { action: 'Searched for Assessment Rubrics', time: '2 days ago' }
   ];
@@ -175,7 +175,7 @@ const Dashboard: React.FC = () => {
               </Box>
             </Box>
             <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" color="text.secondary">Lesson Plans Created</Typography>
+      
               <Typography variant="h4">47</Typography>
             </Box>
             <Box>

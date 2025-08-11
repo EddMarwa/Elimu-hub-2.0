@@ -164,7 +164,7 @@ const RegisterNew: React.FC = () => {
               </Typography>
               <Typography variant="body1" sx={{ opacity: 0.8, mb: 4, lineHeight: 1.6 }}>
                 Join thousands of Kenyan teachers who are transforming education with 
-                our CBC-compliant lesson planning tools.
+                our CBC-compliant scheme of work generation tools.
               </Typography>
               
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -174,7 +174,7 @@ const RegisterNew: React.FC = () => {
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'secondary.main' }} />
-                  <Typography variant="body1">AI-powered lesson plan generation</Typography>
+                  <Typography variant="body1">AI-powered scheme of work generation</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'secondary.main' }} />

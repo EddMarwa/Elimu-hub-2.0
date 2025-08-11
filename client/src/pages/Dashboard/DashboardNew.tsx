@@ -23,7 +23,6 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import {
-  Assignment,
   Description,
   School,
   TrendingUp,
@@ -53,7 +52,7 @@ import {
 } from '../../utils/greetings';
 
 interface DashboardStats {
-  lessonPlans: number;
+
   schemesOfWork: number;
   documents: number;
   collaborations: number;
@@ -61,7 +60,7 @@ interface DashboardStats {
 
 interface RecentActivity {
   id: string;
-  type: 'lesson_plan' | 'scheme' | 'document' | 'collaboration';
+  type: 'scheme' | 'document' | 'collaboration';
   title: string;
   timestamp: string;
   status: 'completed' | 'in_progress' | 'pending';
@@ -74,7 +73,7 @@ const DashboardNew: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [stats, setStats] = useState<DashboardStats>({
-    lessonPlans: 0,
+
     schemesOfWork: 0,
     documents: 0,
     collaborations: 0,
@@ -92,7 +91,7 @@ const DashboardNew: React.FC = () => {
 
     // Simulate loading stats
     setStats({
-      lessonPlans: 24,
+
       schemesOfWork: 8,
       documents: 15,
       collaborations: 5,
@@ -258,31 +257,7 @@ const DashboardNew: React.FC = () => {
 
         {/* Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ 
-              height: '100%', 
-              background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)', 
-              color: 'white',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                transition: 'transform 0.3s ease',
-              }
-            }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Box>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#fbbf24' }}>
-                      {stats.lessonPlans}
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Lesson Plans
-                    </Typography>
-                  </Box>
-                  <Assignment sx={{ fontSize: 40, opacity: 0.8 }} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+
 
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ 
@@ -469,22 +444,7 @@ const DashboardNew: React.FC = () => {
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#1e3a8a' }}>
                 📊 This Week
               </Typography>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="textSecondary">
-                  Lesson Plans Created
-                </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={75} 
-                  sx={{ 
-                    mt: 1,
-                    '& .MuiLinearProgress-bar': {
-                      background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
-                    }
-                  }} 
-                />
-                <Typography variant="caption">3 of 4 completed</Typography>
-              </Box>
+
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="textSecondary">
                   Documents Uploaded
@@ -508,7 +468,7 @@ const DashboardNew: React.FC = () => {
                 🎯 Quick Tips
               </Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                💡 Use the AI lesson plan generator to create CBC-aligned content quickly.
+                💡 Use the AI scheme of work generator to create CBC-aligned content quickly.
               </Typography>
               <Typography variant="body2" sx={{ mb: 2 }}>
                 📚 Upload your existing materials to build a comprehensive resource library.

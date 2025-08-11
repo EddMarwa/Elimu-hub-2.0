@@ -160,7 +160,7 @@ const Login: React.FC = () => {
                   Welcome Back!
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Sign in to access your CBC lesson plans and resources
+                  Sign in to access your CBC schemes of work and resources
                 </Typography>
               </Box>
             </Fade>

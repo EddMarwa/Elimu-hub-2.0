@@ -125,7 +125,6 @@ export class UserManagementService {
             updatedAt: true,
             _count: {
               select: {
-                lessonPlans: true,
                 schemesOfWork: true,
                 libraryFiles: true,
               },
@@ -172,7 +171,6 @@ export class UserManagementService {
           updatedAt: true,
           _count: {
             select: {
-              lessonPlans: true,
               schemesOfWork: true,
               libraryFiles: true,
             },

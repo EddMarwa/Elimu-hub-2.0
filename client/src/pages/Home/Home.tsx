@@ -32,8 +32,8 @@ const Home: React.FC = () => {
   const features = [
     {
       icon: <MenuBook sx={{ fontSize: 40 }} />,
-      title: 'Lesson Plan Generator',
-      description: 'Create comprehensive lesson plans aligned with CBC curriculum using AI assistance.',
+              title: 'Scheme of Work Generator',
+        description: 'Create comprehensive schemes of work aligned with CBC curriculum using AI assistance.',
     },
     {
       icon: <Assignment sx={{ fontSize: 40 }} />,
@@ -177,7 +177,7 @@ const Home: React.FC = () => {
               mx: 'auto',
             }}
           >
-            Create lesson plans, manage schemes of work, and enhance educational 
+            Create schemes of work, manage educational resources, and enhance educational 
             outcomes with our comprehensive platform designed for the CBC curriculum.
           </Typography>
           
