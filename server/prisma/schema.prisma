@@ -31,6 +31,7 @@ model User {
   documents       Document[]
   libraryFiles    LibraryFile[]
   auditLogs       AuditLog[]
+  lessonPlans     LessonPlan[]
 
   @@map("users")
 }
@@ -127,6 +128,25 @@ model Template {
   updatedAt   DateTime     @updatedAt
 
   @@map("templates")
+}
+
+model LessonPlan {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  grade       String
+  subject     String
+  tags        String[]
+  fileUrl     String
+  fileType    String
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [uploadedBy], references: [id])
+
+  @@map("lesson_plans")
 }
 
 // Enums
