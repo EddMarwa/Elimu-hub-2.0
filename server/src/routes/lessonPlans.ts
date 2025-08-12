@@ -37,8 +37,11 @@ const upload = multer({
       'application/vnd.openxmlformats-officedocument.presentationml.presentation',
       'image/png', 'image/jpeg', 'image/jpg', 'image/gif'
     ];
-    if (allowed.includes(file.mimetype)) cb(null, true);
-    else cb(new Error('Invalid file type'), false);
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'));
+    }
   }
 });
 
