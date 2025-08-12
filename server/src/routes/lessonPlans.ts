@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
       await fs.mkdir(uploadDir, { recursive: true });
       cb(null, uploadDir);
     } catch (error) {
-      cb(error as Error, uploadDir);
+      cb(error, uploadDir);
     }
   },
   filename: (req, file, cb) => {
@@ -40,7 +40,7 @@ const upload = multer({
     if (allowed.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type'));
+      cb(null, false);
     }
   }
 });
