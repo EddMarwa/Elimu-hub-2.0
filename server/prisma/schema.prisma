@@ -32,6 +32,7 @@ model User {
   libraryFiles    LibraryFile[]
   auditLogs       AuditLog[]
   lessonPlans     LessonPlan[]
+  comments        Comment[]
 
   @@map("users")
 }
@@ -136,17 +137,56 @@ model LessonPlan {
   description String
   grade       String
   subject     String
-  tags        String[]
+  tags        String   // JSON string for storing tags array
   fileUrl     String
   fileType    String
   uploadedBy  String
+  folderId    String?
+  downloads   Int      @default(0)
+  rating      Float    @default(0)
+  reviewCount Int      @default(0)
+  isPublic    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
-  user User @relation(fields: [uploadedBy], references: [id])
+  user    User     @relation(fields: [uploadedBy], references: [id])
+  folder  Folder?  @relation(fields: [folderId], references: [id])
+  comments Comment[]
 
   @@map("lesson_plans")
+}
+
+model Folder {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  parentId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  parent      Folder?    @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children    Folder[]   @relation("FolderHierarchy")
+  lessonPlans LessonPlan[]
+
+  @@map("folders")
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  content      String
+  rating       Int      @default(0)
+  userId       String
+  lessonPlanId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user       User       @relation(fields: [userId], references: [id])
+  lessonPlan LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
 }
 
 // Enums

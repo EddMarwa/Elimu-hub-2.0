@@ -74,6 +74,63 @@ async function main() {
     },
   });
 
+  // Seed Lesson Plans
+  const lessonPlan1 = await prisma.lessonPlan.create({
+    data: {
+      title: 'Mathematics - Fractions Grade 5',
+      description: 'A comprehensive lesson plan for teaching fractions to Grade 5 students',
+      grade: 'Grade 5',
+      subject: 'Mathematics',
+      tags: JSON.stringify(['fractions', 'mathematics', 'grade5']),
+      fileUrl: 'uploads/lesson-plans/sample-math-fractions.pdf',
+      fileType: 'application/pdf',
+      uploadedBy: adminUser.id,
+    },
+  });
+  const lessonPlan2 = await prisma.lessonPlan.create({
+    data: {
+      title: 'Science - Plants Grade 4',
+      description: 'Interactive lesson plan covering plant life cycles for Grade 4 students',
+      grade: 'Grade 4',
+      subject: 'Science',
+      tags: JSON.stringify(['plants', 'life-cycle', 'science', 'grade4']),
+      fileUrl: 'uploads/lesson-plans/sample-science-plants.pdf',
+      fileType: 'application/pdf',
+      uploadedBy: teacherUser.id,
+    },
+  });
+
+  // Seed Library Sections, Subfolders, and Files
+  const section = await prisma.librarySection.create({
+    data: {
+      name: 'General Library',
+      description: 'Main library section',
+      order: 1,
+    },
+  });
+  const subfolder = await prisma.librarySubfolder.create({
+    data: {
+      name: 'Grade 5 Notes',
+      sectionId: section.id,
+      order: 1,
+    },
+  });
+  await prisma.libraryFile.create({
+    data: {
+      filename: 'sample-notes.txt',
+      originalName: 'Sample Notes.txt',
+      filePath: 'uploads/library/sample-notes.txt',
+      fileType: 'DOCUMENT',
+      fileSize: 1024,
+      mimeType: 'text/plain',
+      sectionId: section.id,
+      subfolderId: subfolder.id,
+      uploadedBy: adminUser.id,
+      description: 'Sample notes for Grade 5',
+      tags: JSON.stringify(['notes', 'grade5']),
+      status: 'APPROVED',
+    },
+  });
 
 
   console.log('✅ Database seeded successfully!');

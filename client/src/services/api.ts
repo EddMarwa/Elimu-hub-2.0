@@ -274,4 +274,36 @@ export const libraryAPI = {
   }
 };
 
+// Lesson Plans API
+export const lessonPlansAPI = {
+  getLessonPlans: (params?: string) => api.get(`/lesson-plans${params ? `?${params}` : ''}`),
+  getLessonPlan: (id: string) => api.get(`/lesson-plans/${id}`),
+  uploadLessonPlan: (formData: FormData) => api.post('/lesson-plans', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  updateLessonPlan: (id: string, data: any) => api.put(`/lesson-plans/${id}`, data),
+  deleteLessonPlan: (id: string) => api.delete(`/lesson-plans/${id}`),
+  downloadLessonPlan: (id: string) => api.get(`/lesson-plans/${id}/download`, {
+    responseType: 'blob',
+  }),
+  
+  // Folders
+  getFolders: () => api.get('/lesson-plans/folders'),
+  createFolder: (data: any) => api.post('/lesson-plans/folders', data),
+  updateFolder: (id: string, data: any) => api.put(`/lesson-plans/folders/${id}`, data),
+  deleteFolder: (id: string) => api.delete(`/lesson-plans/folders/${id}`),
+  
+  // Comments/Reviews
+  getComments: (lessonPlanId: string) => api.get(`/lesson-plans/${lessonPlanId}/comments`),
+  addComment: (lessonPlanId: string, data: any) => api.post(`/lesson-plans/${lessonPlanId}/comments`, data),
+  updateComment: (commentId: string, data: any) => api.put(`/lesson-plans/comments/${commentId}`, data),
+  deleteComment: (commentId: string) => api.delete(`/lesson-plans/comments/${commentId}`),
+  
+  // Sharing
+  shareLessonPlan: (lessonPlanId: string, data: any) => api.post(`/lesson-plans/${lessonPlanId}/share`, data),
+  getSharedLessonPlans: () => api.get('/lesson-plans/shared'),
+};
+
 export default api;

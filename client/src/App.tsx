@@ -23,6 +23,7 @@ import BlankPage from './pages/BlankPage/BlankPage';
 import SchemeOfWorkGenerator from './pages/SchemeOfWorkGenerator/SchemeOfWorkGenerator';
 import SchemeOfWorkEditor from './pages/SchemeOfWorkEditor/SchemeOfWorkEditor';
 import CBCTransition from './pages/CBCTransition/CBCTransition';
+import LessonPlans from './pages/LessonPlans/LessonPlans';
 import { useAuth } from './contexts/AuthContext';
 import LoadingSpinner from './components/Common/LoadingSpinner';
 import { UserRole } from './types';
@@ -102,6 +103,7 @@ const App: React.FC = () => {
           <Route path="cbc-transition" element={<CBCTransition />} />
           <Route path="documents" element={<Documents />} />
           <Route path="schemes-of-work" element={<SchemesOfWork />} />
+          <Route path="lesson-plans" element={<LessonPlans />} />
           <Route path="profile" element={<Profile />} />
         </Route>
         
