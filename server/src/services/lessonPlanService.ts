@@ -12,28 +12,38 @@ export interface CreateLessonPlanData {
   tags: string; // JSON string for storing tags array
   fileUrl: string;
   fileType: string;
-  uploadedBy: string;
-  folderId?: string;
+  userId: string;
 }
 
 export interface CreateFolderData {
   name: string;
   description?: string;
-  parentId?: string;
+  userId: string;
 }
 
 export interface CreateCommentData {
-  content: string;
-  rating: number;
-  userId: string;
   lessonPlanId: string;
+  userId: string;
+  content: string;
+  rating?: number;
 }
 
 export class LessonPlanService {
   async createLessonPlan(data: CreateLessonPlanData) {
     try {
       const lessonPlan = await prisma.lessonPlan.create({
-        data,
+        data: {
+          title: data.title,
+          description: data.description,
+          grade: data.grade,
+          subject: data.subject,
+          tags: data.tags,
+          fileUrl: data.fileUrl,
+          fileType: data.fileType,
+          user: {
+            connect: { id: data.userId }
+          }
+        },
         include: { user: true },
       });
       logger.info(`Lesson plan created: ${lessonPlan.title}`);
