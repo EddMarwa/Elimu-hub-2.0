@@ -5,10 +5,12 @@ import { authAPI } from '../services/api';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  error: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (userData: RegisterData) => Promise<void>;
   logout: () => void;
   updateProfile: (userData: Partial<User>) => Promise<void>;
+  clearError: () => void;
 }
 
 interface RegisterData {
@@ -38,6 +40,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuthStatus();
@@ -45,13 +48,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
       const token = localStorage.getItem('token');
-      if (token) {
-        const response = await authAPI.getProfile();
-        setUser(response.data.data); // Fix: accessing nested data property
+      if (!token) {
+        setLoading(false);
+        return;
       }
-    } catch (error) {
+
+      const response = await authAPI.getProfile();
+      if (response.data.success) {
+        setUser(response.data.data);
+      } else {
+        // Token is invalid, remove it
+        localStorage.removeItem('token');
+        setUser(null);
+      }
+    } catch (error: any) {
+      console.error('Auth check failed:', error);
       localStorage.removeItem('token');
+      setUser(null);
+      
+      // Only set error if it's not a network error
+      if (error.response?.status !== 401) {
+        setError('Failed to check authentication status');
+      }
     } finally {
       setLoading(false);
     }
@@ -59,49 +81,99 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<void> => {
     try {
-      const response = await authAPI.login({ email, password });
-      const { token, user: userData } = response.data.data; // Fix: accessing nested data property
+      setLoading(true);
+      setError(null);
       
-      localStorage.setItem('token', token);
-      setUser(userData);
-    } catch (error) {
+      const response = await authAPI.login({ email, password });
+      
+      if (response.data.success) {
+        const { token, user: userData } = response.data.data;
+        localStorage.setItem('token', token);
+        setUser(userData);
+      } else {
+        throw new Error(response.data.message || 'Login failed');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+      setError(errorMessage);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const register = async (userData: RegisterData): Promise<void> => {
     try {
-      const response = await authAPI.register(userData);
-      const { token, user: newUser } = response.data.data; // Fix: accessing nested data property
+      setLoading(true);
+      setError(null);
       
-      localStorage.setItem('token', token);
-      setUser(newUser);
-    } catch (error) {
+      const response = await authAPI.register(userData);
+      
+      if (response.data.success) {
+        const { token, user: newUser } = response.data.data;
+        localStorage.setItem('token', token);
+        setUser(newUser);
+      } else {
+        throw new Error(response.data.message || 'Registration failed');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Registration failed';
+      setError(errorMessage);
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = (): void => {
-    localStorage.removeItem('token');
-    setUser(null);
+    try {
+      // Call logout API (optional, for server-side cleanup)
+      authAPI.logout().catch(() => {
+        // Ignore logout API errors
+      });
+    } catch (error) {
+      // Ignore any errors during logout
+    } finally {
+      localStorage.removeItem('token');
+      setUser(null);
+      setError(null);
+    }
   };
 
   const updateProfile = async (userData: Partial<User>): Promise<void> => {
     try {
+      setLoading(true);
+      setError(null);
+      
       const response = await authAPI.updateProfile(userData);
-      setUser(response.data.data); // Fix: accessing nested data property if needed
-    } catch (error) {
+      
+      if (response.data.success) {
+        setUser(response.data.data);
+      } else {
+        throw new Error(response.data.message || 'Profile update failed');
+      }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'Profile update failed';
+      setError(errorMessage);
       throw error;
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const clearError = (): void => {
+    setError(null);
   };
 
   const value: AuthContextType = {
     user,
     loading,
+    error,
     login,
     register,
     logout,
     updateProfile,
+    clearError,
   };
 
   return (

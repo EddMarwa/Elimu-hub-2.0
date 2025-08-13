@@ -29,10 +29,28 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle authentication errors
     if (error.response?.status === 401) {
+      // Clear invalid token
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      
+      // Only redirect if not already on login page
+      const currentPath = window.location.pathname;
+      if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+        window.location.href = '/login';
+      }
     }
+    
+    // Handle forbidden errors
+    if (error.response?.status === 403) {
+      console.warn('Access forbidden:', error.response.data?.message || 'Insufficient permissions');
+    }
+    
+    // Handle server errors
+    if (error.response?.status >= 500) {
+      console.error('Server error:', error.response.data?.message || 'Internal server error');
+    }
+    
     return Promise.reject(error);
   }
 );
@@ -80,8 +98,6 @@ export const documentsAPI = {
   
   process: (id: string) => api.post(`/documents/${id}/process`),
 };
-
-
 
 // Schemes of Work API
 export const schemesAPI = {
@@ -200,9 +216,9 @@ export const libraryAPI = {
     try {
       const res = await api.get('/library/sections');
       return { data: res.data.data };
-    } catch {
-      // Fallback mock
-      return Promise.resolve({ data: [] });
+    } catch (error) {
+      console.error('Failed to fetch library sections:', error);
+      return { data: [] };
     }
   },
 
@@ -213,8 +229,9 @@ export const libraryAPI = {
         headers: admin ? { 'x-user-id': admin.userId, 'x-user-role': admin.role } : undefined,
       });
       return { data: res.data.data };
-    } catch {
-      return Promise.resolve({ data: [] });
+    } catch (error) {
+      console.error('Failed to fetch library files:', error);
+      return { data: [] };
     }
   },
 
@@ -232,45 +249,76 @@ export const libraryAPI = {
         },
       });
       return { data: res.data.data };
-    } catch {
-      return Promise.resolve({ data: { id: 'new-file-id' } });
+    } catch (error) {
+      console.error('Failed to upload file:', error);
+      throw error;
     }
   },
 
   async approveFile(fileId: string, admin?: { userId: string; role: string }) {
-    const headers = admin ? { 'x-user-id': admin.userId, 'x-user-role': admin.role } : undefined;
-    const res = await api.post(`/library/files/${fileId}/approve`, undefined, { headers });
-    return { data: res.data };
+    try {
+      const headers = admin ? { 'x-user-id': admin.userId, 'x-user-role': admin.role } : undefined;
+      const res = await api.post(`/library/files/${fileId}/approve`, undefined, { headers });
+      return { data: res.data };
+    } catch (error) {
+      console.error('Failed to approve file:', error);
+      throw error;
+    }
   },
   
   async declineFile(fileId: string, admin?: { userId: string; role: string }) {
-    const headers = admin ? { 'x-user-id': admin.userId, 'x-user-role': admin.role } : undefined;
-    const res = await api.post(`/library/files/${fileId}/decline`, undefined, { headers });
-    return { data: res.data };
+    try {
+      const headers = admin ? { 'x-user-id': admin.userId, 'x-user-role': admin.role } : undefined;
+      const res = await api.post(`/library/files/${fileId}/decline`, undefined, { headers });
+      return { data: res.data };
+    } catch (error) {
+      console.error('Failed to decline file:', error);
+      throw error;
+    }
   },
 
   async getStats(admin?: { userId: string; role: string }) {
-    const headers = admin ? { 'x-user-id': admin.userId, 'x-user-role': admin.role } : undefined;
-    const res = await api.get('/library/stats', { headers });
-    return { data: res.data.data };
+    try {
+      const headers = admin ? { 'x-user-id': admin.userId, 'x-user-role': admin.role } : undefined;
+      const res = await api.get('/library/stats', { headers });
+      return { data: res.data.data };
+    } catch (error) {
+      console.error('Failed to fetch library stats:', error);
+      return { data: {} };
+    }
   },
 
   async createSection(data: { name: string; description?: string; order?: number }, admin: { userId: string; role: string }) {
-    const headers = { 'x-user-id': admin.userId, 'x-user-role': admin.role };
-    const res = await api.post('/library/sections', data, { headers });
-    return { data: res.data.data };
+    try {
+      const headers = { 'x-user-id': admin.userId, 'x-user-role': admin.role };
+      const res = await api.post('/library/sections', data, { headers });
+      return { data: res.data.data };
+    } catch (error) {
+      console.error('Failed to create section:', error);
+      throw error;
+    }
   },
 
   async createSubfolder(data: { name: string; sectionId: string; metadata?: any; order?: number }, admin: { userId: string; role: string }) {
-    const headers = { 'x-user-id': admin.userId, 'x-user-role': admin.role };
-    const res = await api.post('/library/subfolders', data, { headers });
-    return { data: res.data.data };
+    try {
+      const headers = { 'x-user-id': admin.userId, 'x-user-role': admin.role };
+      const res = await api.post('/library/subfolders', data, { headers });
+      return { data: res.data.data };
+    } catch (error) {
+      console.error('Failed to create subfolder:', error);
+      throw error;
+    }
   },
 
   async deleteFile(fileId: string, auth?: { userId: string; role: string }) {
-    const headers = auth ? { 'x-user-id': auth.userId, 'x-user-role': auth.role } : undefined;
-    const res = await api.delete(`/library/files/${fileId}`, { headers });
-    return { data: res.data };
+    try {
+      const headers = auth ? { 'x-user-id': auth.userId, 'x-user-role': auth.role } : undefined;
+      const res = await api.delete(`/library/files/${fileId}`, { headers });
+      return { data: res.data };
+    } catch (error) {
+      console.error('Failed to delete file:', error);
+      throw error;
+    }
   }
 };
 

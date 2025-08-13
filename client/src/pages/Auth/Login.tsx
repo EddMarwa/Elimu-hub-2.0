@@ -80,19 +80,18 @@ const Login: React.FC = () => {
   const demoAccounts = [
     {
       type: 'Teacher',
-      email: 'teacher@demo.com',
-      password: 'teacher123',
+      email: 'teacher@elimuhub.com',
+      password: 'password123',
       icon: <School />,
       color: '#2e7d32'
     },
     {
       type: 'Admin',
-      email: 'admin@demo.com',
-      password: 'admin123',
+      email: 'admin@elimuhub.com',
+      password: 'password123',
       icon: <Person />,
       color: '#1976d2'
     },
-  
   ];
 
   const fillDemoAccount = (email: string, password: string) => {

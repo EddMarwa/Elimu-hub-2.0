@@ -12,13 +12,15 @@ export interface CreateLessonPlanData {
   tags: string; // JSON string for storing tags array
   fileUrl: string;
   fileType: string;
-  userId: string;
+  uploadedBy: string;
+  folderId?: string;
 }
 
 export interface CreateFolderData {
   name: string;
   description?: string;
   userId: string;
+  parentId?: string;
 }
 
 export interface CreateCommentData {
@@ -40,9 +42,8 @@ export class LessonPlanService {
           tags: data.tags,
           fileUrl: data.fileUrl,
           fileType: data.fileType,
-          user: {
-            connect: { id: data.userId }
-          }
+          uploadedBy: data.uploadedBy,
+          folderId: data.folderId
         },
         include: { user: true },
       });
@@ -182,7 +183,13 @@ export class LessonPlanService {
   // Folder methods
   async createFolder(data: CreateFolderData) {
     try {
-      const folder = await prisma.folder.create({ data });
+      const folder = await prisma.folder.create({ 
+        data: {
+          name: data.name,
+          description: data.description,
+          parentId: data.parentId
+        }
+      });
       logger.info(`Folder created: ${folder.name}`);
       return folder;
     } catch (error) {
