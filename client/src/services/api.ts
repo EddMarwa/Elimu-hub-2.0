@@ -143,6 +143,69 @@ export const schemesAPI = {
   delete: (id: string) => api.delete(`/schemes/${id}`),
 };
 
+// Scheme Files API
+export const schemeFilesAPI = {
+  getAll: (params?: { 
+    page?: number; 
+    limit?: number; 
+    subject?: string; 
+    grade?: string; 
+    term?: string;
+    strand?: string;
+    search?: string;
+    sortBy?: string;
+  }) => api.get('/scheme-files', { params }),
+  
+  getById: (id: string) => api.get(`/scheme-files/${id}`),
+  
+  upload: (file: File, metadata: {
+    title: string;
+    description?: string;
+    subject: string;
+    grade: string;
+    term: string;
+    strand?: string;
+    subStrand?: string;
+    isPublic?: boolean;
+  }) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', metadata.title);
+    if (metadata.description) formData.append('description', metadata.description);
+    formData.append('subject', metadata.subject);
+    formData.append('grade', metadata.grade);
+    formData.append('term', metadata.term);
+    if (metadata.strand) formData.append('strand', metadata.strand);
+    if (metadata.subStrand) formData.append('subStrand', metadata.subStrand);
+    formData.append('isPublic', metadata.isPublic?.toString() || 'true');
+    
+    return api.post('/scheme-files/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  
+  download: (id: string) => api.get(`/scheme-files/${id}/download`, {
+    responseType: 'blob'
+  }),
+  
+  update: (id: string, data: {
+    title?: string;
+    description?: string;
+    subject?: string;
+    grade?: string;
+    term?: string;
+    strand?: string;
+    subStrand?: string;
+    isPublic?: boolean;
+  }) => api.put(`/scheme-files/${id}`, data),
+  
+  delete: (id: string) => api.delete(`/scheme-files/${id}`),
+  
+  getStats: () => api.get('/scheme-files/stats/overview'),
+};
+
 // Templates API
 export const templatesAPI = {
   getAll: () => api.get('/templates'),

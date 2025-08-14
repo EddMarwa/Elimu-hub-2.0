@@ -273,6 +273,22 @@ const DashboardEnhanced: React.FC = () => {
       description: 'Build comprehensive schemes'
     },
 
+    { 
+      title: 'Library', 
+      icon: <MenuBook />, 
+      path: '/library', 
+      color: '#8b5cf6',
+      description: 'Access educational resources'
+    },
+
+    { 
+      title: 'Schemes of Work', 
+      icon: <Assignment />, 
+      path: '/schemes-of-work', 
+      color: '#ef4444',
+      description: 'View and manage schemes'
+    },
+
   ];
 
   const adminActions = user?.role && ['ADMIN', 'SUPER_ADMIN'].includes(user.role) ? [

@@ -37,6 +37,7 @@ import {
   Avatar,
   Rating,
   Collapse,
+  LinearProgress,
 } from '@mui/material';
 import {
   Folder,

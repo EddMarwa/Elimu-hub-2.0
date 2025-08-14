@@ -38,6 +38,7 @@ import {
   Home,
   MoreVert,
   Psychology,
+  LibraryBooks,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -94,6 +95,7 @@ const Navbar: React.FC = () => {
     { text: 'Schemes Of Work', icon: <Description />, path: '/schemes-of-work', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Scheme Generator', icon: <AutoFixHigh />, path: '/scheme-generator', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Lesson Plans', icon: <Assignment />, path: '/lesson-plans', roles: ['teacher', 'admin', 'super_admin'] },
+    { text: 'Resource Library', icon: <LibraryBooks />, path: '/library', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Elimu Hub AI', icon: <Psychology />, path: '/ai-assistant', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'Reference', icon: <MenuBook />, path: '/reference', roles: ['teacher', 'admin', 'super_admin'] },
     { text: 'CBC Transition', icon: <Transform />, path: '/cbc-transition', roles: ['teacher', 'admin', 'super_admin'] },

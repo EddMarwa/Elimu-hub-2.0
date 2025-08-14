@@ -17,6 +17,7 @@ import authRoutes from './routes/auth';
 import documentRoutes from './routes/documents';
 
 import schemeRoutes from './routes/schemesOfWork';
+import schemeFileRoutes from './routes/schemeOfWorkFiles';
 import templateRoutes from './routes/templates';
 import userRoutes from './routes/users';
 import libraryRoutes from './routes/library';
@@ -75,6 +76,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
 
 app.use('/api/schemes', schemeRoutes);
+app.use('/api/scheme-files', schemeFileRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/library', libraryRoutes);

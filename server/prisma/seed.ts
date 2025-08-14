@@ -101,36 +101,52 @@ async function main() {
   });
 
   // Seed Library Sections, Subfolders, and Files
-  const section = await prisma.librarySection.create({
-    data: {
+  const section = await prisma.librarySection.upsert({
+    where: { name: 'General Library' },
+    update: {},
+    create: {
       name: 'General Library',
       description: 'Main library section',
       order: 1,
     },
   });
-  const subfolder = await prisma.librarySubfolder.create({
-    data: {
+  const subfolder = await prisma.librarySubfolder.upsert({
+    where: { 
+      sectionId_name: {
+        sectionId: section.id,
+        name: 'Grade 5 Notes'
+      }
+    },
+    update: {},
+    create: {
       name: 'Grade 5 Notes',
       sectionId: section.id,
       order: 1,
     },
   });
-  await prisma.libraryFile.create({
-    data: {
-      filename: 'sample-notes.txt',
-      originalName: 'Sample Notes.txt',
-      filePath: 'uploads/library/sample-notes.txt',
-      fileType: 'DOCUMENT',
-      fileSize: 1024,
-      mimeType: 'text/plain',
-      sectionId: section.id,
-      subfolderId: subfolder.id,
-      uploadedBy: adminUser.id,
-      description: 'Sample notes for Grade 5',
-      tags: JSON.stringify(['notes', 'grade5']),
-      status: 'APPROVED',
-    },
+  // Create library file if it doesn't exist
+  const existingFile = await prisma.libraryFile.findFirst({
+    where: { filename: 'sample-notes.txt' }
   });
+  
+  if (!existingFile) {
+    await prisma.libraryFile.create({
+      data: {
+        filename: 'sample-notes.txt',
+        originalName: 'Sample Notes.txt',
+        filePath: 'uploads/library/sample-notes.txt',
+        fileType: 'DOCUMENT',
+        fileSize: 1024,
+        mimeType: 'text/plain',
+        sectionId: section.id,
+        subfolderId: subfolder.id,
+        uploadedBy: adminUser.id,
+        description: 'Sample notes for Grade 5',
+        tags: JSON.stringify(['notes', 'grade5']),
+        status: 'APPROVED',
+      },
+    });
+  }
 
 
   console.log('✅ Database seeded successfully!');
