@@ -49,6 +49,7 @@ import {
   AccessTime,
   CalendarToday,
   Assignment,
+  Upload,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -287,6 +288,14 @@ const DashboardEnhanced: React.FC = () => {
       path: '/lesson-plans', 
       color: '#ef4444',
       description: 'View and manage lesson plans'
+    },
+
+    { 
+      title: 'Documents', 
+      icon: <Upload />, 
+      path: '/upload', 
+      color: '#06b6d4',
+      description: 'Upload and manage documents'
     },
 
   ];
