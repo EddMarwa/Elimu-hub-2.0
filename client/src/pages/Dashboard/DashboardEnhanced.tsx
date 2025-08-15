@@ -255,6 +255,13 @@ const DashboardEnhanced: React.FC = () => {
       color: '#8b5cf6',
       change: '+5%'
     },
+    { 
+      title: 'Documents', 
+      value: stats.documents, 
+      icon: <MenuBook />, 
+      color: '#06b6d4',
+      change: '+12%'
+    },
   ];
 
   const quickActions = [
