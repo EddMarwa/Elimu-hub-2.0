@@ -178,3 +178,54 @@ export interface Notification {
   read: boolean;
   createdAt: Date;
 }
+
+export interface LessonPlan {
+  id: string;
+  title: string;
+  description: string;
+  grade: string;
+  subject: string;
+  tags: string[];
+  fileUrl: string;
+  fileType: string;
+  uploadedBy: string;
+  folderId?: string;
+  downloads: number;
+  rating: number;
+  reviewCount: number;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: {
+    firstName: string;
+    lastName: string;
+  };
+  folder?: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface Folder {
+  id: string;
+  name: string;
+  description?: string;
+  parentId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  lessonPlanCount?: number;
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  rating: number;
+  userId: string;
+  lessonPlanId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  user?: {
+    firstName: string;
+    lastName: string;
+  };
+}

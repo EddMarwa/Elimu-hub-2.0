@@ -105,6 +105,17 @@ export const API_ENDPOINTS = {
     DELETE: '/api/schemes/:id',
     GENERATE: '/api/schemes/generate'
   },
+  LESSON_PLANS: {
+    CREATE: '/api/lesson-plans',
+    LIST: '/api/lesson-plans',
+    GET: '/api/lesson-plans/:id',
+    UPDATE: '/api/lesson-plans/:id',
+    DELETE: '/api/lesson-plans/:id',
+    DOWNLOAD: '/api/lesson-plans/:id/download',
+    FOLDERS: '/api/lesson-plans/folders',
+    COMMENTS: '/api/lesson-plans/:id/comments',
+    SHARE: '/api/lesson-plans/:id/share'
+  },
   TEMPLATES: {
     LIST: '/api/templates',
     GET: '/api/templates/:id'

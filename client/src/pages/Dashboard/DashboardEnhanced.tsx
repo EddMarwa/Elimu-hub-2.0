@@ -126,7 +126,7 @@ const DashboardEnhanced: React.FC = () => {
       
       setStats({
   
-        schemesOfWork: 12,
+        lessonPlans: 12,
         documents: 18,
         collaborations: 7,
         aiInteractions: 45,
@@ -155,8 +155,8 @@ const DashboardEnhanced: React.FC = () => {
       },
       { 
         id: '3', 
-        type: 'scheme', 
-        title: 'Science Term 1 Scheme', 
+        type: 'lesson_plan', 
+        title: 'English - Reading Comprehension Grade 3', 
         timestamp: '1 day ago', 
         status: 'in_progress' 
       },
@@ -234,10 +234,10 @@ const DashboardEnhanced: React.FC = () => {
 
   const statsCards = [
     { 
-      title: 'Schemes of Work', 
-      value: stats.schemesOfWork, 
-      icon: <Description />, 
-      color: '#f59e0b',
+      title: 'Lesson Plans', 
+      value: stats.lessonPlans, 
+      icon: <Assignment />, 
+      color: '#ef4444',
       change: '+8%'
     },
     { 
@@ -740,7 +740,7 @@ const DashboardEnhanced: React.FC = () => {
                   🤖 Try Elimu Hub AI
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Use our AI assistant to generate schemes of work, get teaching tips, and create educational content faster.
+                  Use our AI assistant to generate lesson plans, get teaching tips, and create educational content faster.
                 </Typography>
               </Box>
               <Box sx={{ p: 2, bgcolor: '#f0fdf4', borderRadius: 2, border: '1px solid #dcfce7' }}>
