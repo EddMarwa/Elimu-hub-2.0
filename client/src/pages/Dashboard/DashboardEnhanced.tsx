@@ -55,7 +55,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface DashboardStats {
 
-  schemesOfWork: number;
+  lessonPlans: number;
   documents: number;
   collaborations: number;
   aiInteractions: number;
@@ -85,7 +85,7 @@ const DashboardEnhanced: React.FC = () => {
   
   const [stats, setStats] = useState<DashboardStats>({
 
-    schemesOfWork: 0,
+    lessonPlans: 0,
     documents: 0,
     collaborations: 0,
     aiInteractions: 0,
@@ -282,11 +282,11 @@ const DashboardEnhanced: React.FC = () => {
     },
 
     { 
-      title: 'Schemes of Work', 
+      title: 'Lesson Plans', 
       icon: <Assignment />, 
-      path: '/schemes-of-work', 
+      path: '/lesson-plans', 
       color: '#ef4444',
-      description: 'View and manage schemes'
+      description: 'View and manage lesson plans'
     },
 
   ];
