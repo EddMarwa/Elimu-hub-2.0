@@ -6,8 +6,11 @@ export interface User {
   firstName: string;
   lastName: string;
   role: UserRole;
+  phone?: string;
   school?: string;
   county?: string;
+  bio?: string;
+  avatar?: string;
   subjects?: string[];
   createdAt: Date;
   updatedAt: Date;
