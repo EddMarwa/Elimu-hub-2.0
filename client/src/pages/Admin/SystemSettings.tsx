@@ -4,282 +4,266 @@ import {
   Paper,
   Typography,
   Box,
-  Button,
   Grid,
   Card,
   CardContent,
+  Button,
   Switch,
   FormControlLabel,
   TextField,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
+  Select,
+  MenuItem,
   Divider,
   Alert,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
   Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  LinearProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import {
   Settings,
+  Analytics,
   Security,
+  Storage,
   Notifications,
   Backup,
-  Update,
-  Analytics,
-  Save,
+  Restore,
   Refresh,
-  Download,
-  Upload,
-  Delete,
-  Info,
+  Save,
   Warning,
   CheckCircle,
-  Schedule,
+  Error,
+  ExpandMore,
+  SystemUpdate,
+  Database,
+  CloudUpload,
+  CloudDownload,
+  Monitor,
+  Speed,
+  Memory,
+  Storage as StorageIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { UserRole } from '../../types';
+import { toast } from 'react-toastify';
 
-interface SystemSetting {
-  id: string;
-  category: string;
-  name: string;
-  description: string;
-  value: string | boolean | number;
-  type: 'text' | 'boolean' | 'number' | 'select';
-  options?: string[];
-  required: boolean;
+interface SystemConfig {
+  general: {
+    siteName: string;
+    siteDescription: string;
+    maintenanceMode: boolean;
+    maxFileSize: number;
+    allowedFileTypes: string[];
+  };
+  security: {
+    sessionTimeout: number;
+    maxLoginAttempts: number;
+    requireTwoFactor: boolean;
+    passwordPolicy: string;
+  };
+  notifications: {
+    emailNotifications: boolean;
+    smsNotifications: boolean;
+    pushNotifications: boolean;
+    notificationFrequency: string;
+  };
+  storage: {
+    maxStoragePerUser: number;
+    backupFrequency: string;
+    retentionPolicy: string;
+    compressionEnabled: boolean;
+  };
 }
 
-interface SystemLog {
-  id: string;
-  timestamp: string;
-  level: 'INFO' | 'WARNING' | 'ERROR';
-  message: string;
-  user?: string;
-  action?: string;
+interface SystemStats {
+  totalUsers: number;
+  activeUsers: number;
+  totalFiles: number;
+  storageUsed: number;
+  systemUptime: number;
+  lastBackup: string;
+  databaseSize: number;
+  cacheHitRate: number;
 }
 
 const SystemSettings: React.FC = () => {
-  const { user: currentUser } = useAuth();
-  const [settings, setSettings] = useState<SystemSetting[]>([]);
-  const [logs, setLogs] = useState<SystemLog[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('general');
-  const [hasChanges, setHasChanges] = useState(false);
-  const [backupDialog, setBackupDialog] = useState(false);
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [config, setConfig] = useState<SystemConfig>({
+    general: {
+      siteName: 'ElimuHub 2.0',
+      siteDescription: 'CBC Education Platform',
+      maintenanceMode: false,
+      maxFileSize: 10,
+      allowedFileTypes: ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'],
+    },
+    security: {
+      sessionTimeout: 30,
+      maxLoginAttempts: 5,
+      requireTwoFactor: false,
+      passwordPolicy: 'strong',
+    },
+    notifications: {
+      emailNotifications: true,
+      smsNotifications: false,
+      pushNotifications: true,
+      notificationFrequency: 'daily',
+    },
+    storage: {
+      maxStoragePerUser: 1000,
+      backupFrequency: 'daily',
+      retentionPolicy: '30 days',
+      compressionEnabled: true,
+    },
+  });
+
+  const [stats, setStats] = useState<SystemStats>({
+    totalUsers: 0,
+    activeUsers: 0,
+    totalFiles: 0,
+    storageUsed: 0,
+    systemUptime: 0,
+    lastBackup: '',
+    databaseSize: 0,
+    cacheHitRate: 0,
+  });
+
+  const [maintenanceDialogOpen, setMaintenanceDialogOpen] = useState(false);
+  const [backupDialogOpen, setBackupDialogOpen] = useState(false);
+  const [backupProgress, setBackupProgress] = useState(0);
+  const [backupInProgress, setBackupInProgress] = useState(false);
 
   useEffect(() => {
-    // Mock system settings
-    const mockSettings: SystemSetting[] = [
-      {
-        id: '1',
-        category: 'general',
-        name: 'Site Name',
-        description: 'The name of the educational platform',
-        value: 'Elimu Hub 2.0',
-        type: 'text',
-        required: true,
-      },
-      {
-        id: '2',
-        category: 'general',
-        name: 'Maintenance Mode',
-        description: 'Enable maintenance mode to prevent user access',
-        value: false,
-        type: 'boolean',
-        required: false,
-      },
-      {
-        id: '3',
-        category: 'general',
-        name: 'Default Language',
-        description: 'Default language for the platform',
-        value: 'English',
-        type: 'select',
-        options: ['English', 'Swahili', 'French'],
-        required: true,
-      },
-      {
-        id: '4',
-        category: 'security',
-        name: 'Password Minimum Length',
-        description: 'Minimum password length for user accounts',
-        value: 8,
-        type: 'number',
-        required: true,
-      },
-      {
-        id: '5',
-        category: 'security',
-        name: 'Two-Factor Authentication',
-        description: 'Require 2FA for admin accounts',
-        value: true,
-        type: 'boolean',
-        required: false,
-      },
-      {
-        id: '6',
-        category: 'security',
-        name: 'Session Timeout',
-        description: 'Session timeout in minutes',
-        value: 60,
-        type: 'number',
-        required: true,
-      },
-      {
-        id: '7',
-        category: 'ai',
-        name: 'AI Provider',
-        description: 'Primary AI service provider',
-        value: 'Grok',
-        type: 'select',
-        options: ['Grok', 'OpenAI', 'Local'],
-        required: true,
-      },
-     {
-  id: '8',
-  name: 'AI Response Limit', // Add missing name
-  description: 'Maximum number of AI responses per session', // Add missing description
-  category: 'ai',
-  value: 10,
-  type: 'number',
-  required: true,
-},
-      {
-        id: '9',
-        category: 'ai',
-        name: 'AI Content Moderation',
-        description: 'Enable AI content moderation for generated content',
-        value: true,
-        type: 'boolean',
-        required: false,
-      },
-      {
-        id: '10',
-        category: 'notifications',
-        name: 'Email Notifications',
-        description: 'Enable email notifications for users',
-        value: true,
-        type: 'boolean',
-        required: false,
-      },
-      {
-        id: '11',
-        category: 'notifications',
-        name: 'System Alerts',
-        description: 'Send system alerts to administrators',
-        value: true,
-        type: 'boolean',
-        required: false,
-      },
-    ];
-
-    const mockLogs: SystemLog[] = [
-      {
-        id: '1',
-        timestamp: '2025-07-29 14:30:25',
-        level: 'INFO',
-        message: 'System settings updated',
-        user: 'admin@elimuhub.com',
-        action: 'SETTINGS_UPDATE',
-      },
-      {
-        id: '2',
-        timestamp: '2025-07-29 13:15:10',
-        level: 'WARNING',
-        message: 'High CPU usage detected',
-        action: 'SYSTEM_MONITOR',
-      },
-      {
-        id: '3',
-        timestamp: '2025-07-29 12:45:33',
-        level: 'INFO',
-        message: 'Database backup completed successfully',
-        action: 'BACKUP_COMPLETE',
-      },
-      {
-        id: '4',
-        timestamp: '2025-07-29 11:20:15',
-        level: 'ERROR',
-        message: 'Failed to send notification email',
-        action: 'EMAIL_ERROR',
-      },
-      {
-        id: '5',
-        timestamp: '2025-07-29 10:30:45',
-        level: 'INFO',
-        message: 'New user registration: teacher@school.edu',
-        user: 'system',
-        action: 'USER_REGISTRATION',
-      },
-    ];
-
-    setSettings(mockSettings);
-    setLogs(mockLogs);
+    loadSystemStats();
   }, []);
 
-  const handleSettingChange = (settingId: string, newValue: string | boolean | number) => {
-    setSettings(settings.map(setting => 
-      setting.id === settingId ? { ...setting, value: newValue } : setting
-    ));
-    setHasChanges(true);
-  };
-
-  const handleSaveSettings = () => {
-    // Simulate saving settings
-    console.log('Saving settings:', settings);
-    setHasChanges(false);
-    // Add success message or notification here
-  };
-
-  const handleResetSettings = () => {
-    // Reset to original values
-    window.location.reload();
-  };
-
-  const getLogIcon = (level: string) => {
-    switch (level) {
-      case 'ERROR': return <Warning color="error" />;
-      case 'WARNING': return <Warning color="warning" />;
-      case 'INFO': return <CheckCircle color="success" />;
-      default: return <Info />;
+  const loadSystemStats = async () => {
+    setLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setStats({
+        totalUsers: 1250,
+        activeUsers: 890,
+        totalFiles: 5670,
+        storageUsed: 45.2,
+        systemUptime: 99.8,
+        lastBackup: new Date().toISOString(),
+        databaseSize: 2.3,
+        cacheHitRate: 94.5,
+      });
+    } catch (error) {
+      toast.error('Failed to load system statistics');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getLogColor = (level: string) => {
-    switch (level) {
-      case 'ERROR': return 'error';
-      case 'WARNING': return 'warning';
-      case 'INFO': return 'success';
-      default: return 'default';
+  const handleConfigChange = (section: keyof SystemConfig, field: string, value: any) => {
+    setConfig(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleSaveConfig = async () => {
+    setSaving(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      toast.success('System configuration saved successfully!');
+    } catch (error) {
+      toast.error('Failed to save configuration');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const categories = [
-    { value: 'general', label: 'General', icon: <Settings /> },
-    { value: 'security', label: 'Security', icon: <Security /> },
-    { value: 'ai', label: 'AI Settings', icon: <Analytics /> },
-    { value: 'notifications', label: 'Notifications', icon: <Notifications /> },
-  ];
+  const handleMaintenanceToggle = async () => {
+    try {
+      const newMode = !config.general.maintenanceMode;
+      handleConfigChange('general', 'maintenanceMode', newMode);
+      
+      if (newMode) {
+        toast.warning('Maintenance mode enabled. Users will see maintenance page.');
+      } else {
+        toast.success('Maintenance mode disabled. System is now accessible.');
+      }
+    } catch (error) {
+      toast.error('Failed to toggle maintenance mode');
+    }
+  };
 
-  const filteredSettings = settings.filter(setting => setting.category === selectedCategory);
+  const handleSystemBackup = async () => {
+    setBackupInProgress(true);
+    setBackupProgress(0);
+    
+    try {
+      // Simulate backup process
+      for (let i = 0; i <= 100; i += 10) {
+        setBackupProgress(i);
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      toast.success('System backup completed successfully!');
+      setBackupDialogOpen(false);
+    } catch (error) {
+      toast.error('Backup failed. Please try again.');
+    } finally {
+      setBackupInProgress(false);
+      setBackupProgress(0);
+    }
+  };
 
-  // Check if current user has permission
-  if (!currentUser || currentUser.role !== UserRole.SUPER_ADMIN) {
+  const handleSystemRestore = async () => {
+    if (!window.confirm('Are you sure you want to restore the system? This will overwrite current data.')) {
+      return;
+    }
+    
+    try {
+      toast.info('System restore initiated. This may take several minutes.');
+      // Simulate restore process
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      toast.success('System restore completed successfully!');
+    } catch (error) {
+      toast.error('System restore failed.');
+    }
+  };
+
+  const handleCacheClear = async () => {
+    try {
+      toast.info('Clearing system cache...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success('System cache cleared successfully!');
+      loadSystemStats(); // Refresh stats
+    } catch (error) {
+      toast.error('Failed to clear cache');
+    }
+  };
+
+  // Check if user has permission to access system settings
+  if (!user || user.role !== 'SUPER_ADMIN') {
     return (
       <Container maxWidth="lg" sx={{ py: 3 }}>
         <Alert severity="error">
-          You don't have permission to access system settings.
+          You don't have permission to access system settings. Only Super Administrators can access this page.
         </Alert>
       </Container>
     );
@@ -287,274 +271,419 @@ const SystemSettings: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
+      {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" fontWeight="bold" color="primary" gutterBottom>
           System Settings
         </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          Configure and monitor system-wide settings
+        <Typography variant="body1" color="text.secondary">
+          Configure system-wide settings, monitor performance, and manage system operations
         </Typography>
       </Box>
 
       <Grid container spacing={3}>
-        {/* Settings Panel */}
-        <Grid item xs={12} lg={8}>
-          <Paper sx={{ p: 3 }}>
-            <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* System Statistics */}
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
               <Typography variant="h6" fontWeight="bold">
-                Configuration
+                System Overview
               </Typography>
-              <Box>
-                {hasChanges && (
-                  <Button
-                    variant="outlined"
-                    onClick={handleResetSettings}
-                    sx={{ mr: 2 }}
-                  >
-                    Reset
-                  </Button>
-                )}
-                <Button
-                  variant="contained"
-                  startIcon={<Save />}
-                  onClick={handleSaveSettings}
-                  disabled={!hasChanges}
-                >
-                  Save Changes
-                </Button>
+              <Button
+                startIcon={<Refresh />}
+                onClick={loadSystemStats}
+                disabled={loading}
+              >
+                Refresh
+              </Button>
+            </Box>
+
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <CircularProgress />
               </Box>
-            </Box>
-
-            {/* Category Tabs */}
-            <Box sx={{ mb: 3 }}>
-              <Grid container spacing={2}>
-                {categories.map((category) => (
-                  <Grid item key={category.value}>
-                    <Button
-                      variant={selectedCategory === category.value ? 'contained' : 'outlined'}
-                      startIcon={category.icon}
-                      onClick={() => setSelectedCategory(category.value)}
-                    >
-                      {category.label}
-                    </Button>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-
-            <Divider sx={{ mb: 3 }} />
-
-            {/* Settings Form */}
-            <Grid container spacing={3}>
-              {filteredSettings.map((setting) => (
-                <Grid item xs={12} md={6} key={setting.id}>
-                  <Card variant="outlined">
-                    <CardContent>
-                      <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                        {setting.name}
-                        {setting.required && <Chip label="Required" size="small" color="error" sx={{ ml: 1 }} />}
+            ) : (
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="primary" fontWeight="bold">
+                        {stats.totalUsers.toLocaleString()}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        {setting.description}
+                      <Typography variant="body2" color="text.secondary">
+                        Total Users
                       </Typography>
-                      
-                      {setting.type === 'boolean' && (
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={setting.value as boolean}
-                              onChange={(e) => handleSettingChange(setting.id, e.target.checked)}
-                            />
-                          }
-                          label={setting.value ? 'Enabled' : 'Disabled'}
-                        />
-                      )}
-
-                      {setting.type === 'text' && (
-                        <TextField
-                          fullWidth
-                          size="small"
-                          value={setting.value as string}
-                          onChange={(e) => handleSettingChange(setting.id, e.target.value)}
-                          required={setting.required}
-                        />
-                      )}
-
-                      {setting.type === 'number' && (
-                        <TextField
-                          fullWidth
-                          size="small"
-                          type="number"
-                          value={setting.value as number}
-                          onChange={(e) => handleSettingChange(setting.id, parseInt(e.target.value) || 0)}
-                          required={setting.required}
-                        />
-                      )}
-
-                      {setting.type === 'select' && (
-                        <FormControl fullWidth size="small">
-                          <Select
-                            value={setting.value as string}
-                            onChange={(e) => handleSettingChange(setting.id, e.target.value)}
-                          >
-                            {setting.options?.map((option) => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      )}
                     </CardContent>
                   </Card>
                 </Grid>
-              ))}
-            </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="success.main" fontWeight="bold">
+                        {stats.activeUsers.toLocaleString()}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Active Users
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="info.main" fontWeight="bold">
+                        {stats.totalFiles.toLocaleString()}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Total Files
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Card>
+                    <CardContent sx={{ textAlign: 'center' }}>
+                      <Typography variant="h4" color="warning.main" fontWeight="bold">
+                        {stats.storageUsed} GB
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Storage Used
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
           </Paper>
         </Grid>
 
-        {/* System Info & Actions */}
-        <Grid item xs={12} lg={4}>
-          {/* System Actions */}
+        {/* Configuration Sections */}
+        <Grid item xs={12} md={8}>
+          <Accordion defaultExpanded>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Settings />
+                <Typography variant="h6">General Settings</Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Site Name"
+                    value={config.general.siteName}
+                    onChange={(e) => handleConfigChange('general', 'siteName', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Max File Size (MB)"
+                    type="number"
+                    value={config.general.maxFileSize}
+                    onChange={(e) => handleConfigChange('general', 'maxFileSize', parseInt(e.target.value))}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Site Description"
+                    multiline
+                    rows={2}
+                    value={config.general.siteDescription}
+                    onChange={(e) => handleConfigChange('general', 'siteDescription', e.target.value)}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={config.general.maintenanceMode}
+                        onChange={handleMaintenanceToggle}
+                        color="warning"
+                      />
+                    }
+                    label="Maintenance Mode"
+                  />
+                  {config.general.maintenanceMode && (
+                    <Alert severity="warning" sx={{ mt: 1 }}>
+                      System is currently in maintenance mode. Users will see a maintenance page.
+                    </Alert>
+                  )}
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Security />
+                <Typography variant="h6">Security Settings</Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Session Timeout (minutes)"
+                    type="number"
+                    value={config.security.sessionTimeout}
+                    onChange={(e) => handleConfigChange('security', 'sessionTimeout', parseInt(e.target.value))}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Max Login Attempts"
+                    type="number"
+                    value={config.security.maxLoginAttempts}
+                    onChange={(e) => handleConfigChange('security', 'maxLoginAttempts', parseInt(e.target.value))}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Password Policy</InputLabel>
+                    <Select
+                      value={config.security.passwordPolicy}
+                      onChange={(e) => handleConfigChange('security', 'passwordPolicy', e.target.value)}
+                      label="Password Policy"
+                    >
+                      <MenuItem value="basic">Basic (6+ characters)</MenuItem>
+                      <MenuItem value="strong">Strong (8+ chars, mixed case, numbers)</MenuItem>
+                      <MenuItem value="very-strong">Very Strong (10+ chars, special chars)</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={config.security.requireTwoFactor}
+                        onChange={(e) => handleConfigChange('security', 'requireTwoFactor', e.target.checked)}
+                      />
+                    }
+                    label="Require Two-Factor Authentication"
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Storage />
+                <Typography variant="h6">Storage Settings</Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Max Storage per User (MB)"
+                    type="number"
+                    value={config.storage.maxStoragePerUser}
+                    onChange={(e) => handleConfigChange('storage', 'maxStoragePerUser', parseInt(e.target.value))}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Backup Frequency</InputLabel>
+                    <Select
+                      value={config.storage.backupFrequency}
+                      onChange={(e) => handleConfigChange('storage', 'backupFrequency', e.target.value)}
+                      label="Backup Frequency"
+                    >
+                      <MenuItem value="hourly">Hourly</MenuItem>
+                      <MenuItem value="daily">Daily</MenuItem>
+                      <MenuItem value="weekly">Weekly</MenuItem>
+                      <MenuItem value="monthly">Monthly</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={config.storage.compressionEnabled}
+                        onChange={(e) => handleConfigChange('storage', 'compressionEnabled', e.target.checked)}
+                      />
+                    }
+                    label="Enable File Compression"
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+
+          <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={saving ? <CircularProgress size={20} /> : <Save />}
+              onClick={handleSaveConfig}
+              disabled={saving}
+            >
+              {saving ? 'Saving...' : 'Save Configuration'}
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<Refresh />}
+              onClick={loadSystemStats}
+            >
+              Reset to Defaults
+            </Button>
+          </Box>
+        </Grid>
+
+        {/* Quick Actions Sidebar */}
+        <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3, mb: 3 }}>
             <Typography variant="h6" fontWeight="bold" gutterBottom>
-              System Actions
+              Quick Actions
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<Backup />}
-                  onClick={() => setBackupDialog(true)}
-                >
-                  Create Backup
-                </Button>
-              </Grid>
-              <Grid item xs={12}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<Download />}
-                >
-                  Export Settings
-                </Button>
-              </Grid>
-              <Grid item xs={12}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<Upload />}
-                >
-                  Import Settings
-                </Button>
-              </Grid>
-              <Grid item xs={12}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  startIcon={<Refresh />}
-                >
-                  Clear Cache
-                </Button>
-              </Grid>
-            </Grid>
+            <List dense>
+              <ListItem>
+                <ListItemIcon>
+                  <Backup />
+                </ListItemIcon>
+                <ListItemText primary="System Backup" />
+                <ListItemSecondaryAction>
+                  <Button
+                    size="small"
+                    onClick={() => setBackupDialogOpen(true)}
+                    disabled={backupInProgress}
+                  >
+                    Start
+                  </Button>
+                </ListItemSecondaryAction>
+              </ListItem>
+              <ListItem>
+                <ListItemIcon>
+                  <Restore />
+                </ListItemIcon>
+                <ListItemText primary="System Restore" />
+                <ListItemSecondaryAction>
+                  <Button
+                    size="small"
+                    color="warning"
+                    onClick={handleSystemRestore}
+                  >
+                    Restore
+                  </Button>
+                </ListItemSecondaryAction>
+              </ListItem>
+              <ListItem>
+                <ListItemIcon>
+                  <Refresh />
+                </ListItemIcon>
+                <ListItemText primary="Clear Cache" />
+                <ListItemSecondaryAction>
+                  <Button
+                    size="small"
+                    onClick={handleCacheClear}
+                  >
+                    Clear
+                  </Button>
+                </ListItemSecondaryAction>
+              </ListItem>
+            </List>
           </Paper>
 
-          {/* System Status */}
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              System Status
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  Server Status
-                </Typography>
-                <Chip label="Online" color="success" size="small" />
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  Database
-                </Typography>
-                <Chip label="Connected" color="success" size="small" />
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  AI Service
-                </Typography>
-                <Chip label="Active" color="success" size="small" />
-              </Grid>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="text.secondary">
-                  Storage
-                </Typography>
-                <Chip label="78% Used" color="warning" size="small" />
-              </Grid>
-            </Grid>
-          </Paper>
-
-          {/* Recent Logs */}
+          {/* System Health */}
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" fontWeight="bold" gutterBottom>
-              System Logs
+              System Health
             </Typography>
-            <TableContainer sx={{ maxHeight: 400 }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Time</TableCell>
-                    <TableCell>Level</TableCell>
-                    <TableCell>Message</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {logs.slice(0, 10).map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell sx={{ fontSize: '0.75rem' }}>
-                        {new Date(log.timestamp).toLocaleTimeString()}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={log.level}
-                          color={getLogColor(log.level) as any}
-                          size="small"
-                          icon={getLogIcon(log.level)}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ fontSize: '0.75rem' }}>
-                        {log.message}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <List dense>
+              <ListItem>
+                <ListItemIcon>
+                  <CheckCircle color="success" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="System Uptime" 
+                  secondary={`${stats.systemUptime}%`}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemIcon>
+                  <Speed />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Cache Hit Rate" 
+                  secondary={`${stats.cacheHitRate}%`}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemIcon>
+                  <Database />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Database Size" 
+                  secondary={`${stats.databaseSize} GB`}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemIcon>
+                  <StorageIcon />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Storage Used" 
+                  secondary={`${stats.storageUsed} GB`}
+                />
+              </ListItem>
+            </List>
           </Paper>
         </Grid>
       </Grid>
 
-      {/* Backup Dialog */}
-      <Dialog open={backupDialog} onClose={() => setBackupDialog(false)}>
-        <DialogTitle>Create System Backup</DialogTitle>
+      {/* Maintenance Mode Dialog */}
+      <Dialog open={maintenanceDialogOpen} onClose={() => setMaintenanceDialogOpen(false)}>
+        <DialogTitle>Maintenance Mode</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" gutterBottom>
-            This will create a full backup of the system including:
+          <Typography>
+            Are you sure you want to enable maintenance mode? This will make the system inaccessible to regular users.
           </Typography>
-          <ul>
-            <li>Database</li>
-            <li>User files</li>
-            <li>System configuration</li>
-            <li>Generated content</li>
-          </ul>
-          <Alert severity="info" sx={{ mt: 2 }}>
-            The backup process may take several minutes to complete.
-          </Alert>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setBackupDialog(false)}>Cancel</Button>
-          <Button variant="contained" startIcon={<Schedule />}>
-            Create Backup
+          <Button onClick={() => setMaintenanceDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleMaintenanceToggle} color="warning" variant="contained">
+            Enable Maintenance Mode
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Backup Dialog */}
+      <Dialog open={backupDialogOpen} onClose={() => setBackupDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>System Backup</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            This will create a complete backup of the system including all data, files, and configurations.
+          </Typography>
+          
+          {backupInProgress && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2" gutterBottom>
+                Backup Progress: {backupProgress}%
+              </Typography>
+              <LinearProgress variant="determinate" value={backupProgress} />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setBackupDialogOpen(false)} disabled={backupInProgress}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSystemBackup}
+            variant="contained"
+            disabled={backupInProgress}
+            startIcon={backupInProgress ? <CircularProgress size={20} /> : <Backup />}
+          >
+            {backupInProgress ? 'Backing Up...' : 'Start Backup'}
           </Button>
         </DialogActions>
       </Dialog>

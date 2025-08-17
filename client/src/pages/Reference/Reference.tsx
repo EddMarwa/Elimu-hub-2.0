@@ -1,573 +1,704 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box,
+  Container,
   Paper,
   Typography,
-  TextField,
-  Button,
+  Box,
+  Grid,
   Card,
   CardContent,
-  Grid,
+  TextField,
+  InputAdornment,
+  Button,
+  Chip,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Divider,
+  Alert,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Chip,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  Alert,
-  CircularProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Badge,
-  Container,
-  InputAdornment,
-  IconButton,
-  Avatar,
-  Skeleton,
-  Fade,
-  Tooltip,
   Tabs,
   Tab,
-  LinearProgress
 } from '@mui/material';
 import {
   Search,
+  Book,
+  Description,
+  School,
+  Policy,
+  Assessment,
+  Timeline,
+  Download,
+  Visibility,
   FilterList,
   ExpandMore,
-  School,
-  MenuBook,
-  Assessment,
-  TrendingUp,
-  Clear,
+  Article,
+  VideoLibrary,
+  PictureAsPdf,
+  InsertDriveFile,
+  Star,
+  StarBorder,
   Bookmark,
-  Share,
-  ContentCopy,
-  AutoAwesome,
-  Psychology,
-  FindInPage,
-  Lightbulb
+  BookmarkBorder,
 } from '@mui/icons-material';
+import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'react-toastify';
 
-interface SearchResult {
+interface ReferenceDocument {
   id: string;
-  content: string;
-  similarity: number;
-  metadata: {
-    source: string;
-    subject?: string;
-    grade?: string;
-    topic?: string;
-    documentType?: string;
-    chunkIndex: number;
-    totalChunks: number;
-    uploadedAt?: string;
-  };
-  highlights?: string[];
-}
-
-interface SearchFilters {
-  subject: string;
-  grade: string;
-  documentType: string;
-  minSimilarity: number;
-}
-
-interface QuickSearch {
-  query: string;
-  category: string;
-  icon: React.ReactNode;
+  title: string;
   description: string;
+  type: 'policy' | 'guideline' | 'curriculum' | 'assessment' | 'research' | 'template';
+  category: string;
+  tags: string[];
+  fileUrl: string;
+  fileType: string;
+  fileSize: number;
+  lastUpdated: string;
+  author: string;
+  rating: number;
+  downloads: number;
+  isBookmarked: boolean;
+}
+
+interface ReferenceCategory {
+  id: string;
+  name: string;
+  description: string;
+  documentCount: number;
+  icon: React.ReactNode;
 }
 
 const Reference: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [filters, setFilters] = useState<SearchFilters>({
-    subject: '',
-    grade: '',
-    documentType: '',
-    minSimilarity: 0.7
-  });
+  const { user } = useAuth();
+  const [documents, setDocuments] = useState<ReferenceDocument[]>([]);
+  const [filteredDocuments, setFilteredDocuments] = useState<ReferenceDocument[]>([]);
+  const [categories, setCategories] = useState<ReferenceCategory[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<string>('');
+  const [sortBy, setSortBy] = useState('relevance');
   const [activeTab, setActiveTab] = useState(0);
-  const [searchHistory, setSearchHistory] = useState<string[]>([]);
-  const [savedResults, setSavedResults] = useState<SearchResult[]>([]);
-
-  const subjects = [
-    'English', 'Kiswahili', 'Mathematics', 'Science & Technology',
-    'Social Studies', 'Creative Arts', 'Physical Education',
-    'Religious Education', 'Life Skills', 'Computer Science'
-  ];
-
-  const grades = [
-    'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6',
-    'Grade 7', 'Grade 8', 'Grade 9', 'Form 1', 'Form 2', 'Form 3', 'Form 4'
-  ];
+  const [selectedDocument, setSelectedDocument] = useState<ReferenceDocument | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
 
   const documentTypes = [
-    'Curriculum Design', 'Teacher\'s Guide', 'Learner\'s Book',
-    'Assessment Guidelines', 'CBC Handbook', 'Subject Manual'
+    { value: 'policy', label: 'Policy Documents' },
+    { value: 'guideline', label: 'Guidelines' },
+    { value: 'curriculum', label: 'Curriculum' },
+    { value: 'assessment', label: 'Assessment' },
+    { value: 'research', label: 'Research Papers' },
+    { value: 'template', label: 'Templates' },
   ];
 
-  const quickSearches: QuickSearch[] = [
-    {
-      query: 'CBC learning objectives for Grade 1 Mathematics',
-      category: 'Learning Objectives',
-      icon: <School />,
-      description: 'Find specific learning objectives'
-    },
-    {
-      query: 'Assessment methods and rubrics',
-      category: 'Assessment',
-      icon: <Assessment />,
-      description: 'Assessment criteria and methods'
-    },
-    {
-      query: 'Teaching methodologies and approaches',
-      category: 'Teaching Methods',
-      icon: <Psychology />,
-      description: 'Pedagogical approaches'
-    },
-    {
-      query: 'Competency-based curriculum framework',
-      category: 'CBC Framework',
-      icon: <TrendingUp />,
-      description: 'Core CBC principles'
-    }
+  const sortOptions = [
+    { value: 'relevance', label: 'Relevance' },
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+    { value: 'rating', label: 'Highest Rated' },
+    { value: 'downloads', label: 'Most Downloaded' },
+    { value: 'title', label: 'Title A-Z' },
   ];
 
-  const performSearch = async (query: string = searchQuery) => {
-    if (!query.trim()) return;
+  useEffect(() => {
+    loadReferenceData();
+  }, []);
 
-    setIsSearching(true);
+  useEffect(() => {
+    filterDocuments();
+  }, [searchTerm, selectedCategory, selectedType, sortBy, documents]);
+
+  const loadReferenceData = async () => {
+    setLoading(true);
     try {
-      // Add to search history
-      if (!searchHistory.includes(query)) {
-        setSearchHistory(prev => [query, ...prev.slice(0, 9)]);
-      }
-
-      // Simulate API call for semantic search
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Mock search results based on query
-      const mockResults: SearchResult[] = [
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const mockCategories: ReferenceCategory[] = [
         {
-          id: '1',
-          content: `The CBC curriculum for ${query} emphasizes competency-based learning where learners demonstrate mastery of specific skills and knowledge. The learning objectives are designed to develop critical thinking, creativity, and problem-solving abilities in learners.`,
-          similarity: 0.95,
-          metadata: {
-            source: 'CBC_Curriculum_Design_Grade1.pdf',
-            subject: 'Mathematics',
-            grade: 'Grade 1',
-            topic: 'Number Concepts',
-            documentType: 'Curriculum Design',
-            chunkIndex: 1,
-            totalChunks: 45,
-            uploadedAt: '2025-01-15'
-          },
-          highlights: [query.split(' ').slice(0, 2).join(' ')]
+          id: 'policy',
+          name: 'Policy Documents',
+          description: 'Official education policies and regulations',
+          documentCount: 15,
+          icon: <Policy />
         },
         {
-          id: '2',
-          content: `Assessment in the CBC framework is continuous and formative, focusing on the learner's progress rather than just final outcomes. Teachers use various assessment methods including observations, portfolios, and practical demonstrations to evaluate competency development.`,
-          similarity: 0.87,
-          metadata: {
-            source: 'Assessment_Guidelines_CBC.pdf',
-            subject: 'General',
-            grade: 'All Grades',
-            topic: 'Assessment Methods',
-            documentType: 'Assessment Guidelines',
-            chunkIndex: 3,
-            totalChunks: 28,
-            uploadedAt: '2025-01-10'
-          },
-          highlights: ['assessment', 'competency']
+          id: 'curriculum',
+          name: 'Curriculum Standards',
+          description: 'CBC curriculum frameworks and standards',
+          documentCount: 28,
+          icon: <School />
         },
         {
-          id: '3',
-          content: `The teaching methodology in CBC encourages learner-centered approaches where students actively participate in the learning process. This includes collaborative learning, inquiry-based learning, and hands-on activities that make learning meaningful and engaging.`,
-          similarity: 0.82,
-          metadata: {
-            source: 'Teachers_Guide_Primary.pdf',
-            subject: 'Science & Technology',
-            grade: 'Grade 3',
-            topic: 'Teaching Approaches',
-            documentType: 'Teacher\'s Guide',
-            chunkIndex: 7,
-            totalChunks: 67,
-            uploadedAt: '2025-01-08'
-          },
-          highlights: ['teaching', 'learner-centered']
+          id: 'assessment',
+          name: 'Assessment Guidelines',
+          description: 'Evaluation and assessment procedures',
+          documentCount: 22,
+          icon: <Assessment />
+        },
+        {
+          id: 'research',
+          name: 'Research Papers',
+          description: 'Educational research and studies',
+          documentCount: 45,
+          icon: <Article />
+        },
+        {
+          id: 'templates',
+          name: 'Templates & Forms',
+          description: 'Ready-to-use templates and forms',
+          documentCount: 33,
+          icon: <Description />
+        },
+        {
+          id: 'multimedia',
+          name: 'Multimedia Resources',
+          description: 'Videos, presentations, and interactive content',
+          documentCount: 18,
+          icon: <VideoLibrary />
         }
       ];
 
-      // Filter results based on current filters
-      const filteredResults = mockResults.filter(result => {
-        if (filters.subject && result.metadata.subject !== filters.subject) return false;
-        if (filters.grade && result.metadata.grade !== filters.grade) return false;
-        if (filters.documentType && result.metadata.documentType !== filters.documentType) return false;
-        if (result.similarity < filters.minSimilarity) return false;
-        return true;
-      });
+      const mockDocuments: ReferenceDocument[] = [
+        {
+          id: '1',
+          title: 'CBC Implementation Policy Framework',
+          description: 'Comprehensive policy framework for implementing CBC curriculum across all levels',
+          type: 'policy',
+          category: 'policy',
+          tags: ['cbc', 'implementation', 'policy', 'framework'],
+          fileUrl: '#',
+          fileType: 'pdf',
+          fileSize: 2.5,
+          lastUpdated: '2024-01-15',
+          author: 'Ministry of Education',
+          rating: 4.8,
+          downloads: 1250,
+          isBookmarked: false
+        },
+        {
+          id: '2',
+          title: 'Mathematics Grade 4-6 Curriculum Guide',
+          description: 'Detailed curriculum guide for Mathematics in upper primary grades',
+          type: 'curriculum',
+          category: 'curriculum',
+          tags: ['mathematics', 'grade4', 'grade5', 'grade6', 'curriculum'],
+          fileUrl: '#',
+          fileType: 'pdf',
+          fileSize: 3.2,
+          lastUpdated: '2024-02-01',
+          author: 'KICD',
+          rating: 4.6,
+          downloads: 890,
+          isBookmarked: true
+        },
+        {
+          id: '3',
+          title: 'Assessment Rubrics for Creative Arts',
+          description: 'Standardized assessment rubrics for evaluating creative arts projects',
+          type: 'assessment',
+          category: 'assessment',
+          tags: ['assessment', 'creative-arts', 'rubrics', 'evaluation'],
+          fileUrl: '#',
+          fileType: 'docx',
+          fileSize: 1.8,
+          lastUpdated: '2024-01-28',
+          author: 'Curriculum Development Team',
+          rating: 4.4,
+          downloads: 567,
+          isBookmarked: false
+        },
+        {
+          id: '4',
+          title: 'Teacher Professional Development Guidelines',
+          description: 'Guidelines for continuous professional development of teachers',
+          type: 'guideline',
+          category: 'policy',
+          tags: ['teacher-development', 'professional-development', 'guidelines'],
+          fileUrl: '#',
+          fileType: 'pdf',
+          fileSize: 2.1,
+          lastUpdated: '2024-01-20',
+          author: 'TSC',
+          rating: 4.7,
+          downloads: 1100,
+          isBookmarked: false
+        },
+        {
+          id: '5',
+          title: 'Lesson Plan Template - Science & Technology',
+          description: 'Standardized lesson plan template for Science & Technology subjects',
+          type: 'template',
+          category: 'templates',
+          tags: ['lesson-plan', 'template', 'science', 'technology'],
+          fileUrl: '#',
+          fileType: 'docx',
+          fileSize: 0.8,
+          lastUpdated: '2024-02-05',
+          author: 'Curriculum Team',
+          rating: 4.9,
+          downloads: 2100,
+          isBookmarked: true
+        }
+      ];
 
-      setSearchResults(filteredResults);
-
+      setCategories(mockCategories);
+      setDocuments(mockDocuments);
     } catch (error) {
-      console.error('Search error:', error);
+      toast.error('Failed to load reference materials');
     } finally {
-      setIsSearching(false);
+      setLoading(false);
     }
   };
 
-  const clearSearch = () => {
-    setSearchQuery('');
-    setSearchResults([]);
-  };
+  const filterDocuments = () => {
+    let filtered = [...documents];
 
-  const saveResult = (result: SearchResult) => {
-    if (!savedResults.find(r => r.id === result.id)) {
-      setSavedResults(prev => [...prev, result]);
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(doc =>
+        doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
     }
-  };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // Could add a toast notification here
-  };
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter(doc => doc.category === selectedCategory);
+    }
 
-  const highlightText = (text: string, highlights: string[] = []) => {
-    if (!highlights.length) return text;
-    
-    let highlightedText = text;
-    highlights.forEach(highlight => {
-      const regex = new RegExp(`(${highlight})`, 'gi');
-      highlightedText = highlightedText.replace(regex, '<mark>$1</mark>');
+    // Filter by type
+    if (selectedType) {
+      filtered = filtered.filter(doc => doc.type === selectedType);
+    }
+
+    // Sort documents
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime();
+        case 'oldest':
+          return new Date(a.lastUpdated).getTime() - new Date(b.lastUpdated).getTime();
+        case 'rating':
+          return b.rating - a.rating;
+        case 'downloads':
+          return b.downloads - a.downloads;
+        case 'title':
+          return a.title.localeCompare(b.title);
+        default:
+          return 0;
+      }
     });
-    
-    return <span dangerouslySetInnerHTML={{ __html: highlightedText }} />;
+
+    setFilteredDocuments(filtered);
   };
 
-  const getSimilarityColor = (similarity: number) => {
-    if (similarity >= 0.9) return 'success';
-    if (similarity >= 0.8) return 'warning';
-    return 'error';
+  const handleDocumentAction = (document: ReferenceDocument, action: string) => {
+    switch (action) {
+      case 'view':
+        setSelectedDocument(document);
+        setViewDialogOpen(true);
+        break;
+      case 'download':
+        toast.success(`Downloading ${document.title}`);
+        break;
+      case 'bookmark':
+        setDocuments(prev => prev.map(doc =>
+          doc.id === document.id ? { ...doc, isBookmarked: !doc.isBookmarked } : doc
+        ));
+        toast.success(document.isBookmarked ? 'Removed from bookmarks' : 'Added to bookmarks');
+        break;
+      case 'rate':
+        toast.info('Rating functionality coming soon');
+        break;
+    }
+  };
+
+  const getFileIcon = (fileType: string) => {
+    switch (fileType) {
+      case 'pdf':
+        return <PictureAsPdf color="error" />;
+      case 'docx':
+        return <InsertDriveFile color="primary" />;
+      case 'pptx':
+        return <InsertDriveFile color="warning" />;
+      default:
+        return <InsertDriveFile />;
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'policy': return 'error';
+      case 'guideline': return 'warning';
+      case 'curriculum': return 'primary';
+      case 'assessment': return 'success';
+      case 'research': return 'info';
+      case 'template': return 'secondary';
+      default: return 'default';
+    }
+  };
+
+  const formatFileSize = (size: number) => {
+    return `${size} MB`;
+  };
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
   };
 
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ py: 4 }}>
-        {/* Header */}
-        <Paper elevation={3} sx={{ p: 4, mb: 4, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-          <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
-            🔍 Semantic Search & Reference
-          </Typography>
-          <Typography variant="h6" sx={{ opacity: 0.9 }}>
-            Search through your uploaded CBC curriculum documents using AI-powered semantic search
-          </Typography>
-        </Paper>
+    <Container maxWidth="xl" sx={{ py: 3 }}>
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" fontWeight="bold" color="primary" gutterBottom>
+          Reference Materials
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Access educational policies, curriculum guides, assessment tools, and research materials
+        </Typography>
+      </Box>
 
-        <Grid container spacing={4}>
-          {/* Search Section */}
-          <Grid item xs={12} lg={8}>
-            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-              {/* Search Bar */}
-              <TextField
-                fullWidth
-                placeholder="Search for learning objectives, teaching methods, assessment criteria..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && performSearch()}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AutoAwesome color="primary" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      {searchQuery && (
-                        <IconButton onClick={clearSearch} size="small">
-                          <Clear />
-                        </IconButton>
-                      )}
-                      <Button
-                        variant="contained"
-                        onClick={() => performSearch()}
-                        disabled={!searchQuery.trim() || isSearching}
-                        sx={{ ml: 1 }}
-                      >
-                        {isSearching ? <CircularProgress size={20} /> : <Search />}
-                      </Button>
-                    </InputAdornment>
-                  )
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    fontSize: '1.1rem',
-                    '& fieldset': {
-                      borderColor: '#667eea',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: '#667eea',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#667eea',
-                    },
-                  },
-                }}
-              />
-
-              {/* Quick Search Suggestions */}
-              {!searchQuery && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="subtitle2" gutterBottom color="text.secondary">
-                    💡 Quick Search Ideas:
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                    {quickSearches.map((quick, index) => (
-                      <Tooltip key={index} title={quick.description}>
-                        <Chip
-                          label={quick.category}
-                          variant="outlined"
-                          clickable
-                          onClick={() => {
-                            setSearchQuery(quick.query);
-                            performSearch(quick.query);
-                          }}
-                          sx={{
-                            '&:hover': {
-                              backgroundColor: 'primary.light',
-                              color: 'white'
-                            }
-                          }}
-                        />
-                      </Tooltip>
-                    ))}
-                  </Box>
-                </Box>
-              )}
-            </Paper>
-
-            {/* Search Results */}
-            {isSearching && (
-              <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                  <CircularProgress size={24} />
-                  <Typography>Searching through your document library...</Typography>
-                </Box>
-                <LinearProgress />
-              </Paper>
-            )}
-
-            {searchResults.length > 0 && (
-              <Paper elevation={2} sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <FindInPage color="primary" />
-                  Search Results ({searchResults.length})
-                </Typography>
-
-                {searchResults.map((result, index) => (
-                  <Fade key={result.id} in={true} timeout={300 * (index + 1)}>
-                    <Card sx={{ mb: 2, border: '1px solid', borderColor: 'divider' }}>
-                      <CardContent>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="h6" gutterBottom>
-                              {result.metadata.source}
-                            </Typography>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                              <Chip label={result.metadata.subject} size="small" color="primary" variant="outlined" />
-                              <Chip label={result.metadata.grade} size="small" color="secondary" variant="outlined" />
-                              <Chip label={result.metadata.documentType} size="small" variant="outlined" />
-                              <Chip 
-                                label={`${Math.round(result.similarity * 100)}% match`}
-                                size="small"
-                                color={getSimilarityColor(result.similarity)}
-                              />
-                            </Box>
-                          </Box>
-                          
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Tooltip title="Save result">
-                              <IconButton size="small" onClick={() => saveResult(result)}>
-                                <Bookmark />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Copy content">
-                              <IconButton size="small" onClick={() => copyToClipboard(result.content)}>
-                                <ContentCopy />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        </Box>
-
-                        <Typography variant="body1" sx={{ lineHeight: 1.6, mb: 2 }}>
-                          {highlightText(result.content, result.highlights)}
-                        </Typography>
-
-                        <Box sx={{ display: 'flex', justify: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="caption" color="text.secondary">
-                            Chunk {result.metadata.chunkIndex} of {result.metadata.totalChunks} • 
-                            Uploaded {result.metadata.uploadedAt}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Topic: {result.metadata.topic}
-                          </Typography>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Fade>
-                ))}
-              </Paper>
-            )}
-
-            {searchQuery && !isSearching && searchResults.length === 0 && (
-              <Paper elevation={2} sx={{ p: 3 }}>
-                <Alert severity="info">
-                  No results found for "{searchQuery}". Try adjusting your search terms or filters.
-                </Alert>
-              </Paper>
-            )}
+      {/* Search and Filters */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Grid container spacing={3} alignItems="center">
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              placeholder="Search reference materials..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              }}
+            />
           </Grid>
-
-          {/* Sidebar */}
-          <Grid item xs={12} lg={4}>
-            {/* Filters */}
-            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <FilterList color="primary" />
-                Search Filters
-              </Typography>
-
-              <FormControl fullWidth margin="normal" size="small">
-                <InputLabel>Subject</InputLabel>
-                <Select
-                  value={filters.subject}
-                  onChange={(e) => setFilters(prev => ({ ...prev, subject: e.target.value }))}
-                  label="Subject"
-                >
-                  <MenuItem value="">All Subjects</MenuItem>
-                  {subjects.map(subject => (
-                    <MenuItem key={subject} value={subject}>{subject}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth margin="normal" size="small">
-                <InputLabel>Grade</InputLabel>
-                <Select
-                  value={filters.grade}
-                  onChange={(e) => setFilters(prev => ({ ...prev, grade: e.target.value }))}
-                  label="Grade"
-                >
-                  <MenuItem value="">All Grades</MenuItem>
-                  {grades.map(grade => (
-                    <MenuItem key={grade} value={grade}>{grade}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth margin="normal" size="small">
-                <InputLabel>Document Type</InputLabel>
-                <Select
-                  value={filters.documentType}
-                  onChange={(e) => setFilters(prev => ({ ...prev, documentType: e.target.value }))}
-                  label="Document Type"
-                >
-                  <MenuItem value="">All Types</MenuItem>
-                  {documentTypes.map(type => (
-                    <MenuItem key={type} value={type}>{type}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" gutterBottom>
-                  Minimum Similarity: {Math.round(filters.minSimilarity * 100)}%
-                </Typography>
-                <Box 
-                  component="input"
-                  type="range"
-                  min="0.5"
-                  max="1"
-                  step="0.05"
-                  value={filters.minSimilarity}
-                  onChange={(e: any) => setFilters(prev => ({ ...prev, minSimilarity: parseFloat(e.target.value) }))}
-                  sx={{ width: '100%' }}
-                  aria-label="Minimum similarity threshold"
-                  title="Adjust minimum similarity threshold for search results"
-                />
-              </Box>
-
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => setFilters({
-                  subject: '',
-                  grade: '',
-                  documentType: '',
-                  minSimilarity: 0.7
-                })}
-                sx={{ mt: 2 }}
+          <Grid item xs={12} md={2}>
+            <FormControl fullWidth>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                label="Category"
               >
-                Clear Filters
-              </Button>
-            </Paper>
-
-            {/* Search History */}
-            {searchHistory.length > 0 && (
-              <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  Recent Searches
-                </Typography>
-                <List dense>
-                  {searchHistory.slice(0, 5).map((query, index) => (
-                    <ListItem
-                      key={index}
-                      button
-                      onClick={() => {
-                        setSearchQuery(query);
-                        performSearch(query);
-                      }}
-                    >
-                      <ListItemText 
-                        primary={query}
-                        primaryTypographyProps={{ variant: 'body2' }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            )}
-
-            {/* Saved Results */}
-            {savedResults.length > 0 && (
-              <Paper elevation={2} sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  Saved Results ({savedResults.length})
-                </Typography>
-                <List dense>
-                  {savedResults.slice(0, 3).map((result) => (
-                    <ListItem key={result.id} sx={{ px: 0 }}>
-                      <ListItemText
-                        primary={result.metadata.source}
-                        secondary={`${result.metadata.subject} • ${result.metadata.grade}`}
-                        primaryTypographyProps={{ variant: 'body2' }}
-                        secondaryTypographyProps={{ variant: 'caption' }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            )}
+                <MenuItem value="">All Categories</MenuItem>
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={2}>
+            <FormControl fullWidth>
+              <InputLabel>Type</InputLabel>
+              <Select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                label="Type"
+              >
+                <MenuItem value="">All Types</MenuItem>
+                {documentTypes.map((type) => (
+                  <MenuItem key={type.value} value={type.value}>
+                    {type.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={2}>
+            <FormControl fullWidth>
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                label="Sort By"
+              >
+                {sortOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={2}>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<FilterList />}
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCategory('');
+                setSelectedType('');
+                setSortBy('relevance');
+              }}
+            >
+              Clear Filters
+            </Button>
           </Grid>
         </Grid>
-      </Box>
+      </Paper>
+
+      {/* Categories Overview */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" fontWeight="bold" gutterBottom>
+          Browse by Category
+        </Typography>
+        <Grid container spacing={3}>
+          {categories.map((category) => (
+            <Grid item xs={12} sm={6} md={4} lg={2} key={category.id}>
+              <Card 
+                sx={{ 
+                  cursor: 'pointer',
+                  '&:hover': { boxShadow: 3, transform: 'translateY(-2px)' },
+                  transition: 'all 0.3s ease',
+                  border: selectedCategory === category.id ? '2px solid' : '1px solid',
+                  borderColor: selectedCategory === category.id ? 'primary.main' : 'divider',
+                }}
+                onClick={() => setSelectedCategory(selectedCategory === category.id ? '' : category.id)}
+              >
+                <CardContent sx={{ textAlign: 'center', p: 2 }}>
+                  <Box sx={{ color: 'primary.main', mb: 1 }}>
+                    {category.icon}
+                  </Box>
+                  <Typography variant="subtitle2" fontWeight="bold" noWrap>
+                    {category.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {category.documentCount} documents
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Paper>
+
+      {/* Documents List */}
+      <Paper sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h6" fontWeight="bold">
+            Reference Documents ({filteredDocuments.length})
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Showing {filteredDocuments.length} of {documents.length} documents
+          </Typography>
+        </Box>
+
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : filteredDocuments.length === 0 ? (
+          <Alert severity="info">
+            No documents found matching your criteria. Try adjusting your search or filters.
+          </Alert>
+        ) : (
+          <List>
+            {filteredDocuments.map((document, index) => (
+              <React.Fragment key={document.id}>
+                <ListItem sx={{ 
+                  border: 1, 
+                  borderColor: 'divider', 
+                  borderRadius: 2, 
+                  mb: 2,
+                  '&:hover': { bgcolor: 'action.hover' }
+                }}>
+                  <ListItemIcon>
+                    {getFileIcon(document.fileType)}
+                  </ListItemIcon>
+                  
+                  <ListItemText
+                    primary={
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {document.title}
+                        </Typography>
+                        <Chip
+                          label={document.type}
+                          size="small"
+                          color={getTypeColor(document.type) as any}
+                        />
+                        {document.isBookmarked && (
+                          <Bookmark color="primary" fontSize="small" />
+                        )}
+                      </Box>
+                    }
+                    secondary={
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                          {document.description}
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                          {document.tags.slice(0, 3).map((tag, tagIndex) => (
+                            <Chip
+                              key={tagIndex}
+                              label={tag}
+                              size="small"
+                              variant="outlined"
+                            />
+                          ))}
+                          {document.tags.length > 3 && (
+                            <Typography variant="caption" color="text.secondary">
+                              +{document.tags.length - 3} more
+                            </Typography>
+                          )}
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
+                          <Typography variant="caption" color="text.secondary">
+                            By {document.author}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Updated {new Date(document.lastUpdated).toLocaleDateString()}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {formatFileSize(document.fileSize)}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Star fontSize="small" color="primary" />
+                            <Typography variant="caption">{document.rating}</Typography>
+                          </Box>
+                          <Typography variant="caption" color="text.secondary">
+                            {document.downloads} downloads
+                          </Typography>
+                        </Box>
+                      </Box>
+                    }
+                  />
+                  
+                  <ListItemSecondaryAction>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDocumentAction(document, 'bookmark')}
+                        color={document.isBookmarked ? 'primary' : 'default'}
+                      >
+                        {document.isBookmarked ? <Bookmark /> : <BookmarkBorder />}
+                      </IconButton>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={<Visibility />}
+                        onClick={() => handleDocumentAction(document, 'view')}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        startIcon={<Download />}
+                        onClick={() => handleDocumentAction(document, 'download')}
+                      >
+                        Download
+                      </Button>
+                    </Box>
+                  </ListItemSecondaryAction>
+                </ListItem>
+                {index < filteredDocuments.length - 1 && <Divider />}
+              </React.Fragment>
+            ))}
+          </List>
+        )}
+      </Paper>
+
+      {/* Document View Dialog */}
+      <Dialog 
+        open={viewDialogOpen} 
+        onClose={() => setViewDialogOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+      >
+        <DialogTitle>
+          {selectedDocument?.title}
+        </DialogTitle>
+        <DialogContent>
+          {selectedDocument && (
+            <Box>
+              <Typography variant="body1" paragraph>
+                {selectedDocument.description}
+              </Typography>
+              
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>Tags:</Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {selectedDocument.tags.map((tag, index) => (
+                    <Chip key={index} label={tag} size="small" />
+                  ))}
+                </Box>
+              </Box>
+              
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Author:</strong> {selectedDocument.author}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>File Type:</strong> {selectedDocument.fileType.toUpperCase()}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>File Size:</strong> {formatFileSize(selectedDocument.fileSize)}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Last Updated:</strong> {new Date(selectedDocument.lastUpdated).toLocaleDateString()}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Rating:</strong> {selectedDocument.rating}/5
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    <strong>Downloads:</strong> {selectedDocument.downloads}
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
+          {selectedDocument && (
+            <Button 
+              variant="contained" 
+              startIcon={<Download />}
+              onClick={() => handleDocumentAction(selectedDocument, 'download')}
+            >
+              Download
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
+
 export default Reference;
