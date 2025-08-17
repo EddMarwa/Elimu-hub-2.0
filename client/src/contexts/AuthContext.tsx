@@ -10,6 +10,7 @@ interface AuthContextType {
   register: (userData: RegisterData) => Promise<void>;
   logout: () => void;
   updateProfile: (userData: Partial<User>) => Promise<void>;
+  updateUser: (userData: User) => Promise<void>;
   clearError: () => void;
 }
 
@@ -161,6 +162,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateUser = async (userData: User): Promise<void> => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Update the user state directly (for immediate UI updates)
+      setUser(userData);
+      
+      // Optionally, you can also call the API to persist changes
+      // const response = await authAPI.updateProfile(userData);
+      // if (response.data.success) {
+      //   setUser(response.data.data);
+      // }
+      
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || error.message || 'User update failed';
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const clearError = (): void => {
     setError(null);
   };
@@ -173,6 +197,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     updateProfile,
+    updateUser,
     clearError,
   };
 
