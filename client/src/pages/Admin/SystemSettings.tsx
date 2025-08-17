@@ -48,7 +48,7 @@ import {
   Error,
   ExpandMore,
   SystemUpdate,
-  Database,
+  Storage as Database,
   CloudUpload,
   CloudDownload,
   Monitor,
