@@ -137,6 +137,11 @@ const Profile: React.FC = () => {
       return;
     }
 
+    if (!user) {
+      toast.error('User not found');
+      return;
+    }
+
     setLoading(true);
     try {
       // Simulate API call
@@ -146,7 +151,14 @@ const Profile: React.FC = () => {
       if (updateUser) {
         await updateUser({
           ...user,
-          ...profile
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          email: profile.email,
+          phone: profile.phone,
+          school: profile.school,
+          county: profile.county,
+          bio: profile.bio,
+          avatar: profile.avatar
         });
       }
       
@@ -442,7 +454,7 @@ const Profile: React.FC = () => {
               {profile.firstName} {profile.lastName}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {user.role?.replace('_', ' ')}
+              {user.role ? user.role.replace('_', ' ') : 'User'}
             </Typography>
             <Chip
               icon={<School />}
