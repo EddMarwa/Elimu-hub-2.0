@@ -276,7 +276,7 @@ const SystemSettings: React.FC = () => {
         <Typography variant="h4" fontWeight="bold" color="primary" gutterBottom>
           System Settings
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="subtitle1" color="text.secondary">
           Configure system-wide settings, monitor performance, and manage system operations
         </Typography>
       </Box>
