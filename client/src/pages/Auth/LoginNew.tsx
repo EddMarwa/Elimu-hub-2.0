@@ -111,18 +111,27 @@ const LoginNew: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
+        width: '100vw',
         background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
         display: 'flex',
         alignItems: 'center',
-        py: 4,
+        justifyContent: 'center',
+        py: { xs: 2, md: 4 },
+        px: { xs: 1, md: 0 },
       }}
     >
-      <Container maxWidth="lg">
-        <Grid container spacing={4} alignItems="center">
+      <Container maxWidth="lg" sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: { xs: '100vh', md: '80vh' },
+        p: 0,
+      }}>
+        <Grid container spacing={4} alignItems="center" justifyContent="center" sx={{ minHeight: { xs: 'auto', md: '70vh' } }}>
           {/* Welcome Section */}
-          <Grid item xs={12} md={6}>
-            <Box sx={{ color: 'white', pr: { md: 4 } }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <Grid item xs={12} md={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ color: 'white', pr: { md: 4 }, textAlign: { xs: 'center', md: 'left' } }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, justifyContent: { xs: 'center', md: 'flex-start' } }}>
                 <School sx={{ fontSize: 48, mr: 2, color: 'secondary.main' }} />
                 <Typography variant="h3" fontWeight="bold">
                   ElimuHub 2.0
@@ -135,8 +144,7 @@ const LoginNew: React.FC = () => {
                 Generate CBC-compliant schemes of work and educational content 
                 with AI-powered tools designed specifically for Kenyan teachers.
               </Typography>
-              
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: { xs: 'center', md: 'flex-start' } }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'secondary.main' }} />
                   <Typography variant="body2">AI-Powered Content Generation</Typography>
@@ -154,22 +162,20 @@ const LoginNew: React.FC = () => {
           </Grid>
 
           {/* Login Form */}
-          <Grid item xs={12} md={6}>
-            <Card elevation={12} sx={{ maxWidth: 480, mx: 'auto' }}>
-              <CardContent sx={{ p: 4 }}>
+          <Grid item xs={12} md={6} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Card elevation={12} sx={{ maxWidth: 480, width: '100%', mx: 'auto', my: { xs: 4, md: 0 } }}>
+              <CardContent sx={{ p: { xs: 2, sm: 4 } }}>
                 <Typography variant="h4" gutterBottom textAlign="center" fontWeight="bold" color="primary">
                   Sign In
                 </Typography>
                 <Typography variant="body2" textAlign="center" color="text.secondary" sx={{ mb: 3 }}>
                   Enter your credentials to access your account
                 </Typography>
-
                 {error && (
                   <Alert severity="error" sx={{ mb: 3 }}>
                     {error}
                   </Alert>
                 )}
-
                 <form onSubmit={handleSubmit}>
                   <TextField
                     fullWidth
@@ -189,7 +195,6 @@ const LoginNew: React.FC = () => {
                       ),
                     }}
                   />
-                  
                   <TextField
                     fullWidth
                     label="Password"
@@ -218,7 +223,6 @@ const LoginNew: React.FC = () => {
                       ),
                     }}
                   />
-
                   <Button
                     type="submit"
                     fullWidth
@@ -231,7 +235,6 @@ const LoginNew: React.FC = () => {
                     {loading ? 'Signing In...' : 'Sign In'}
                   </Button>
                 </form>
-
                 <Box textAlign="center">
                   <Typography variant="body2" color="text.secondary">
                     Don't have an account?{' '}
@@ -240,13 +243,11 @@ const LoginNew: React.FC = () => {
                     </Link>
                   </Typography>
                 </Box>
-
                 <Divider sx={{ my: 3 }}>
                   <Typography variant="body2" color="text.secondary">
                     Demo Accounts
                   </Typography>
                 </Divider>
-
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {demoCredentials.map((cred) => (
                     <Button
