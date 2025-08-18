@@ -184,6 +184,31 @@ const AIAssistant: React.FC = () => {
     }
   };
 
+  // Utility to extract URLs from a string
+  const extractReferences = (text: string): string[] => {
+    // Simple URL regex
+    const urlRegex = /(https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=%]+)|(www\.[\w\-._~:/?#[\]@!$&'()*+,;=%]+)/gi;
+    return text.match(urlRegex) || [];
+  };
+
+  // Utility to clean and shorten AI responses
+  const cleanAIResponse = (text: string): string => {
+    // Remove generic CBC intros and boilerplate
+    let cleaned = text.replace(/(As an expert in Kenyan CBC.*?\.|I'm happy to help!|What specific topic or area would you like to discuss\?|Feel free to ask me any questions, and I'll do my best to help!|I can assist you with various topics, such as:.*?\d+\..*?\n?)+/gis, '').trim();
+    // Limit to first 2-3 sentences or 80 words
+    const sentences = cleaned.split(/(?<=[.!?])\s+/);
+    let result = '';
+    let wordCount = 0;
+    for (const s of sentences) {
+      const words = s.split(/\s+/);
+      if (wordCount + words.length > 80) break;
+      result += s + ' ';
+      wordCount += words.length;
+      if (wordCount > 60) break;
+    }
+    return result.trim();
+  };
+
   // ===== MESSAGE HANDLING =====
   
   /**
@@ -698,57 +723,85 @@ const AIAssistant: React.FC = () => {
             bgcolor: '#fafbfc'
           }}>
             {/* Render each message in the conversation */}
-            {messages.map((message) => (
-              <Box
-                key={message.id}
-                sx={{
-                  display: 'flex',
-                  justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
-                  mb: 1.5,
-                }}
-              >
-                {/* Individual message bubble */}
-                <Paper
+            {messages.map((message) => {
+              const isAI = message.sender === 'ai';
+              const cleanedContent = isAI ? cleanAIResponse(message.content) : message.content;
+              return (
+                <Box
+                  key={message.id}
                   sx={{
-                    p: 1.5,
-                    maxWidth: '70%',
-                    borderRadius: 2,
-                    bgcolor: message.sender === 'user' 
-                      ? 'primary.main'
-                      : 'white',
-                    color: message.sender === 'user' ? 'white' : 'text.primary',
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                    position: 'relative',
+                    display: 'flex',
+                    justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
+                    mb: 1.5,
                   }}
                 >
-                  {/* Message content text */}
-                  <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize: '0.9rem' }}>
-                    {message.content}
-                  </Typography>
-                  
-                  {/* AI message actions - Copy, Like, Dislike */}
-                  {message.sender === 'ai' && (
-                    <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
-                      <Tooltip title="Copy">
-                        <IconButton size="small" onClick={() => copyToClipboard(message.content)}>
-                          <ContentCopy fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Like">
-                        <IconButton size="small">
-                          <ThumbUp fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Dislike">
-                        <IconButton size="small">
-                          <ThumbDown fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  )}
-                </Paper>
-              </Box>
-            ))}
+                  <Paper
+                    sx={{
+                      p: 1.5,
+                      maxWidth: '70%',
+                      borderRadius: 2,
+                      bgcolor: isAI ? 'rgba(232, 244, 253, 0.8)' : 'primary.main',
+                      color: isAI ? 'text.primary' : 'white',
+                      boxShadow: isAI ? '0 2px 8px rgba(33, 150, 243, 0.08)' : '0 1px 4px rgba(0,0,0,0.08)',
+                      border: isAI ? '1.5px solid #90caf9' : undefined,
+                      position: 'relative',
+                    }}
+                  >
+                    {isAI && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                        <SmartToy sx={{ color: '#1976d2', mr: 1, fontSize: 20 }} />
+                        <Typography variant="caption" sx={{ color: '#1976d2', fontWeight: 600 }}>
+                          Elimu Hub AI
+                        </Typography>
+                      </Box>
+                    )}
+                    <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize: '0.98rem', fontStyle: isAI ? 'italic' : 'normal' }}>
+                      {cleanedContent}
+                    </Typography>
+                    {/* AI message actions - Copy, Like, Dislike */}
+                    {isAI && (
+                      <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
+                        <Tooltip title="Copy">
+                          <IconButton size="small" onClick={() => copyToClipboard(message.content)}>
+                            <ContentCopy fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Like">
+                          <IconButton size="small">
+                            <ThumbUp fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Dislike">
+                          <IconButton size="small">
+                            <ThumbDown fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    )}
+                    {/* References below AI message */}
+                    {isAI && extractReferences(message.content).length > 0 && (
+                      <Box sx={{ mt: 1 }}>
+                        {extractReferences(message.content).map((ref, idx) => (
+                          <Typography
+                            key={idx}
+                            variant="body2"
+                            sx={{ color: 'green', fontStyle: 'italic', wordBreak: 'break-all' }}
+                          >
+                            <a href={ref.startsWith('http') ? ref : `https://${ref}`} target="_blank" rel="noopener noreferrer" style={{ color: 'green', fontStyle: 'italic', textDecoration: 'underline' }}>
+                              {ref}
+                            </a>
+                          </Typography>
+                        ))}
+                      </Box>
+                    )}
+                    {/* Timestamp below message */}
+                    <Typography variant="caption" sx={{ display: 'block', mt: 1, color: isAI ? '#1976d2' : 'white', textAlign: 'right', opacity: 0.7 }}>
+                      {message.timestamp instanceof Date ? message.timestamp.toLocaleString() : new Date(message.timestamp).toLocaleString()}
+                    </Typography>
+                  </Paper>
+                </Box>
+              );
+            })}
             
             {/* Loading indicator - Shows when AI is processing */}
             {isLoading && (

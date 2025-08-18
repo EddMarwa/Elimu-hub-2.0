@@ -21,18 +21,25 @@ export interface SchemeOfWorkGenerationData {
 
 export class AIService {
   private static instance: AIService;
-  private apiKey: string;
-  private apiUrl: string;
-  private model: string;
+  private groqApiKey: string;
+  private groqApiUrl: string;
+  private groqModel: string;
+  private openRouterApiKey: string;
+  private openRouterApiUrl: string;
+  private openRouterModel: string;
 
   private constructor() {
-    this.apiKey = process.env.GROK_API_KEY || '';
-    this.apiUrl = process.env.GROK_API_URL || 'https://api.x.ai/v1';
-    this.model = process.env.GROK_MODEL || 'grok-beta';
-
-    if (!this.apiKey) {
-      logger.warn('Grok API key not found in environment variables');
-    }
+    this.groqApiKey = process.env.GROQ_API_KEY || '';
+    this.groqApiUrl = process.env.GROQ_API_URL || 'https://api.groq.com/openai/v1';
+    this.groqModel = process.env.GROQ_MODEL || 'llama3-70b-8192';
+    this.openRouterApiKey = process.env.OPENROUTER_API_KEY || '';
+    this.openRouterApiUrl = process.env.OPENROUTER_API_URL || 'https://openrouter.ai/api/v1';
+    this.openRouterModel = process.env.OPENROUTER_MODEL || 'meta-llama/llama-3-70b-instruct';
+    // Log API key presence for debugging
+    console.log('GROQ_API_KEY:', this.groqApiKey ? '[set]' : '[missing]');
+    console.log('OPENROUTER_API_KEY:', this.openRouterApiKey ? '[set]' : '[missing]');
+    if (!this.groqApiKey) logger.warn('Groq API key not found in environment variables');
+    if (!this.openRouterApiKey) logger.warn('OpenRouter API key not found in environment variables');
   }
 
   public static getInstance(): AIService {
@@ -105,9 +112,9 @@ export class AIService {
   private async callGrokAPI(prompt: string): Promise<string> {
     try {
       const response = await axios.post(
-        `${this.apiUrl}/chat/completions`,
+        `${this.groqApiUrl}/chat/completions`,
         {
-          model: this.model,
+          model: this.groqModel,
           messages: [
             {
               role: 'system',
@@ -123,7 +130,7 @@ export class AIService {
         },
         {
           headers: {
-            'Authorization': `Bearer ${this.apiKey}`,
+            'Authorization': `Bearer ${this.groqApiKey}`,
             'Content-Type': 'application/json'
           },
           timeout: 30000
@@ -205,24 +212,31 @@ export class AIService {
     max_tokens?: number,
     temperature?: number,
   }): Promise<string> {
-    if (!this.apiKey) throw new Error('Groq API key missing');
-    const response = await axios.post(
-      `${this.apiUrl}/chat/completions`,
-      {
-        model: request.model || this.model,
-        messages: request.messages,
-        max_tokens: request.max_tokens || 2000,
-        temperature: request.temperature ?? 0.7,
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
+    if (!this.groqApiKey) throw new Error('Groq API key missing');
+    try {
+      const response = await axios.post(
+        `${this.groqApiUrl}/chat/completions`,
+        {
+          model: request.model || this.groqModel,
+          messages: request.messages,
+          max_tokens: request.max_tokens || 2000,
+          temperature: request.temperature ?? 0.7,
         },
-        timeout: 30000,
+        {
+          headers: {
+            'Authorization': `Bearer ${this.groqApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 30000,
+        }
+      );
+      return response.data.choices[0]?.message?.content || '';
+    } catch (error: any) {
+      if (error.response) {
+        console.error('Groq API error response:', error.response.data);
       }
-    );
-    return response.data.choices[0]?.message?.content || '';
+      throw error;
+    }
   }
 
   // OpenRouter chat completion (OpenAI-compatible)
@@ -234,25 +248,32 @@ export class AIService {
   }): Promise<string> {
     const openRouterKey = process.env.OPENROUTER_API_KEY || '';
     const openRouterUrl = process.env.OPENROUTER_API_URL || 'https://openrouter.ai/api/v1';
-    const openRouterModel = process.env.OPENROUTER_MODEL || 'openrouter/mistral-7b';
+    const openRouterModel = process.env.OPENROUTER_MODEL || 'mistralai/mixtral-8x7b';
     if (!openRouterKey) throw new Error('OpenRouter API key missing');
-    const response = await axios.post(
-      `${openRouterUrl}/chat/completions`,
-      {
-        model: request.model || openRouterModel,
-        messages: request.messages,
-        max_tokens: request.max_tokens || 2000,
-        temperature: request.temperature ?? 0.7,
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${openRouterKey}`,
-          'Content-Type': 'application/json',
+    try {
+      const response = await axios.post(
+        `${openRouterUrl}/chat/completions`,
+        {
+          model: request.model || openRouterModel,
+          messages: request.messages,
+          max_tokens: request.max_tokens || 2000,
+          temperature: request.temperature ?? 0.7,
         },
-        timeout: 30000,
+        {
+          headers: {
+            'Authorization': `Bearer ${openRouterKey}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 30000,
+        }
+      );
+      return response.data.choices[0]?.message?.content || '';
+    } catch (error: any) {
+      if (error.response) {
+        console.error('OpenRouter API error response:', error.response.data);
       }
-    );
-    return response.data.choices[0]?.message?.content || '';
+      throw error;
+    }
   }
 }
 

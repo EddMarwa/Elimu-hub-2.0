@@ -37,10 +37,9 @@ if (process.env.NODE_ENV !== 'production') {
     format: winston.format.combine(
       winston.format.colorize(),
       winston.format.simple(),
-      winston.format.printf(({ timestamp, level, message, ...meta }) => {
-        return `${timestamp} [${level}]: ${message} ${
-          Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''
-        }`;
+      winston.format.printf(({ timestamp, level, message, stack }) => {
+        // Only log message and stack (if present), avoid JSON.stringify(meta)
+        return `${timestamp} [${level}]: ${message} ${stack ? '\n' + stack : ''}`;
       })
     )
   }));

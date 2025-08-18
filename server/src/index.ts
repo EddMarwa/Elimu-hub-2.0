@@ -118,6 +118,7 @@ const startServer = async () => {
       logger.info(`📚 ElimuHub 2.0 API is ready!`);
       logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
       logger.info(`🔗 Health check: http://localhost:${PORT}/health`);
+      console.log('Backend started and ready!');
     });
   } catch (error) {
     logger.error('Failed to start server:', error);
