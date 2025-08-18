@@ -178,6 +178,82 @@ export class AIService {
       weeks: weeks
     };
   }
+
+  /**
+   * Generic chat method: tries Groq first, falls back to OpenRouter if Groq fails.
+   */
+  async chat(request: {
+    messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
+    model?: string,
+    provider?: 'groq' | 'openrouter',
+    max_tokens?: number,
+    temperature?: number,
+  }): Promise<string> {
+    try {
+      // Always try Groq first
+      return await this.callGrokAPIChat(request);
+    } catch (err) {
+      logger.warn('Groq failed, falling back to OpenRouter:', err);
+      return await this.callOpenRouterAPIChat(request);
+    }
+  }
+
+  // Groq chat completion (OpenAI-compatible)
+  private async callGrokAPIChat(request: {
+    messages: Array<{ role: string; content: string }>,
+    model?: string,
+    max_tokens?: number,
+    temperature?: number,
+  }): Promise<string> {
+    if (!this.apiKey) throw new Error('Groq API key missing');
+    const response = await axios.post(
+      `${this.apiUrl}/chat/completions`,
+      {
+        model: request.model || this.model,
+        messages: request.messages,
+        max_tokens: request.max_tokens || 2000,
+        temperature: request.temperature ?? 0.7,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000,
+      }
+    );
+    return response.data.choices[0]?.message?.content || '';
+  }
+
+  // OpenRouter chat completion (OpenAI-compatible)
+  private async callOpenRouterAPIChat(request: {
+    messages: Array<{ role: string; content: string }>,
+    model?: string,
+    max_tokens?: number,
+    temperature?: number,
+  }): Promise<string> {
+    const openRouterKey = process.env.OPENROUTER_API_KEY || '';
+    const openRouterUrl = process.env.OPENROUTER_API_URL || 'https://openrouter.ai/api/v1';
+    const openRouterModel = process.env.OPENROUTER_MODEL || 'openrouter/mistral-7b';
+    if (!openRouterKey) throw new Error('OpenRouter API key missing');
+    const response = await axios.post(
+      `${openRouterUrl}/chat/completions`,
+      {
+        model: request.model || openRouterModel,
+        messages: request.messages,
+        max_tokens: request.max_tokens || 2000,
+        temperature: request.temperature ?? 0.7,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${openRouterKey}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000,
+      }
+    );
+    return response.data.choices[0]?.message?.content || '';
+  }
 }
 
 export default AIService.getInstance();

@@ -172,37 +172,14 @@ const AIAssistant: React.FC = () => {
    * @param prompt - The user's question or request
    * @returns Promise<string> - AI-generated response
    */
-  const callAIAPI = async (prompt: string): Promise<string> => {
+  const callBackendAIChat = async (messages: { role: string; content: string }[]): Promise<string> => {
     try {
-      // Make request to OpenAI Chat Completions API
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',           // Use GPT-3.5 for cost-effective responses
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert in Kenyan CBC (Competency-Based Curriculum) education. Generate detailed, practical, and CBC-compliant educational content for teachers. Be helpful, informative, and provide actionable advice.'
-            },
-            { role: 'user', content: prompt }
-          ],
-          max_tokens: 2000,                  // Limit response length for cost control
-          temperature: 0.7,                   // Balance creativity with consistency
-        }),
+      const res = await api.post('/ai/chat', {
+        messages,
       });
-
-      // Handle API errors
-      if (!response.ok) throw new Error(`API request failed: ${response.status}`);
-      
-      // Parse and return AI response
-      const data = await response.json();
-      return data.choices[0]?.message?.content || 'Sorry, I encountered an error. Please try again.';
+      return res.data?.data || 'Sorry, I encountered an error. Please try again.';
     } catch (error) {
-      console.error('AI API Error:', error);
+      console.error('Backend AI chat error:', error);
       return 'Sorry, I encountered an error. Please try again.';
     }
   };
@@ -231,8 +208,12 @@ const AIAssistant: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Get AI response from OpenAI API
-      const aiResponse = await callAIAPI(inputMessage);
+      // Build message history for backend
+      const chatHistory = [
+        { role: 'system', content: 'You are an expert in Kenyan CBC (Competency-Based Curriculum) education. Generate detailed, practical, and CBC-compliant educational content for teachers. Be helpful, informative, and provide actionable advice.' },
+        ...[...messages, userMessage].map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.content }))
+      ];
+      const aiResponse = await callBackendAIChat(chatHistory);
       
       // Create and add AI message to chat
       const aiMessage: Message = {
@@ -320,8 +301,12 @@ const AIAssistant: React.FC = () => {
           prompt = "I need educational assistance. Please provide helpful guidance for teachers.";
       }
 
-      // Get AI response and add to chat
-      const aiResponse = await callAIAPI(prompt);
+      // Build message history for backend
+      const chatHistory = [
+        { role: 'system', content: 'You are an expert in Kenyan CBC (Competency-Based Curriculum) education. Generate detailed, practical, and CBC-compliant educational content for teachers. Be helpful, informative, and provide actionable advice.' },
+        ...[...messages, suggestionMessage, { id: '', content: prompt, sender: 'user', timestamp: new Date() }].map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.content }))
+      ];
+      const aiResponse = await callBackendAIChat(chatHistory);
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: aiResponse,

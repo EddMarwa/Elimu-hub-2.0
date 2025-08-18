@@ -297,13 +297,12 @@ const LessonPlans: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, overflowX: 'hidden' }}>
       {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box sx={{ mb: { xs: 2, md: 3 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 2, sm: 0 } }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Lesson Plan Library
         </Typography>
-        
         {user?.role === 'ADMIN' && (
           <Box>
             <Tooltip title="Create Folder">
@@ -327,7 +326,6 @@ const LessonPlans: React.FC = () => {
           </Box>
         )}
       </Box>
-
       {/* Breadcrumbs */}
       <Breadcrumbs sx={{ mb: 2 }}>
         <Link
@@ -350,9 +348,8 @@ const LessonPlans: React.FC = () => {
           </Link>
         ))}
       </Breadcrumbs>
-
       {/* Filters */}
-      <Paper sx={{ p: 2, mb: 3 }}>
+      <Paper sx={{ p: { xs: 1, md: 2 }, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} md={3}>
             <TextField
@@ -413,7 +410,6 @@ const LessonPlans: React.FC = () => {
           </Grid>
         </Grid>
       </Paper>
-
       {/* Folders */}
       {currentFolder === null && (
         <Box sx={{ mb: 3 }}>
@@ -428,7 +424,7 @@ const LessonPlans: React.FC = () => {
                   <Card 
                     sx={{ 
                       cursor: 'pointer',
-                      '&:hover': { boxShadow: 3 }
+                      '&:hover': { boxShadow: 3 },
                     }}
                     onClick={() => setCurrentFolder(folder.id)}
                   >
@@ -454,13 +450,11 @@ const LessonPlans: React.FC = () => {
           </Grid>
         </Box>
       )}
-
       {/* Lesson Plans */}
       <Box>
         <Typography variant="h6" gutterBottom>
           Lesson Plans {currentFolder && `in ${folders.find(f => f.id === currentFolder)?.name}`}
         </Typography>
-        
         {lessonPlans.length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -488,20 +482,16 @@ const LessonPlans: React.FC = () => {
                         <MoreVert />
                       </IconButton>
                     </Box>
-                    
                     <Typography variant="h6" noWrap sx={{ mt: 1 }}>
                       {lessonPlan.title}
                     </Typography>
-                    
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                       {lessonPlan.description}
                     </Typography>
-                    
                     <Box display="flex" gap={1} sx={{ mb: 1 }}>
                       <Chip label={lessonPlan.grade} size="small" />
                       <Chip label={lessonPlan.subject} size="small" variant="outlined" />
                     </Box>
-                    
                     <Box display="flex" alignItems="center" gap={1} sx={{ mb: 1 }}>
                       <Rating 
                         value={lessonPlan.rating || 0} 
@@ -513,7 +503,6 @@ const LessonPlans: React.FC = () => {
                         ({lessonPlan.reviewCount || 0})
                       </Typography>
                     </Box>
-                    
                     <Box display="flex" alignItems="center" gap={2}>
                       <Box display="flex" alignItems="center" gap={0.5}>
                         <CloudDownload fontSize="small" />
@@ -528,7 +517,6 @@ const LessonPlans: React.FC = () => {
                         </Typography>
                       </Box>
                     </Box>
-                    
                     {lessonPlan.user && (
                       <Box display="flex" alignItems="center" gap={0.5} sx={{ mt: 1 }}>
                         <Person fontSize="small" />
@@ -538,7 +526,6 @@ const LessonPlans: React.FC = () => {
                       </Box>
                     )}
                   </CardContent>
-                  
                   <CardActions>
                     <Button
                       size="small"
@@ -574,7 +561,6 @@ const LessonPlans: React.FC = () => {
           </Grid>
         )}
       </Box>
-
       {/* Upload Dialog */}
       <Dialog open={uploadDialogOpen} onClose={() => setUploadDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Upload Lesson Plan</DialogTitle>
@@ -595,7 +581,6 @@ const LessonPlans: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* Create Folder Dialog */}
       <Dialog open={folderDialogOpen} onClose={() => setFolderDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Create New Folder</DialogTitle>
@@ -624,7 +609,6 @@ const LessonPlans: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
       {/* View Lesson Plan Dialog */}
       <Dialog open={viewDialogOpen} onClose={() => setViewDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>
@@ -636,12 +620,10 @@ const LessonPlans: React.FC = () => {
               <Typography variant="body1" paragraph>
                 {selectedLessonPlan.description}
               </Typography>
-              
               <Box display="flex" gap={1} sx={{ mb: 2 }}>
                 <Chip label={selectedLessonPlan.grade} />
                 <Chip label={selectedLessonPlan.subject} variant="outlined" />
               </Box>
-              
               <Box display="flex" alignItems="center" gap={2} sx={{ mb: 2 }}>
                 <Rating value={selectedLessonPlan.rating || 0} readOnly precision={0.5} />
                 <Typography variant="body2">
@@ -651,7 +633,6 @@ const LessonPlans: React.FC = () => {
                   {selectedLessonPlan.downloads || 0} downloads
                 </Typography>
               </Box>
-              
               <Typography variant="body2" color="text.secondary">
                 Uploaded on {new Date(selectedLessonPlan.createdAt).toLocaleDateString()}
               </Typography>
@@ -671,76 +652,73 @@ const LessonPlans: React.FC = () => {
           )}
         </DialogActions>
       </Dialog>
-
-             {/* Menu */}
-       <Menu
-         anchorEl={menuAnchor}
-         open={Boolean(menuAnchor)}
-         onClose={handleMenuClose}
-       >
-         <MenuItemComponent onClick={() => {
-           if (menuItem) {
-             setSelectedLessonPlan(menuItem);
-             setViewDialogOpen(true);
-           }
-           handleMenuClose();
-         }}>
-           <Visibility sx={{ mr: 1 }} /> View
-         </MenuItemComponent>
-         <MenuItemComponent onClick={() => {
-           if (menuItem) handleDownload(menuItem);
-           handleMenuClose();
-         }}>
-           <Download sx={{ mr: 1 }} /> Download
-         </MenuItemComponent>
-         <MenuItemComponent onClick={() => {
-           if (menuItem) {
-             setSelectedLessonPlan(menuItem);
-             setCommentDialogOpen(true);
-           }
-           handleMenuClose();
-         }}>
-           <Comment sx={{ mr: 1 }} /> Review
-         </MenuItemComponent>
-         <MenuItemComponent onClick={() => {
-           if (menuItem) {
-             setSelectedLessonPlan(menuItem);
-             setShareDialogOpen(true);
-           }
-           handleMenuClose();
-         }}>
-           <Share sx={{ mr: 1 }} /> Share
-         </MenuItemComponent>
-         {user?.role === 'ADMIN' && (
-           <>
-             <Divider />
-             <MenuItemComponent onClick={() => {
-               if (menuItem) handleDelete(menuItem);
-               handleMenuClose();
-             }}>
-               <Delete sx={{ mr: 1 }} /> Delete
-             </MenuItemComponent>
-           </>
-         )}
-       </Menu>
-
-       {/* Comment Dialog */}
-       <CommentDialog
-         open={commentDialogOpen}
-         onClose={() => setCommentDialogOpen(false)}
-         lessonPlanId={selectedLessonPlan?.id || ''}
-         lessonPlanTitle={selectedLessonPlan?.title || ''}
-       />
-
-       {/* Share Dialog */}
-       <ShareDialog
-         open={shareDialogOpen}
-         onClose={() => setShareDialogOpen(false)}
-         lessonPlanId={selectedLessonPlan?.id || ''}
-         lessonPlanTitle={selectedLessonPlan?.title || ''}
-       />
-     </Box>
-   );
- };
+      {/* Menu */}
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={handleMenuClose}
+      >
+        <MenuItemComponent onClick={() => {
+          if (menuItem) {
+            setSelectedLessonPlan(menuItem);
+            setViewDialogOpen(true);
+          }
+          handleMenuClose();
+        }}>
+          <Visibility sx={{ mr: 1 }} /> View
+        </MenuItemComponent>
+        <MenuItemComponent onClick={() => {
+          if (menuItem) handleDownload(menuItem);
+          handleMenuClose();
+        }}>
+          <Download sx={{ mr: 1 }} /> Download
+        </MenuItemComponent>
+        <MenuItemComponent onClick={() => {
+          if (menuItem) {
+            setSelectedLessonPlan(menuItem);
+            setCommentDialogOpen(true);
+          }
+          handleMenuClose();
+        }}>
+          <Comment sx={{ mr: 1 }} /> Review
+        </MenuItemComponent>
+        <MenuItemComponent onClick={() => {
+          if (menuItem) {
+            setSelectedLessonPlan(menuItem);
+            setShareDialogOpen(true);
+          }
+          handleMenuClose();
+        }}>
+          <Share sx={{ mr: 1 }} /> Share
+        </MenuItemComponent>
+        {user?.role === 'ADMIN' && (
+          <>
+            <Divider />
+            <MenuItemComponent onClick={() => {
+              if (menuItem) handleDelete(menuItem);
+              handleMenuClose();
+            }}>
+              <Delete sx={{ mr: 1 }} /> Delete
+            </MenuItemComponent>
+          </>
+        )}
+      </Menu>
+      {/* Comment Dialog */}
+      <CommentDialog
+        open={commentDialogOpen}
+        onClose={() => setCommentDialogOpen(false)}
+        lessonPlanId={selectedLessonPlan?.id || ''}
+        lessonPlanTitle={selectedLessonPlan?.title || ''}
+      />
+      {/* Share Dialog */}
+      <ShareDialog
+        open={shareDialogOpen}
+        onClose={() => setShareDialogOpen(false)}
+        lessonPlanId={selectedLessonPlan?.id || ''}
+        lessonPlanTitle={selectedLessonPlan?.title || ''}
+      />
+    </Box>
+  );
+};
 
 export default LessonPlans;

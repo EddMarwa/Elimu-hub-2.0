@@ -68,6 +68,7 @@ const Home: React.FC = () => {
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
         color: 'white',
+        overflowX: 'hidden',
       }}
     >
       {/* Navigation Bar */}
@@ -96,7 +97,6 @@ const Home: React.FC = () => {
               Elimu Hub 2.0
             </Typography>
           </Box>
-          
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
             <Button
               color="inherit"
@@ -125,7 +125,6 @@ const Home: React.FC = () => {
               Sign Up
             </Button>
           </Box>
-
           {/* Mobile menu button */}
           <IconButton
             sx={{ display: { xs: 'block', md: 'none' }, color: 'white' }}
@@ -142,7 +141,7 @@ const Home: React.FC = () => {
           <Typography
             variant="h1"
             sx={{
-              fontSize: { xs: '2.5rem', md: '4rem', lg: '5rem' },
+              fontSize: { xs: '2.2rem', sm: '2.5rem', md: '4rem', lg: '5rem' },
               fontWeight: 'bold',
               mb: 3,
               background: 'linear-gradient(45deg, #fbbf24, #f59e0b)',
@@ -157,7 +156,7 @@ const Home: React.FC = () => {
           <Typography
             variant="h4"
             sx={{
-              fontSize: { xs: '1.2rem', md: '1.8rem', lg: '2.2rem' },
+              fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.8rem', lg: '2.2rem' },
               mb: 4,
               opacity: 0.9,
               maxWidth: '800px',
@@ -170,7 +169,7 @@ const Home: React.FC = () => {
           <Typography
             variant="h6"
             sx={{
-              fontSize: { xs: '1rem', md: '1.2rem' },
+              fontSize: { xs: '0.95rem', sm: '1rem', md: '1.2rem' },
               mb: 6,
               opacity: 0.8,
               maxWidth: '600px',
@@ -180,7 +179,6 @@ const Home: React.FC = () => {
             Create schemes of work, manage educational resources, and enhance educational 
             outcomes with our comprehensive platform designed for the CBC curriculum.
           </Typography>
-          
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Button
               variant="contained"
@@ -233,7 +231,7 @@ const Home: React.FC = () => {
             variant="h2"
             textAlign="center"
             sx={{
-              fontSize: { xs: '2rem', md: '3rem' },
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' },
               fontWeight: 'bold',
               mb: 6,
               color: '#fbbf24',
@@ -241,7 +239,6 @@ const Home: React.FC = () => {
           >
             🚀 Powerful Features
           </Typography>
-          
           <Grid container spacing={{ xs: 2, md: 3 }}>
             {features.map((feature, index) => (
               <Grid item xs={12} sm={6} lg={4} key={index}>
@@ -297,16 +294,17 @@ const Home: React.FC = () => {
           sx={{
             background: 'rgba(255, 255, 255, 0.1)',
             borderRadius: 3,
-            p: { xs: 4, md: 6 },
+            p: { xs: 3, sm: 4, md: 6 },
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
+            mb: { xs: 4, md: 8 },
           }}
         >
           <Typography
             variant="h3"
             sx={{
-              fontSize: { xs: '1.8rem', md: '2.5rem' },
+              fontSize: { xs: '1.2rem', sm: '1.8rem', md: '2.5rem' },
               fontWeight: 'bold',
               mb: 3,
               color: '#fbbf24',
@@ -336,8 +334,8 @@ const Home: React.FC = () => {
               color: 'white',
               fontWeight: 'bold',
               fontSize: { xs: '1.1rem', md: '1.3rem' },
-              px: { xs: 4, md: 6 },
-              py: { xs: 2, md: 2.5 },
+              px: { xs: 3, md: 6 },
+              py: { xs: 1.5, md: 2.5 },
               borderRadius: 2,
               '&:hover': {
                 background: 'linear-gradient(45deg, #059669, #10b981)',

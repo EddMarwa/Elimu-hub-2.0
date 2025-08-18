@@ -39,6 +39,7 @@ import {
   FormControlLabel,
   Switch,
   LinearProgress,
+  Container,
 } from '@mui/material';
 import {
   Folder,
@@ -410,502 +411,486 @@ const Library: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          <LibraryBooks sx={{ mr: 1, verticalAlign: 'middle' }} />
-          Resource Library
-        </Typography>
-        
-        {user?.role === 'ADMIN' && (
-          <Box>
-            <Tooltip title="Create Section">
-              <IconButton 
-                color="primary" 
-                onClick={() => setSectionDialogOpen(true)}
-                sx={{ mr: 1 }}
-              >
-                <CreateNewFolder />
-              </IconButton>
-            </Tooltip>
-            {currentSection && (
-              <Tooltip title="Create Subfolder">
+    <Container maxWidth="xl" sx={{ py: { xs: 1, sm: 2, md: 3 }, overflowX: 'hidden' }}>
+      <Box>
+        {/* Header */}
+        <Box sx={{ mb: { xs: 2, md: 3 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 2, sm: 0 } }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            <LibraryBooks sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Resource Library
+          </Typography>
+          {user?.role === 'ADMIN' && (
+            <Box>
+              <Tooltip title="Create Section">
                 <IconButton 
                   color="primary" 
-                  onClick={() => setSubfolderDialogOpen(true)}
+                  onClick={() => setSectionDialogOpen(true)}
                   sx={{ mr: 1 }}
                 >
-                  <Add />
+                  <CreateNewFolder />
                 </IconButton>
               </Tooltip>
-            )}
-            <Tooltip title="Upload File">
-              <Fab 
-                color="primary" 
-                size="medium"
-                onClick={() => setUploadDialogOpen(true)}
-                disabled={!currentSection}
-              >
-                <Upload />
-              </Fab>
-            </Tooltip>
-          </Box>
-        )}
-      </Box>
-
-      {/* Breadcrumbs */}
-      <Breadcrumbs sx={{ mb: 2 }}>
-        <Link
-          component="button"
-          variant="body1"
-          onClick={() => {
-            setCurrentSection(null);
-            setCurrentSubfolder(null);
-          }}
-          sx={{ cursor: 'pointer' }}
-        >
-          Home
-        </Link>
-        {getBreadcrumbPath().map((item) => (
+              {currentSection && (
+                <Tooltip title="Create Subfolder">
+                  <IconButton 
+                    color="primary" 
+                    onClick={() => setSubfolderDialogOpen(true)}
+                    sx={{ mr: 1 }}
+                  >
+                    <Add />
+                  </IconButton>
+                </Tooltip>
+              )}
+              <Tooltip title="Upload File">
+                <Fab 
+                  color="primary" 
+                  size="medium"
+                  onClick={() => setUploadDialogOpen(true)}
+                  disabled={!currentSection}
+                >
+                  <Upload />
+                </Fab>
+              </Tooltip>
+            </Box>
+          )}
+        </Box>
+        {/* Breadcrumbs */}
+        <Breadcrumbs sx={{ mb: 2 }}>
           <Link
-            key={item.id}
             component="button"
             variant="body1"
             onClick={() => {
-              if (item.type === 'section') {
-                setCurrentSection(sections.find(s => s.id === item.id) || null);
-                setCurrentSubfolder(null);
-              } else if (item.type === 'subfolder') {
-                const section = sections.find(s => s.subfolders?.some(sub => sub.id === item.id));
-                if (section) {
-                  setCurrentSection(section);
-                  setCurrentSubfolder(section.subfolders?.find(sub => sub.id === item.id) || null);
-                }
-              }
+              setCurrentSection(null);
+              setCurrentSubfolder(null);
             }}
             sx={{ cursor: 'pointer' }}
           >
-            {item.name}
+            Home
           </Link>
-        ))}
-      </Breadcrumbs>
-
-      {/* Filters */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={3}>
-            <TextField
-              fullWidth
-              placeholder="Search files..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <FormControl fullWidth>
-              <InputLabel>File Type</InputLabel>
-              <Select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                label="File Type"
-              >
-                <MenuItem value="">All Types</MenuItem>
-                {fileTypes.map((type) => (
-                  <MenuItem key={type} value={type}>{type}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                label="Status"
-              >
-                <MenuItem value="">All Status</MenuItem>
-                {statuses.map((status) => (
-                  <MenuItem key={status} value={status}>{status}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={2}>
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                label="Sort By"
-              >
-                <MenuItem value="newest">Newest First</MenuItem>
-                <MenuItem value="oldest">Oldest First</MenuItem>
-                <MenuItem value="name">Name A-Z</MenuItem>
-                <MenuItem value="size">File Size</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Sections and Subfolders */}
-      {!currentSection && (
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Library Sections
-          </Typography>
-          <Grid container spacing={2}>
-            {sections.map((section) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={section.id}>
-                <Card 
-                  sx={{ 
-                    cursor: 'pointer',
-                    '&:hover': { boxShadow: 3 }
-                  }}
-                  onClick={() => handleSectionClick(section)}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center">
-                      <Folder color="primary" sx={{ mr: 1 }} />
-                      <Typography variant="h6" noWrap>
-                        {section.name}
-                      </Typography>
-                    </Box>
-                    {section.description && (
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        {section.description}
-                      </Typography>
-                    )}
-                    <Typography variant="caption" color="text.secondary">
-                      {section._count?.files || 0} files
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      )}
-
-      {/* Subfolders */}
-      {currentSection && !currentSubfolder && currentSection.subfolders && Array.isArray(currentSection.subfolders) && currentSection.subfolders.length > 0 && (
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Subfolders in {currentSection.name}
-          </Typography>
-          <Grid container spacing={2}>
-            {currentSection.subfolders.map((subfolder) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={subfolder.id}>
-                <Card 
-                  sx={{ 
-                    cursor: 'pointer',
-                    '&:hover': { boxShadow: 3 }
-                  }}
-                  onClick={() => handleSubfolderClick(subfolder)}
-                >
-                  <CardContent>
-                    <Box display="flex" alignItems="center">
-                      <Folder color="secondary" sx={{ mr: 1 }} />
-                      <Typography variant="h6" noWrap>
-                        {subfolder.name}
-                      </Typography>
-                    </Box>
-                    <Typography variant="caption" color="text.secondary">
-                      {subfolder._count?.files || 0} files
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      )}
-
-      {/* Files */}
-      {(currentSection || currentSubfolder) && (
-        <Box>
-          <Typography variant="h6" gutterBottom>
-            Files {currentSubfolder ? `in ${currentSubfolder.name}` : currentSection ? `in ${currentSection.name}` : ''}
-          </Typography>
-          
-          {(!files || files.length === 0) ? (
-            <Paper sx={{ p: 4, textAlign: 'center' }}>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                No files found
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {currentSection 
-                  ? 'This section is empty. Upload some files to get started.'
-                  : 'No files match your current filters.'
+          {getBreadcrumbPath().map((item) => (
+            <Link
+              key={item.id}
+              component="button"
+              variant="body1"
+              onClick={() => {
+                if (item.type === 'section') {
+                  setCurrentSection(sections.find(s => s.id === item.id) || null);
+                  setCurrentSubfolder(null);
+                } else if (item.type === 'subfolder') {
+                  const section = sections.find(s => s.subfolders?.some(sub => sub.id === item.id));
+                  if (section) {
+                    setCurrentSection(section);
+                    setCurrentSubfolder(section.subfolders?.find(sub => sub.id === item.id) || null);
+                  }
                 }
-              </Typography>
-            </Paper>
-          ) : (
+              }}
+              sx={{ cursor: 'pointer' }}
+            >
+              {item.name}
+            </Link>
+          ))}
+        </Breadcrumbs>
+        {/* Filters */}
+        <Paper sx={{ p: { xs: 1, md: 2 }, mb: 3 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={3}>
+              <TextField
+                fullWidth
+                placeholder="Search files..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={2}>
+              <FormControl fullWidth>
+                <InputLabel>File Type</InputLabel>
+                <Select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  label="File Type"
+                >
+                  <MenuItem value="">All Types</MenuItem>
+                  {fileTypes.map((type) => (
+                    <MenuItem key={type} value={type}>{type}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={2}>
+              <FormControl fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  label="Status"
+                >
+                  <MenuItem value="">All Status</MenuItem>
+                  {statuses.map((status) => (
+                    <MenuItem key={status} value={status}>{status}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={2}>
+              <FormControl fullWidth>
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  label="Sort By"
+                >
+                  <MenuItem value="newest">Newest First</MenuItem>
+                  <MenuItem value="oldest">Oldest First</MenuItem>
+                  <MenuItem value="name">Name A-Z</MenuItem>
+                  <MenuItem value="size">File Size</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </Paper>
+        {/* Sections and Subfolders */}
+        {!currentSection && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Library Sections
+            </Typography>
             <Grid container spacing={2}>
-              {files.map((file) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={file.id}>
-                  <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Box display="flex" alignItems="center" justifyContent="space-between">
-                        {getFileIcon(file.fileType)}
-                        <IconButton
-                          size="small"
-                          onClick={(e) => handleMenuOpen(e, file)}
-                        >
-                          <MoreVert />
-                        </IconButton>
+              {sections.map((section) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={section.id}>
+                  <Card 
+                    sx={{ 
+                      cursor: 'pointer',
+                      '&:hover': { boxShadow: 3 },
+                    }}
+                    onClick={() => handleSectionClick(section)}
+                  >
+                    <CardContent>
+                      <Box display="flex" alignItems="center">
+                        <Folder color="primary" sx={{ mr: 1 }} />
+                        <Typography variant="h6" noWrap>
+                          {section.name}
+                        </Typography>
                       </Box>
-                      
-                      <Typography variant="h6" noWrap sx={{ mt: 1 }}>
-                        {file.originalName}
-                      </Typography>
-                      
-                      {file.description && (
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                          {file.description}
+                      {section.description && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                          {section.description}
                         </Typography>
                       )}
-                      
-                      <Box display="flex" gap={1} sx={{ mb: 1 }}>
-                        <Chip 
-                          label={file.fileType} 
-                          size="small" 
-                          color={getFileTypeColor(file.fileType) as any}
-                        />
-                        <Chip 
-                          label={file.status} 
-                          size="small" 
-                          color={getStatusColor(file.status) as any}
-                          variant="outlined"
-                        />
-                      </Box>
-                      
-                      <Box display="flex" alignItems="center" gap={2}>
-                        <Box display="flex" alignItems="center" gap={0.5}>
-                          <CloudDownload fontSize="small" />
-                          <Typography variant="caption">
-                            {formatFileSize(file.fileSize)}
-                          </Typography>
-                        </Box>
-                        <Box display="flex" alignItems="center" gap={0.5}>
-                          <AccessTime fontSize="small" />
-                          <Typography variant="caption">
-                            {new Date(file.createdAt).toLocaleDateString()}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      
-                      {file.uploader && (
-                        <Box display="flex" alignItems="center" gap={0.5} sx={{ mt: 1 }}>
-                          <Person fontSize="small" />
-                          <Typography variant="caption">
-                            {file.uploader.firstName} {file.uploader.lastName}
-                          </Typography>
-                        </Box>
-                      )}
+                      <Typography variant="caption" color="text.secondary">
+                        {section._count?.files || 0} files
+                      </Typography>
                     </CardContent>
-                    
-                    <CardActions>
-                      <Button
-                        size="small"
-                        startIcon={<Visibility />}
-                        component="a"
-                        href={`${SERVER_BASE_ORIGIN}/uploads/library/${file.filename}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View
-                      </Button>
-                      <Button
-                        size="small"
-                        startIcon={<Download />}
-                        component="a"
-                        href={`${SERVER_BASE_ORIGIN}/uploads/library/${file.filename}`}
-                        download
-                      >
-                        Download
-                      </Button>
-                    </CardActions>
                   </Card>
                 </Grid>
               ))}
             </Grid>
-          )}
-        </Box>
-      )}
-
-      {/* Upload Dialog */}
-      <Dialog open={uploadDialogOpen} onClose={() => setUploadDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Upload File</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="File"
-            type="file"
-            inputProps={{ accept: '*/*' }}
-            onChange={(e) => setSelectedFile((e.target as HTMLInputElement).files?.[0] || null)}
-            sx={{ mt: 1 }}
-          />
-          {uploadProgress > 0 && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="body2" gutterBottom>
-                Upload Progress: {uploadProgress}%
-              </Typography>
-              <LinearProgress variant="determinate" value={uploadProgress} />
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleFileUpload} variant="contained" disabled={!selectedFile}>
-            Upload
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Create Section Dialog */}
-      <Dialog open={sectionDialogOpen} onClose={() => setSectionDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Create New Section</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Section Name"
-            value={newSectionName}
-            onChange={(e) => setNewSectionName(e.target.value)}
-            sx={{ mt: 1 }}
-          />
-          <TextField
-            fullWidth
-            label="Description (Optional)"
-            value={newSectionDescription}
-            onChange={(e) => setNewSectionDescription(e.target.value)}
-            multiline
-            rows={3}
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSectionDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleCreateSection} variant="contained" disabled={!newSectionName.trim()}>
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Create Subfolder Dialog */}
-      <Dialog open={subfolderDialogOpen} onClose={() => setSubfolderDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Create New Subfolder</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Subfolder Name"
-            value={newSubfolderName}
-            onChange={(e) => setNewSubfolderName(e.target.value)}
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSubfolderDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleCreateSubfolder} variant="contained" disabled={!newSubfolderName.trim()}>
-            Create
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Approval Dialog */}
-      <Dialog open={approvalDialogOpen} onClose={() => setApprovalDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>File Approval</DialogTitle>
-        <DialogContent>
-          {selectedFileForApproval && (
-            <Box>
-              <Typography variant="body1" paragraph>
-                File: {selectedFileForApproval.originalName}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Uploaded by: {selectedFileForApproval.uploader?.firstName} {selectedFileForApproval.uploader?.lastName}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Size: {formatFileSize(selectedFileForApproval.fileSize)}
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setApprovalDialogOpen(false)}>Cancel</Button>
-          {selectedFileForApproval && (
-            <>
-              <Button 
-                onClick={() => handleDeclineFile(selectedFileForApproval)} 
-                color="error"
-              >
-                Decline
-              </Button>
-              <Button 
-                onClick={() => handleApproveFile(selectedFileForApproval)} 
-                variant="contained"
-                color="success"
-              >
-                Approve
-              </Button>
-            </>
-          )}
-        </DialogActions>
-      </Dialog>
-
-      {/* Menu */}
-      <Menu
-        anchorEl={menuAnchor}
-        open={Boolean(menuAnchor)}
-        onClose={handleMenuClose}
-      >
-        <MenuItemComponent onClick={() => {
-          if (menuItem) {
-            window.open(`${SERVER_BASE_ORIGIN}/uploads/library/${menuItem.filename}`, '_blank');
-          }
-          handleMenuClose();
-        }}>
-          <Visibility sx={{ mr: 1 }} /> View
-        </MenuItemComponent>
-        <MenuItemComponent onClick={() => {
-          if (menuItem) {
-            const link = document.createElement('a');
-            link.href = `${SERVER_BASE_ORIGIN}/uploads/library/${menuItem.filename}`;
-            link.download = menuItem.originalName;
-            link.click();
-          }
-          handleMenuClose();
-        }}>
-          <Download sx={{ mr: 1 }} /> Download
-        </MenuItemComponent>
-        {user?.role === 'ADMIN' && menuItem?.status === 'PENDING' && (
+          </Box>
+        )}
+        {/* Subfolders */}
+        {currentSection && !currentSubfolder && currentSection.subfolders && Array.isArray(currentSection.subfolders) && currentSection.subfolders.length > 0 && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Subfolders in {currentSection.name}
+            </Typography>
+            <Grid container spacing={2}>
+              {currentSection.subfolders.map((subfolder) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={subfolder.id}>
+                  <Card 
+                    sx={{ 
+                      cursor: 'pointer',
+                      '&:hover': { boxShadow: 3 },
+                    }}
+                    onClick={() => handleSubfolderClick(subfolder)}
+                  >
+                    <CardContent>
+                      <Box display="flex" alignItems="center">
+                        <Folder color="secondary" sx={{ mr: 1 }} />
+                        <Typography variant="h6" noWrap>
+                          {subfolder.name}
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" color="text.secondary">
+                        {subfolder._count?.files || 0} files
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
+        {/* Files */}
+        {(currentSection || currentSubfolder) && (
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              Files {currentSubfolder ? `in ${currentSubfolder.name}` : currentSection ? `in ${currentSection.name}` : ''}
+            </Typography>
+            {(!files || files.length === 0) ? (
+              <Paper sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No files found
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {currentSection 
+                    ? 'This section is empty. Upload some files to get started.'
+                    : 'No files match your current filters.'
+                  }
+                </Typography>
+              </Paper>
+            ) : (
+              <Grid container spacing={2}>
+                {files.map((file) => (
+                  <Grid item xs={12} sm={6} md={4} lg={3} key={file.id}>
+                    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      <CardContent sx={{ flexGrow: 1 }}>
+                        <Box display="flex" alignItems="center" justifyContent="space-between">
+                          {getFileIcon(file.fileType)}
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleMenuOpen(e, file)}
+                          >
+                            <MoreVert />
+                          </IconButton>
+                        </Box>
+                        <Typography variant="h6" noWrap sx={{ mt: 1 }}>
+                          {file.originalName}
+                        </Typography>
+                        {file.description && (
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            {file.description}
+                          </Typography>
+                        )}
+                        <Box display="flex" gap={1} sx={{ mb: 1 }}>
+                          <Chip 
+                            label={file.fileType} 
+                            size="small" 
+                            color={getFileTypeColor(file.fileType) as any}
+                          />
+                          <Chip 
+                            label={file.status} 
+                            size="small" 
+                            color={getStatusColor(file.status) as any}
+                            variant="outlined"
+                          />
+                        </Box>
+                        <Box display="flex" alignItems="center" gap={2}>
+                          <Box display="flex" alignItems="center" gap={0.5}>
+                            <CloudDownload fontSize="small" />
+                            <Typography variant="caption">
+                              {formatFileSize(file.fileSize)}
+                            </Typography>
+                          </Box>
+                          <Box display="flex" alignItems="center" gap={0.5}>
+                            <AccessTime fontSize="small" />
+                            <Typography variant="caption">
+                              {new Date(file.createdAt).toLocaleDateString()}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        {file.uploader && (
+                          <Box display="flex" alignItems="center" gap={0.5} sx={{ mt: 1 }}>
+                            <Person fontSize="small" />
+                            <Typography variant="caption">
+                              {file.uploader.firstName} {file.uploader.lastName}
+                            </Typography>
+                          </Box>
+                        )}
+                      </CardContent>
+                      <CardActions>
+                        <Button
+                          size="small"
+                          startIcon={<Visibility />}
+                          component="a"
+                          href={`${SERVER_BASE_ORIGIN}/uploads/library/${file.filename}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View
+                        </Button>
+                        <Button
+                          size="small"
+                          startIcon={<Download />}
+                          component="a"
+                          href={`${SERVER_BASE_ORIGIN}/uploads/library/${file.filename}`}
+                          download
+                        >
+                          Download
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Box>
+        )}
+        {/* Upload Dialog */}
+        <Dialog open={uploadDialogOpen} onClose={() => setUploadDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Upload File</DialogTitle>
+          <DialogContent>
+            <TextField
+              fullWidth
+              label="File"
+              type="file"
+              inputProps={{ accept: '*/*' }}
+              onChange={(e) => setSelectedFile((e.target as HTMLInputElement).files?.[0] || null)}
+              sx={{ mt: 1 }}
+            />
+            {uploadProgress > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="body2" gutterBottom>
+                  Upload Progress: {uploadProgress}%
+                </Typography>
+                <LinearProgress variant="determinate" value={uploadProgress} />
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleFileUpload} variant="contained" disabled={!selectedFile}>
+              Upload
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {/* Create Section Dialog */}
+        <Dialog open={sectionDialogOpen} onClose={() => setSectionDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Create New Section</DialogTitle>
+          <DialogContent>
+            <TextField
+              fullWidth
+              label="Section Name"
+              value={newSectionName}
+              onChange={(e) => setNewSectionName(e.target.value)}
+              sx={{ mt: 1 }}
+            />
+            <TextField
+              fullWidth
+              label="Description (Optional)"
+              value={newSectionDescription}
+              onChange={(e) => setNewSectionDescription(e.target.value)}
+              multiline
+              rows={3}
+              sx={{ mt: 2 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setSectionDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreateSection} variant="contained" disabled={!newSectionName.trim()}>
+              Create
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {/* Create Subfolder Dialog */}
+        <Dialog open={subfolderDialogOpen} onClose={() => setSubfolderDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Create New Subfolder</DialogTitle>
+          <DialogContent>
+            <TextField
+              fullWidth
+              label="Subfolder Name"
+              value={newSubfolderName}
+              onChange={(e) => setNewSubfolderName(e.target.value)}
+              sx={{ mt: 1 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setSubfolderDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreateSubfolder} variant="contained" disabled={!newSubfolderName.trim()}>
+              Create
+            </Button>
+          </DialogActions>
+        </Dialog>
+        {/* Approval Dialog */}
+        <Dialog open={approvalDialogOpen} onClose={() => setApprovalDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>File Approval</DialogTitle>
+          <DialogContent>
+            {selectedFileForApproval && (
+              <Box>
+                <Typography variant="body1" paragraph>
+                  File: {selectedFileForApproval.originalName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Uploaded by: {selectedFileForApproval.uploader?.firstName} {selectedFileForApproval.uploader?.lastName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Size: {formatFileSize(selectedFileForApproval.fileSize)}
+                </Typography>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setApprovalDialogOpen(false)}>Cancel</Button>
+            {selectedFileForApproval && (
+              <>
+                <Button 
+                  onClick={() => handleDeclineFile(selectedFileForApproval)} 
+                  color="error"
+                >
+                  Decline
+                </Button>
+                <Button 
+                  onClick={() => handleApproveFile(selectedFileForApproval)} 
+                  variant="contained"
+                  color="success"
+                >
+                  Approve
+                </Button>
+              </>
+            )}
+          </DialogActions>
+        </Dialog>
+        {/* Menu */}
+        <Menu
+          anchorEl={menuAnchor}
+          open={Boolean(menuAnchor)}
+          onClose={handleMenuClose}
+        >
           <MenuItemComponent onClick={() => {
             if (menuItem) {
-              setSelectedFileForApproval(menuItem);
-              setApprovalDialogOpen(true);
+              window.open(`${SERVER_BASE_ORIGIN}/uploads/library/${menuItem.filename}`, '_blank');
             }
             handleMenuClose();
           }}>
-            <Edit sx={{ mr: 1 }} /> Review
+            <Visibility sx={{ mr: 1 }} /> View
           </MenuItemComponent>
-        )}
-        {user?.role === 'ADMIN' && (
-          <>
-            <Divider />
+          <MenuItemComponent onClick={() => {
+            if (menuItem) {
+              const link = document.createElement('a');
+              link.href = `${SERVER_BASE_ORIGIN}/uploads/library/${menuItem.filename}`;
+              link.download = menuItem.originalName;
+              link.click();
+            }
+            handleMenuClose();
+          }}>
+            <Download sx={{ mr: 1 }} /> Download
+          </MenuItemComponent>
+          {user?.role === 'ADMIN' && menuItem?.status === 'PENDING' && (
             <MenuItemComponent onClick={() => {
-              if (menuItem) handleDeleteFile(menuItem);
+              if (menuItem) {
+                setSelectedFileForApproval(menuItem);
+                setApprovalDialogOpen(true);
+              }
               handleMenuClose();
             }}>
-              <Delete sx={{ mr: 1 }} /> Delete
+              <Edit sx={{ mr: 1 }} /> Review
             </MenuItemComponent>
-          </>
-        )}
-      </Menu>
-    </Box>
+          )}
+          {user?.role === 'ADMIN' && (
+            <>
+              <Divider />
+              <MenuItemComponent onClick={() => {
+                if (menuItem) handleDeleteFile(menuItem);
+                handleMenuClose();
+              }}>
+                <Delete sx={{ mr: 1 }} /> Delete
+              </MenuItemComponent>
+            </>
+          )}
+        </Menu>
+      </Box>
+    </Container>
   );
 };
 

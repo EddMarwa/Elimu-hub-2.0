@@ -558,8 +558,8 @@ const SchemeOfWorkGenerator: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      <Paper sx={{ p: 4, backgroundColor: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, backgroundColor: '#f8f9fa', minHeight: '100vh', px: { xs: 0.5, sm: 2, md: 3 }, overflowX: 'hidden' }}>
+      <Paper sx={{ p: { xs: 2, md: 4 }, backgroundColor: '#ffffff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         <Typography variant="h4" gutterBottom align="center">
           CBC Scheme of Work Generator
         </Typography>
@@ -577,7 +577,7 @@ const SchemeOfWorkGenerator: React.FC = () => {
               Select or upload a scheme of work template to ensure all generated schemes follow the same format and criteria.
             </Typography>
             
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
               <Button
                 variant="outlined"
                 startIcon={<Settings />}
@@ -630,7 +630,7 @@ const SchemeOfWorkGenerator: React.FC = () => {
           {/* Quick AI Generation Section */}
           {activeStep === 0 && schemeOfWork.subject && schemeOfWork.grade && schemeOfWork.strand && (
             <Alert severity="info" sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 0 } }}>
                 <Typography>
                   Ready to generate? You can create an AI-powered scheme of work now or continue customizing.
                   {selectedTemplate && ' 📊 Using your selected template format!'}
@@ -650,14 +650,14 @@ const SchemeOfWorkGenerator: React.FC = () => {
           {renderStepContent(activeStep)}
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 0 } }}>
           <Button
             disabled={activeStep === 0}
             onClick={handleBack}
           >
             Back
           </Button>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             {activeStep === steps.length - 1 ? (
               <Button 
                 variant="contained" 

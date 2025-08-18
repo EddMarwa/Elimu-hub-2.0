@@ -237,9 +237,9 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 3 } }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: { xs: 3, md: 4 } }}>
         <Typography variant="h4" fontWeight="bold" color="primary" gutterBottom>
           Profile Settings
         </Typography>
@@ -251,8 +251,8 @@ const Profile: React.FC = () => {
       <Grid container spacing={3}>
         {/* Profile Information */}
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3, mb: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3, gap: { xs: 2, sm: 0 } }}>
               <Typography variant="h6" fontWeight="bold">
                 Personal Information
               </Typography>
@@ -360,7 +360,7 @@ const Profile: React.FC = () => {
           </Paper>
 
           {/* Preferences */}
-          <Paper sx={{ p: 3 }}>
+          <Paper sx={{ p: { xs: 2, md: 3 } }}>
             <Typography variant="h6" fontWeight="bold" gutterBottom>
               Preferences
             </Typography>
@@ -422,14 +422,14 @@ const Profile: React.FC = () => {
         {/* Sidebar */}
         <Grid item xs={12} md={4}>
           {/* Avatar Section */}
-          <Paper sx={{ p: 3, mb: 3, textAlign: 'center' }}>
+          <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3, textAlign: 'center' }}>
             <Box sx={{ position: 'relative', display: 'inline-block' }}>
               <Avatar
                 src={profile.avatar}
                 sx={{
-                  width: 120,
-                  height: 120,
-                  fontSize: '3rem',
+                  width: { xs: 80, sm: 100, md: 120 },
+                  height: { xs: 80, sm: 100, md: 120 },
+                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
                   border: '4px solid',
                   borderColor: 'primary.main',
                 }}
@@ -465,7 +465,7 @@ const Profile: React.FC = () => {
           </Paper>
 
           {/* Quick Stats */}
-          <Paper sx={{ p: 3 }}>
+          <Paper sx={{ p: { xs: 2, md: 3 } }}>
             <Typography variant="h6" fontWeight="bold" gutterBottom>
               Account Statistics
             </Typography>

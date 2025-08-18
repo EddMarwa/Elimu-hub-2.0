@@ -294,19 +294,22 @@ const SchemesOfWork: React.FC = () => {
   );
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>📄 Schemes Of Work Samples</Typography>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 0.5, sm: 2, md: 3 }, overflowX: 'hidden' }}>
+      <Box sx={{ mb: { xs: 2, md: 4 } }}>
+        <Typography variant="h4" gutterBottom> Schemes Of Work Samples</Typography>
         <Typography variant="body1" color="text.secondary">Browse folders of Schemes of Work (PDF/Word). Admins can create folders, upload, and delete files.</Typography>
       </Box>
 
       {renderBreadcrumbs()}
 
+      {/* Sections */}
       {!currentSection && renderSections()}
+      {/* Subfolders */}
       {currentSection && !currentSubfolder && currentSection.subfolders && currentSection.subfolders.length > 0 && renderSubfolders()}
+      {/* Files */}
       {((currentSection && currentSubfolder) || (currentSection && (!currentSection.subfolders || currentSection.subfolders.length === 0))) && (
         <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 0 } }}>
             <Typography variant="h6">{currentSubfolder ? currentSubfolder.name : currentSection?.name} Files</Typography>
             <Button variant="contained" startIcon={<Upload />} onClick={() => setUploadDialogOpen(true)} disabled={!user}>Upload File</Button>
           </Box>
@@ -315,7 +318,32 @@ const SchemesOfWork: React.FC = () => {
               <CircularProgress />
             </Box>
           ) : (
-            renderFiles()
+            <Grid container spacing={2}>
+              {files.map((file) => (
+                <Grid item xs={12} sm={6} md={4} key={file.id}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+                        {getFileIcon(file.fileType)}
+                        <Box sx={{ ml: 1, flexGrow: 1, minWidth: 0 }}>
+                          <Typography variant="subtitle2" noWrap>{file.originalName}</Typography>
+                          <Typography variant="caption" color="text.secondary">{formatFileSize(file.fileSize)}</Typography>
+                        </Box>
+                        <Chip label={file.status} size="small" color={file.status === 'APPROVED' ? 'success' : file.status === 'PENDING' ? 'warning' : 'error'} variant="outlined" />
+                      </Box>
+                      <Typography variant="caption" color="text.secondary">Uploaded by {file.uploader.firstName} {file.uploader.lastName}</Typography>
+                    </CardContent>
+                    <CardActions>
+                      <Button size="small" startIcon={<Visibility />} component="a" href={`${SERVER_BASE_ORIGIN}/uploads/library/${file.filename}`} target="_blank" rel="noopener noreferrer">View</Button>
+                      <Button size="small" startIcon={<Download />} component="a" href={`${SERVER_BASE_ORIGIN}/uploads/library/${file.filename}`} download>Download</Button>
+                      {isAdmin && (
+                        <Button size="small" startIcon={<Delete />} color="error" onClick={() => { setFileToDelete(file); setDeleteConfirmOpen(true); }}>Delete</Button>
+                      )}
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
           )}
         </>
       )}

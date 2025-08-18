@@ -423,9 +423,9 @@ const Documents: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ py: 3 }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 }, px: { xs: 0.5, sm: 2, md: 3 }, overflowX: 'hidden' }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: { xs: 2, md: 4 } }}>
         <Typography variant="h4" fontWeight="bold" color="primary" gutterBottom>
           Curriculum Documents
         </Typography>
@@ -452,9 +452,9 @@ const Documents: React.FC = () => {
       </Breadcrumbs>
 
       {/* Search and Filters */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={4}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6} md={4}>
             <TextField
               fullWidth
               placeholder="Search documents..."
@@ -469,7 +469,7 @@ const Documents: React.FC = () => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid item xs={12} sm={6} md={2}>
             <FormControl fullWidth>
               <InputLabel>Category</InputLabel>
               <Select
@@ -486,7 +486,7 @@ const Documents: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid item xs={12} sm={6} md={2}>
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>
               <Select
@@ -503,7 +503,7 @@ const Documents: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid item xs={12} sm={6} md={2}>
             <FormControl fullWidth>
               <InputLabel>Sort By</InputLabel>
               <Select
@@ -519,7 +519,7 @@ const Documents: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid item xs={12} sm={6} md={2}>
             <Button
               fullWidth
               variant="outlined"
@@ -539,8 +539,8 @@ const Documents: React.FC = () => {
 
       {/* Folders */}
       {!currentFolder && (
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 0 } }}>
             <Typography variant="h6" fontWeight="bold">
               Document Folders
             </Typography>
@@ -554,15 +554,15 @@ const Documents: React.FC = () => {
               </Button>
             )}
           </Box>
-          
-          <Grid container spacing={3}>
+
+          <Grid container spacing={2}>
             {folders.map((folder) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={folder.id}>
-                <Card 
-                  sx={{ 
+                <Card
+                  sx={{
                     cursor: 'pointer',
                     '&:hover': { boxShadow: 3, transform: 'translateY(-2px)' },
-                    transition: 'all 0.3s ease'
+                    transition: 'all 0.3s ease',
                   }}
                   onClick={() => setCurrentFolder(folder.id)}
                 >
@@ -576,10 +576,10 @@ const Documents: React.FC = () => {
                         {folder.description}
                       </Typography>
                     )}
-                    <Chip 
-                      label={`${folder.documentCount} documents`} 
-                      size="small" 
-                      color="primary" 
+                    <Chip
+                      label={`${folder.documentCount} documents`}
+                      size="small"
+                      color="primary"
                       variant="outlined"
                     />
                   </CardContent>
@@ -591,8 +591,8 @@ const Documents: React.FC = () => {
       )}
 
       {/* Documents List */}
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Paper sx={{ p: { xs: 2, md: 3 } }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 0 } }}>
           <Typography variant="h6" fontWeight="bold">
             Documents {currentFolder && `in ${folders.find(f => f.id === currentFolder)?.name}`}
           </Typography>
@@ -617,20 +617,22 @@ const Documents: React.FC = () => {
           <List>
             {filteredDocuments.map((document, index) => (
               <React.Fragment key={document.id}>
-                <ListItem sx={{ 
-                  border: 1, 
-                  borderColor: 'divider', 
-                  borderRadius: 2, 
+                <ListItem sx={{
+                  border: 1,
+                  borderColor: 'divider',
+                  borderRadius: 2,
                   mb: 2,
-                  '&:hover': { bgcolor: 'action.hover' }
+                  '&:hover': { bgcolor: 'action.hover' },
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  alignItems: { xs: 'flex-start', sm: 'center' },
                 }}>
                   <ListItemIcon>
                     {getFileIcon(document.fileType)}
                   </ListItemIcon>
-                  
+
                   <ListItemText
                     primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, flexWrap: 'wrap' }}>
                         <Typography variant="subtitle1" fontWeight="bold">
                           {document.title}
                         </Typography>
@@ -663,7 +665,7 @@ const Documents: React.FC = () => {
                             />
                           ))}
                         </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                           <Typography variant="caption" color="text.secondary">
                             By {document.uploadedBy}
                           </Typography>
@@ -687,9 +689,9 @@ const Documents: React.FC = () => {
                       </Box>
                     }
                   />
-                  
+
                   <ListItemSecondaryAction>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                       <IconButton
                         size="small"
                         onClick={() => handleDocumentAction(document, 'bookmark')}

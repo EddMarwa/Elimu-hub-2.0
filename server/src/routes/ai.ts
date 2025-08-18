@@ -99,6 +99,20 @@ router.get('/references', asyncHandler(async (req: Request, res: Response) => {
   return res.json({ success: true, data: items });
 }));
 
+// Generic chat endpoint for Elimu Hub AI
+router.post('/chat', asyncHandler(async (req: Request, res: Response) => {
+  const { messages, model, provider, max_tokens, temperature } = req.body || {};
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ success: false, message: 'messages array is required' });
+  }
+  try {
+    const response = await AIService.chat({ messages, model, provider, max_tokens, temperature });
+    return res.json({ success: true, data: response });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'AI chat failed', error: error instanceof Error ? error.message : error });
+  }
+}));
+
 export default router;
 
 

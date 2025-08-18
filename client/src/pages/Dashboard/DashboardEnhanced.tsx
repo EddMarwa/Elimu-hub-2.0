@@ -333,18 +333,19 @@ const DashboardEnhanced: React.FC = () => {
     <Box sx={{ 
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+      overflowX: 'hidden',
     }}>
-      <Container maxWidth="xl" sx={{ py: 3 }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 3 }, px: { xs: 0.5, sm: 2, md: 3 } }}>
         {/* Enhanced Welcome Header */}
         <Fade in={true} timeout={1000}>
           <Paper
             elevation={0}
             sx={{
-              mb: 4,
+              mb: { xs: 3, md: 4 },
               background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
               color: 'white',
               borderRadius: 3,
-              p: 3,
+              p: { xs: 2, md: 3 },
               position: 'relative',
               overflow: 'hidden',
               '&::before': {
@@ -352,8 +353,8 @@ const DashboardEnhanced: React.FC = () => {
                 position: 'absolute',
                 top: 0,
                 right: 0,
-                width: '200px',
-                height: '200px',
+                width: { xs: '120px', md: '200px' },
+                height: { xs: '120px', md: '200px' },
                 background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
                 borderRadius: '50%',
                 transform: 'translate(50%, -50%)',
@@ -364,10 +365,10 @@ const DashboardEnhanced: React.FC = () => {
               <Grid item>
                 <Avatar 
                   sx={{ 
-                    width: 64, 
-                    height: 64, 
+                    width: { xs: 48, md: 64 }, 
+                    height: { xs: 48, md: 64 }, 
                     background: 'linear-gradient(45deg, #f59e0b, #fbbf24)',
-                    fontSize: '1.5rem',
+                    fontSize: { xs: '1.1rem', md: '1.5rem' },
                     fontWeight: 'bold',
                     border: '3px solid rgba(255, 255, 255, 0.2)',
                     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
@@ -383,7 +384,7 @@ const DashboardEnhanced: React.FC = () => {
                     sx={{ 
                       fontWeight: 'bold', 
                       mb: 1,
-                      fontSize: { xs: '1.75rem', md: '2.125rem' }
+                      fontSize: { xs: '1.3rem', sm: '1.75rem', md: '2.125rem' }
                     }}
                   >
                     {getGreetingIcon()} {getTimeBasedGreeting()}, {user?.firstName || 'Teacher'}!
@@ -393,7 +394,7 @@ const DashboardEnhanced: React.FC = () => {
                     sx={{ 
                       opacity: 0.9,
                       mb: 2,
-                      fontSize: { xs: '1rem', md: '1.1rem' }
+                      fontSize: { xs: '0.95rem', md: '1.1rem' }
                     }}
                   >
                     Ready to inspire and educate today? Let's make learning amazing!
@@ -457,7 +458,7 @@ const DashboardEnhanced: React.FC = () => {
         </Fade>
 
         {/* Enhanced Stats Cards */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={3} sx={{ mb: { xs: 2, md: 4 } }}>
           {statsCards.map((stat, index) => (
             <Grid item xs={12} sm={6} md={3} key={index}>
               <Fade in={!loading} timeout={1000 + (index * 200)}>
@@ -469,7 +470,6 @@ const DashboardEnhanced: React.FC = () => {
                   overflow: 'hidden',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
                   },
                   transition: 'all 0.3s ease',
                   cursor: 'pointer',
@@ -477,7 +477,7 @@ const DashboardEnhanced: React.FC = () => {
                   <CardContent sx={{ position: 'relative', zIndex: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                       <Box>
-                        <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                        <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 0.5, fontSize: { xs: '1.5rem', md: '2.2rem' } }}>
                           {loading ? '...' : stat.value}
                         </Typography>
                         <Typography variant="body2" sx={{ opacity: 0.9 }}>
@@ -500,8 +500,8 @@ const DashboardEnhanced: React.FC = () => {
                       position: 'absolute',
                       top: -20,
                       right: -20,
-                      width: 80,
-                      height: 80,
+                      width: { xs: 50, md: 80 },
+                      height: { xs: 50, md: 80 },
                       borderRadius: '50%',
                       background: 'rgba(255, 255, 255, 0.1)',
                       zIndex: 0,
@@ -514,7 +514,7 @@ const DashboardEnhanced: React.FC = () => {
         </Grid>
 
         {/* Enhanced Quick Actions */}
-        <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: { xs: 2, md: 4 } }}>
           <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold', color: '#1e3a8a' }}>
             ⚡ Quick Actions
           </Typography>
@@ -537,11 +537,11 @@ const DashboardEnhanced: React.FC = () => {
                     }}
                     onClick={() => navigate(action.path)}
                   >
-                    <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                    <CardContent sx={{ p: { xs: 2, md: 3 }, textAlign: 'center' }}>
                       <Box
                         sx={{
-                          width: 60,
-                          height: 60,
+                          width: { xs: 40, md: 60 },
+                          height: { xs: 40, md: 60 },
                           borderRadius: '50%',
                           background: action.color,
                           display: 'flex',
@@ -552,9 +552,9 @@ const DashboardEnhanced: React.FC = () => {
                           color: 'white',
                         }}
                       >
-                        {React.cloneElement(action.icon, { sx: { fontSize: 28 } })}
+                        {React.cloneElement(action.icon, { sx: { fontSize: { xs: 20, md: 28 } } })}
                       </Box>
-                      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: action.color }}>
+                      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: action.color, fontSize: { xs: '1rem', md: '1.1rem' } }}>
                         {action.title}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
@@ -570,7 +570,7 @@ const DashboardEnhanced: React.FC = () => {
 
         {/* Admin Actions */}
         {adminActions.length > 0 && (
-          <Box sx={{ mb: 4 }}>
+          <Box sx={{ mb: { xs: 2, md: 4 } }}>
             <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold', color: '#1e3a8a' }}>
               👑 Admin Actions
             </Typography>
@@ -585,7 +585,7 @@ const DashboardEnhanced: React.FC = () => {
                     sx={{
                       borderColor: '#1e3a8a',
                       color: '#1e3a8a',
-                      py: 2,
+                      py: { xs: 1.5, md: 2 },
                       fontWeight: 'bold',
                       borderRadius: 2,
                       background: 'white',
@@ -596,6 +596,7 @@ const DashboardEnhanced: React.FC = () => {
                         boxShadow: '0 8px 25px rgba(30, 58, 138, 0.25)',
                       },
                       transition: 'all 0.3s ease',
+                      fontSize: { xs: '0.95rem', md: '1.05rem' },
                     }}
                   >
                     <Box sx={{ textAlign: 'left' }}>
@@ -617,8 +618,8 @@ const DashboardEnhanced: React.FC = () => {
         <Grid container spacing={3}>
           {/* Recent Activity */}
           <Grid item xs={12} lg={8}>
-            <Paper sx={{ p: 3, borderRadius: 3, height: 'fit-content' }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+            <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, height: 'fit-content' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 2, sm: 0 } }}>
                 <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e3a8a' }}>
                   📋 Recent Activity
                 </Typography>
@@ -639,6 +640,9 @@ const DashboardEnhanced: React.FC = () => {
                           bgcolor: '#f8fafc',
                         },
                         transition: 'background-color 0.2s ease',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        alignItems: { xs: 'flex-start', sm: 'center' },
+                        gap: { xs: 1, sm: 0 },
                       }}
                     >
                       <ListItemIcon>
@@ -678,7 +682,7 @@ const DashboardEnhanced: React.FC = () => {
           {/* Sidebar */}
           <Grid item xs={12} lg={4}>
             {/* Weekly Progress */}
-            <Paper sx={{ p: 3, borderRadius: 3, mb: 3 }}>
+            <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3, mb: 3 }}>
               <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold', color: '#1e3a8a' }}>
                 📊 Weekly Progress
               </Typography>
@@ -704,7 +708,6 @@ const DashboardEnhanced: React.FC = () => {
                   }} 
                 />
               </Box>
-              
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="textSecondary">
                   Lesson Plans Created
@@ -724,7 +727,6 @@ const DashboardEnhanced: React.FC = () => {
                 />
                 <Typography variant="caption">3 of 4 completed</Typography>
               </Box>
-              
               <Box>
                 <Typography variant="body2" color="textSecondary">
                   AI Interactions
@@ -747,7 +749,7 @@ const DashboardEnhanced: React.FC = () => {
             </Paper>
 
             {/* Tips & Suggestions */}
-            <Paper sx={{ p: 3, borderRadius: 3 }}>
+            <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
               <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold', color: '#1e3a8a' }}>
                 💡 Tips & Suggestions
               </Typography>

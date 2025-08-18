@@ -478,10 +478,10 @@ const SchemeOfWorkEditor: React.FC = () => {
   );
 
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 0.5, sm: 2, md: 3 }, overflowX: 'hidden' }}>
+      <Box sx={{ py: { xs: 2, md: 4 } }}>
         {/* Header */}
-        <Paper elevation={3} sx={{ p: 4, mb: 4, background: 'linear-gradient(135deg, #43a047 0%, #66bb6a 100%)', color: 'white' }}>
+        <Paper elevation={3} sx={{ p: { xs: 2, md: 4 }, mb: { xs: 2, md: 4 }, background: 'linear-gradient(135deg, #43a047 0%, #66bb6a 100%)', color: 'white' }}>
           <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
             📋 CBC Scheme of Work Editor
           </Typography>
@@ -491,7 +491,7 @@ const SchemeOfWorkEditor: React.FC = () => {
           
           {/* Progress Bar */}
           <Box sx={{ mt: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1, sm: 0 } }}>
               <Typography variant="body2">Term Planning Progress</Typography>
               <Typography variant="body2">{Math.round(calculateProgress())}% Complete</Typography>
             </Box>
@@ -513,13 +513,13 @@ const SchemeOfWorkEditor: React.FC = () => {
         <Grid container spacing={4}>
           {/* Scheme Setup */}
           <Grid item xs={12}>
-            <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
+            <Paper elevation={2} sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <School color="primary" />
                 Scheme Information
               </Typography>
               
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
@@ -591,9 +591,9 @@ const SchemeOfWorkEditor: React.FC = () => {
 
           {/* View Controls */}
           <Grid item xs={12}>
-            <Paper elevation={2} sx={{ p: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Paper elevation={2} sx={{ p: { xs: 1, md: 2 } }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1, sm: 0 } }}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                   <Typography variant="h6">Week Planning</Typography>
                   <FormControlLabel
                     control={
@@ -606,7 +606,7 @@ const SchemeOfWorkEditor: React.FC = () => {
                   />
                 </Box>
                 
-                <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   <Button
                     variant={viewMode === 'timeline' ? 'contained' : 'outlined'}
                     onClick={() => setViewMode('timeline')}
@@ -635,7 +635,7 @@ const SchemeOfWorkEditor: React.FC = () => {
 
           {/* Main Content */}
           <Grid item xs={12}>
-            <Paper elevation={2} sx={{ p: 3 }}>
+            <Paper elevation={2} sx={{ p: { xs: 1, md: 3 } }}>
               {viewMode === 'timeline' && renderTimelineView()}
               {viewMode === 'table' && renderTableView()}
               {viewMode === 'cards' && renderCardsView()}
