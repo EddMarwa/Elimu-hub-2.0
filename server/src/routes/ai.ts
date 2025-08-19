@@ -125,6 +125,14 @@ router.get('/youtube/search', asyncHandler(async (req: Request, res: Response) =
   if (!q || typeof q !== 'string') {
     return res.status(400).json({ success: false, message: 'Missing query parameter q' });
   }
+  // Only allow educational queries (simple keyword filter)
+  const educationalKeywords = [
+    'science', 'math', 'history', 'experiment', 'lesson', 'tutorial', 'education', 'cbc', 'curriculum', 'teacher', 'class', 'learning', 'demonstration', 'activity', 'explained', 'explainer', 'school', 'subject', 'topic', 'how to', 'explore', 'explain', 'study', 'revision', 'practice', 'exam', 'test', 'cbc', 'kenya', 'primary', 'secondary', 'grade', 'syllabus'
+  ];
+  const isEducational = educationalKeywords.some(kw => q.toLowerCase().includes(kw));
+  if (!isEducational) {
+    return res.status(200).json({ success: false, message: 'No educational video suggested for this topic.' });
+  }
   try {
     const apiKey = 'AIzaSyAZk_pGC52sgHzFKdSD7FEDayAf636p-9Q';
     const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
@@ -134,11 +142,23 @@ router.get('/youtube/search', asyncHandler(async (req: Request, res: Response) =
         key: apiKey,
         maxResults: 1,
         type: 'video',
+        videoCategoryId: 27, // Education
+        relevanceLanguage: 'en',
+        regionCode: 'US',
       },
     });
     if (response.data.items && response.data.items.length > 0) {
       const video = response.data.items[0];
-      return res.json({ success: true, video });
+      return res.json({
+        success: true,
+        video: {
+          id: video.id,
+          title: video.snippet.title,
+          channelTitle: video.snippet.channelTitle,
+          description: video.snippet.description,
+          thumbnails: video.snippet.thumbnails,
+        }
+      });
     } else {
       return res.status(404).json({ success: false, message: 'No video found' });
     }

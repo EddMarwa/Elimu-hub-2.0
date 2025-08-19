@@ -93,6 +93,10 @@ const AIAssistant: React.FC = () => {
   const [pendingVideoId, setPendingVideoId] = useState<string | null>(null);
   const [showVideoPrompt, setShowVideoPrompt] = useState(false);
 
+  // Add state for feedback/bookmark
+  const [videoFeedback, setVideoFeedback] = useState<{ [msgId: string]: 'up' | 'down' | undefined }>({});
+  const [bookmarkedVideos, setBookmarkedVideos] = useState<{ [msgId: string]: boolean }>({});
+
   // ===== AI TOOL SUGGESTIONS =====
   // Array of available AI-powered educational tools with their configurations
   const suggestions: AISuggestion[] = [
@@ -214,11 +218,19 @@ const AIAssistant: React.FC = () => {
     return result.trim();
   };
 
-  // Add this function after your other async handlers
-  const fetchYoutubeVideo = async (query: string): Promise<string | null> => {
+  // Update fetchYoutubeVideo to return video info
+  const fetchYoutubeVideo = async (query: string): Promise<{ videoId: string, title: string, channelTitle: string } | null> => {
     try {
       const res = await api.get('/ai/youtube/search', { params: { q: query } });
-      return res.data?.video?.id?.videoId || null;
+      const video = res.data?.video;
+      if (video && video.id?.videoId) {
+        return {
+          videoId: video.id.videoId,
+          title: video.title,
+          channelTitle: video.channelTitle,
+        };
+      }
+      return null;
     } catch (e) {
       return null;
     }
@@ -282,17 +294,16 @@ const AIAssistant: React.FC = () => {
     }
   };
 
-  // Handler for user accepting video suggestion
+  // In handleAcceptVideo, store video info in the message content as JSON
   const handleAcceptVideo = async () => {
     if (pendingVideoQuery) {
-      const videoId = await fetchYoutubeVideo(pendingVideoQuery);
-      if (videoId) {
-        // Add a new AI message with the video embed
+      const videoInfo = await fetchYoutubeVideo(pendingVideoQuery);
+      if (videoInfo) {
         setMessages(prev => [
           ...prev,
           {
             id: (Date.now() + 2).toString(),
-            content: `__YOUTUBE_VIDEO__:${videoId}`,
+            content: `__YOUTUBE_VIDEO__:${JSON.stringify(videoInfo)}`,
             sender: 'ai',
             timestamp: new Date(),
           },
@@ -308,6 +319,11 @@ const AIAssistant: React.FC = () => {
     setShowVideoPrompt(false);
     setPendingVideoQuery(null);
   };
+
+  // Feedback handlers
+  const handleThumbsUp = (msgId: string) => setVideoFeedback(prev => ({ ...prev, [msgId]: 'up' }));
+  const handleThumbsDown = (msgId: string) => setVideoFeedback(prev => ({ ...prev, [msgId]: 'down' }));
+  const handleBookmark = (msgId: string) => setBookmarkedVideos(prev => ({ ...prev, [msgId]: !prev[msgId] }));
 
   // ===== SUGGESTION HANDLING =====
   
@@ -802,20 +818,51 @@ const AIAssistant: React.FC = () => {
                         </Typography>
                       </Box>
                     )}
-                    {isAI && message.content.startsWith('__YOUTUBE_VIDEO__:') ? (
-                      <Box sx={{ mt: 1 }}>
-                        <iframe
-                          width="360"
-                          height="215"
-                          src={`https://www.youtube.com/embed/${message.content.replace('__YOUTUBE_VIDEO__:', '')}`}
-                          frameBorder="0"
-                          allow="autoplay; encrypted-media"
-                          allowFullScreen
-                          title="YouTube video"
-                          style={{ borderRadius: 8 }}
-                        />
-                      </Box>
-                    ) : (
+                    {isAI && message.content.startsWith('__YOUTUBE_VIDEO__:') ? (() => {
+                      const videoInfo = JSON.parse(message.content.replace('__YOUTUBE_VIDEO__:', ''));
+                      return (
+                        <Box sx={{ mt: 1 }}>
+                          <Typography variant="subtitle2" fontWeight="bold">{videoInfo.title}</Typography>
+                          <Typography variant="caption" color="text.secondary">by {videoInfo.channelTitle}</Typography>
+                          <iframe
+                            width="360"
+                            height="215"
+                            src={`https://www.youtube.com/embed/${videoInfo.videoId}`}
+                            frameBorder="0"
+                            allow="autoplay; encrypted-media"
+                            allowFullScreen
+                            title="YouTube video"
+                            style={{ borderRadius: 8, marginTop: 8, marginBottom: 8 }}
+                          />
+                          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                            <Button
+                              size="small"
+                              variant={videoFeedback[message.id] === 'up' ? 'contained' : 'outlined'}
+                              color="success"
+                              onClick={() => handleThumbsUp(message.id)}
+                            >
+                              👍 Helpful
+                            </Button>
+                            <Button
+                              size="small"
+                              variant={videoFeedback[message.id] === 'down' ? 'contained' : 'outlined'}
+                              color="error"
+                              onClick={() => handleThumbsDown(message.id)}
+                            >
+                              👎 Not helpful
+                            </Button>
+                            <Button
+                              size="small"
+                              variant={bookmarkedVideos[message.id] ? 'contained' : 'outlined'}
+                              color="primary"
+                              onClick={() => handleBookmark(message.id)}
+                            >
+                              {bookmarkedVideos[message.id] ? '🔖 Saved' : '🔖 Save'}
+                            </Button>
+                          </Box>
+                        </Box>
+                      );
+                    })() : (
                       <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize: '0.98rem', fontStyle: isAI ? 'italic' : 'normal' }}>
                         {cleanedContent}
                       </Typography>
