@@ -88,6 +88,11 @@ const AIAssistant: React.FC = () => {
   // Theme State
   const [darkMode, setDarkMode] = useState(false);                         // Dark/light mode toggle
 
+  // Add at the top, after other useState hooks
+  const [pendingVideoQuery, setPendingVideoQuery] = useState<string | null>(null);
+  const [pendingVideoId, setPendingVideoId] = useState<string | null>(null);
+  const [showVideoPrompt, setShowVideoPrompt] = useState(false);
+
   // ===== AI TOOL SUGGESTIONS =====
   // Array of available AI-powered educational tools with their configurations
   const suggestions: AISuggestion[] = [
@@ -209,6 +214,16 @@ const AIAssistant: React.FC = () => {
     return result.trim();
   };
 
+  // Add this function after your other async handlers
+  const fetchYoutubeVideo = async (query: string): Promise<string | null> => {
+    try {
+      const res = await api.get('/ai/youtube/search', { params: { q: query } });
+      return res.data?.video?.id?.videoId || null;
+    } catch (e) {
+      return null;
+    }
+  };
+
   // ===== MESSAGE HANDLING =====
   
   /**
@@ -248,6 +263,11 @@ const AIAssistant: React.FC = () => {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiMessage]);
+      // Suggest a video if the AI response is descriptive (simple heuristic: > 30 words)
+      if (aiResponse.split(/\s+/).length > 30) {
+        setPendingVideoQuery(inputMessage);
+        setShowVideoPrompt(true);
+      }
     } catch (error) {
       // Add error message if AI call fails
       const errorMessage: Message = {
@@ -260,6 +280,33 @@ const AIAssistant: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handler for user accepting video suggestion
+  const handleAcceptVideo = async () => {
+    if (pendingVideoQuery) {
+      const videoId = await fetchYoutubeVideo(pendingVideoQuery);
+      if (videoId) {
+        // Add a new AI message with the video embed
+        setMessages(prev => [
+          ...prev,
+          {
+            id: (Date.now() + 2).toString(),
+            content: `__YOUTUBE_VIDEO__:${videoId}`,
+            sender: 'ai',
+            timestamp: new Date(),
+          },
+        ]);
+      }
+      setShowVideoPrompt(false);
+      setPendingVideoQuery(null);
+    }
+  };
+
+  // Handler for user declining video suggestion
+  const handleDeclineVideo = () => {
+    setShowVideoPrompt(false);
+    setPendingVideoQuery(null);
   };
 
   // ===== SUGGESTION HANDLING =====
@@ -755,9 +802,24 @@ const AIAssistant: React.FC = () => {
                         </Typography>
                       </Box>
                     )}
-                    <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize: '0.98rem', fontStyle: isAI ? 'italic' : 'normal' }}>
-                      {cleanedContent}
-                    </Typography>
+                    {isAI && message.content.startsWith('__YOUTUBE_VIDEO__:') ? (
+                      <Box sx={{ mt: 1 }}>
+                        <iframe
+                          width="360"
+                          height="215"
+                          src={`https://www.youtube.com/embed/${message.content.replace('__YOUTUBE_VIDEO__:', '')}`}
+                          frameBorder="0"
+                          allow="autoplay; encrypted-media"
+                          allowFullScreen
+                          title="YouTube video"
+                          style={{ borderRadius: 8 }}
+                        />
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize: '0.98rem', fontStyle: isAI ? 'italic' : 'normal' }}>
+                        {cleanedContent}
+                      </Typography>
+                    )}
                     {/* AI message actions - Copy, Like, Dislike */}
                     {isAI && (
                       <Box sx={{ display: 'flex', gap: 0.5, mt: 1 }}>
@@ -1248,6 +1310,17 @@ const AIAssistant: React.FC = () => {
           </Box>
         </Box>
       </Drawer>
+
+      {/* Video Suggestion Prompt Dialog */}
+      {showVideoPrompt && (
+        <Dialog open onClose={handleDeclineVideo}>
+          <DialogTitle>Would you like to see a related video?</DialogTitle>
+          <DialogActions>
+            <Button onClick={handleDeclineVideo}>No, thanks</Button>
+            <Button onClick={handleAcceptVideo} variant="contained">Yes, show video</Button>
+          </DialogActions>
+        </Dialog>
+      )}
 
       <style>
         {`

@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import AIService from '../services/aiService';
 import libraryService from '../services/libraryService';
+import axios from 'axios';
 
 const router = express.Router();
 
@@ -115,6 +116,34 @@ router.post('/chat', asyncHandler(async (req: Request, res: Response) => {
       console.error(error.stack);
     }
     return res.status(500).json({ success: false, message: 'AI chat failed', error: error instanceof Error ? error.message : error });
+  }
+}));
+
+// YouTube video search endpoint
+router.get('/youtube/search', asyncHandler(async (req: Request, res: Response) => {
+  const { q } = req.query;
+  if (!q || typeof q !== 'string') {
+    return res.status(400).json({ success: false, message: 'Missing query parameter q' });
+  }
+  try {
+    const apiKey = 'AIzaSyAZk_pGC52sgHzFKdSD7FEDayAf636p-9Q';
+    const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+      params: {
+        part: 'snippet',
+        q,
+        key: apiKey,
+        maxResults: 1,
+        type: 'video',
+      },
+    });
+    if (response.data.items && response.data.items.length > 0) {
+      const video = response.data.items[0];
+      return res.json({ success: true, video });
+    } else {
+      return res.status(404).json({ success: false, message: 'No video found' });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'YouTube API error', error });
   }
 }));
 
