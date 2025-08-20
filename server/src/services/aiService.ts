@@ -34,7 +34,7 @@ export class AIService {
     this.groqModel = process.env.GROQ_MODEL || 'llama3-70b-8192';
     this.openRouterApiKey = process.env.OPENROUTER_API_KEY || '';
     this.openRouterApiUrl = process.env.OPENROUTER_API_URL || 'https://openrouter.ai/api/v1';
-    this.openRouterModel = process.env.OPENROUTER_MODEL || 'meta-llama/llama-3-70b-instruct';
+    this.openRouterModel = process.env.OPENROUTER_MODEL || 'openai/gpt-3.5-turbo';
     // Log API key presence for debugging
     console.log('GROQ_API_KEY:', this.groqApiKey ? '[set]' : '[missing]');
     console.log('OPENROUTER_API_KEY:', this.openRouterApiKey ? '[set]' : '[missing]');
@@ -248,7 +248,7 @@ export class AIService {
   }): Promise<string> {
     const openRouterKey = process.env.OPENROUTER_API_KEY || '';
     const openRouterUrl = process.env.OPENROUTER_API_URL || 'https://openrouter.ai/api/v1';
-    const openRouterModel = process.env.OPENROUTER_MODEL || 'mistralai/mixtral-8x7b';
+    const openRouterModel = process.env.OPENROUTER_MODEL || 'openai/gpt-3.5-turbo';
     if (!openRouterKey) throw new Error('OpenRouter API key missing');
     try {
       const response = await axios.post(

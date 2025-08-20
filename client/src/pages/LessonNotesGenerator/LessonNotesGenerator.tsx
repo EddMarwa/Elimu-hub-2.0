@@ -58,7 +58,13 @@ const LessonNotesGenerator: React.FC = () => {
           {Object.entries(lessonNotes).map(([key, value]) => (
             <Box key={key} sx={{ mb: 1 }}>
               <Typography variant="subtitle2" fontWeight="bold">{key.replace(/([A-Z])/g, ' $1')}</Typography>
-              <Typography variant="body2">{Array.isArray(value) ? value.join(', ') : value}</Typography>
+              <Typography variant="body2">{
+                Array.isArray(value)
+                  ? value.join(', ')
+                  : typeof value === 'object' && value !== null
+                  ? JSON.stringify(value)
+                  : String(value)
+              }</Typography>
             </Box>
           ))}
         </Paper>
