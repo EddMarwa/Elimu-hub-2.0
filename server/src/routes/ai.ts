@@ -79,6 +79,40 @@ Return JSON: { formative: [ ... ], summative: [ ... ], gradingStrategies: [ ... 
   return res.json({ success: true, data });
 }));
 
+// Generate lesson plan
+router.post('/lesson-plan', asyncHandler(async (req: Request, res: Response) => {
+  const { subject, grade, topic, objectives, context } = req.body || {};
+  if (!subject || !grade || !topic) {
+    return res.status(400).json({ success: false, message: 'subject, grade, and topic are required' });
+  }
+  const prompt = `Generate a detailed CBC-compliant lesson plan for:\nSubject: ${subject}\nGrade: ${grade}\nTopic: ${topic}\nObjectives: ${objectives || ''}\n${context ? `Context: ${context}` : ''}\n\nReturn JSON with fields: lessonPlan: { subject, grade, topic, objectives, introduction, lessonDevelopment, activities, assessment, resources, conclusion }.`;
+  const response = await AIService['callGrokAPI'](prompt);
+  let data: any = null;
+  try {
+    const m = response.match(/\{[\s\S]*\}/);
+    data = m ? JSON.parse(m[0]) : null;
+  } catch {}
+  if (!data) data = { lessonPlan: {} };
+  return res.json({ success: true, data });
+}));
+
+// Generate lesson notes
+router.post('/lesson-notes', asyncHandler(async (req: Request, res: Response) => {
+  const { subject, grade, topic, scheme, lessonPlan, context } = req.body || {};
+  if (!subject || !grade || !topic) {
+    return res.status(400).json({ success: false, message: 'subject, grade, and topic are required' });
+  }
+  const prompt = `Generate concise CBC lesson notes for:\nSubject: ${subject}\nGrade: ${grade}\nTopic: ${topic}\n${scheme ? `Scheme of Work: ${JSON.stringify(scheme)}` : ''}\n${lessonPlan ? `Lesson Plan: ${JSON.stringify(lessonPlan)}` : ''}\n${context ? `Context: ${context}` : ''}\n\nReturn JSON with fields: lessonNotes: { subject, grade, topic, summary, keyPoints, activities, assessment, conclusion }.`;
+  const response = await AIService['callGrokAPI'](prompt);
+  let data: any = null;
+  try {
+    const m = response.match(/\{[\s\S]*\}/);
+    data = m ? JSON.parse(m[0]) : null;
+  } catch {}
+  if (!data) data = { lessonNotes: {} };
+  return res.json({ success: true, data });
+}));
+
 // References from library
 router.get('/references', asyncHandler(async (req: Request, res: Response) => {
   const { q = '', tags, limit = '10' } = req.query;
@@ -98,6 +132,23 @@ router.get('/references', asyncHandler(async (req: Request, res: Response) => {
     uploadedAt: f.createdAt,
   }));
   return res.json({ success: true, data: items });
+}));
+
+// Summarize any document or text
+router.post('/summarize', asyncHandler(async (req: Request, res: Response) => {
+  const { text, context } = req.body || {};
+  if (!text) {
+    return res.status(400).json({ success: false, message: 'text is required' });
+  }
+  const prompt = `Summarize the following educational content for a teacher. Provide a concise summary and 3-5 key points.\n\n${text}\n\nReturn JSON: { summary: string, keyPoints: string[] }.`;
+  const response = await AIService['callGrokAPI'](prompt);
+  let data: any = null;
+  try {
+    const m = response.match(/\{[\s\S]*\}/);
+    data = m ? JSON.parse(m[0]) : null;
+  } catch {}
+  if (!data) data = { summary: '', keyPoints: [] };
+  return res.json({ success: true, data });
 }));
 
 // Generic chat endpoint for Elimu Hub AI

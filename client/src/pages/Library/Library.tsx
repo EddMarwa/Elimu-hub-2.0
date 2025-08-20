@@ -40,6 +40,13 @@ import {
   Switch,
   LinearProgress,
   Container,
+  Tabs,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
 } from '@mui/material';
 import {
   Folder,
@@ -73,7 +80,7 @@ import {
   InsertDriveFile,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { libraryAPI, SERVER_BASE_ORIGIN } from '../../services/api';
+import { libraryAPI, SERVER_BASE_ORIGIN, pastPapersAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 
 interface LibrarySection {
@@ -140,6 +147,7 @@ interface LibraryFile {
 
 const Library: React.FC = () => {
   const { user } = useAuth();
+  const [tab, setTab] = useState(0);
   const [sections, setSections] = useState<LibrarySection[]>([]);
   const [currentSection, setCurrentSection] = useState<LibrarySection | null>(null);
   const [currentSubfolder, setCurrentSubfolder] = useState<LibrarySubfolder | null>(null);
@@ -169,6 +177,19 @@ const Library: React.FC = () => {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuItem, setMenuItem] = useState<LibraryFile | null>(null);
 
+  // Past Papers state
+  const [uploading, setUploading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [subject, setSubject] = useState('');
+  const [grade, setGrade] = useState('');
+  const [year, setYear] = useState('');
+  const [searchQ, setSearchQ] = useState('');
+  const [papers, setPapers] = useState<any[]>([]);
+  const [loadingPapers, setLoadingPapers] = useState(false);
+  const [selectedPaper, setSelectedPaper] = useState<any>(null);
+  const [questions, setQuestions] = useState<any[]>([]);
+  const [questionsOpen, setQuestionsOpen] = useState(false);
+
   const fileTypes = ['PDF', 'VIDEO', 'AUDIO', 'IMAGE', 'DOCUMENT'];
   const statuses = ['PENDING', 'APPROVED', 'DECLINED'];
 
@@ -181,6 +202,8 @@ const Library: React.FC = () => {
       loadFiles();
     }
   }, [currentSection, currentSubfolder, searchTerm, filterType, filterStatus, sortBy]);
+
+  useEffect(() => { if (tab === 1) fetchPapers(); }, [tab]);
 
   const loadSections = async () => {
     try {
@@ -400,6 +423,42 @@ const Library: React.FC = () => {
       path.push({ name: currentSubfolder.name, id: currentSubfolder.id, type: 'subfolder' });
     }
     return path;
+  };
+
+  const fetchPapers = async () => {
+    setLoadingPapers(true);
+    try {
+      const res = await pastPapersAPI.list({ subject, grade, year, q: searchQ });
+      setPapers(res.data?.data || []);
+    } finally {
+      setLoadingPapers(false);
+    }
+  };
+  useEffect(() => { if (tab === 1) fetchPapers(); }, [tab]);
+
+  const handleUpload = async () => {
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('subject', subject);
+    formData.append('grade', grade);
+    formData.append('year', year);
+    try {
+      await pastPapersAPI.upload(formData);
+      setFile(null); setSubject(''); setGrade(''); setYear('');
+      fetchPapers();
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleExtractQuestions = async (paper: any) => {
+    setSelectedPaper(paper);
+    setQuestions([]);
+    setQuestionsOpen(true);
+    const res = await pastPapersAPI.extractQuestions(paper.id);
+    setQuestions(res.data?.data?.questions || []);
   };
 
   if (loading && (!sections || sections.length === 0)) {
@@ -890,6 +949,78 @@ const Library: React.FC = () => {
           )}
         </Menu>
       </Box>
+      {tab === 1 && (
+        <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4 }}>
+          <Typography variant="h4" fontWeight="bold" gutterBottom>Past Papers</Typography>
+          <Tabs value={tab} onChange={(_, v) => setTab(v)}>
+            <Tab label="Library Files" />
+            <Tab label="Past Papers" />
+          </Tabs>
+          <Paper sx={{ p: 3, mt: 2 }}>
+            <Typography variant="h6" fontWeight="bold">Upload Past Paper</Typography>
+            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+              <input type="file" accept=".pdf,.docx" onChange={e => setFile(e.target.files?.[0] || null)} />
+              <TextField label="Subject" value={subject} onChange={e => setSubject(e.target.value)} size="small" />
+              <TextField label="Grade" value={grade} onChange={e => setGrade(e.target.value)} size="small" />
+              <TextField label="Year" value={year} onChange={e => setYear(e.target.value)} size="small" />
+              <Button variant="contained" onClick={handleUpload} disabled={uploading || !file}>Upload</Button>
+            </Box>
+            <Typography variant="h6" fontWeight="bold" sx={{ mt: 4 }}>Search Past Papers</Typography>
+            <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+              <TextField label="Subject" value={subject} onChange={e => setSubject(e.target.value)} size="small" />
+              <TextField label="Grade" value={grade} onChange={e => setGrade(e.target.value)} size="small" />
+              <TextField label="Year" value={year} onChange={e => setYear(e.target.value)} size="small" />
+              <TextField label="Search" value={searchQ} onChange={e => setSearchQ(e.target.value)} size="small" />
+              <Button variant="outlined" onClick={fetchPapers}>Search</Button>
+            </Box>
+            {loadingPapers ? <CircularProgress sx={{ mt: 2 }} /> : (
+              <Table sx={{ mt: 3 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Title</TableCell>
+                    <TableCell>Subject</TableCell>
+                    <TableCell>Grade</TableCell>
+                    <TableCell>Year</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {papers.map(paper => (
+                    <TableRow key={paper.id}>
+                      <TableCell>{paper.originalName}</TableCell>
+                      <TableCell>{paper.subject}</TableCell>
+                      <TableCell>{paper.grade}</TableCell>
+                      <TableCell>{paper.year}</TableCell>
+                      <TableCell>
+                        <Button variant="outlined" onClick={() => handleExtractQuestions(paper)}>Extract Questions</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+            <Dialog open={questionsOpen} onClose={() => setQuestionsOpen(false)} maxWidth="md" fullWidth>
+              <DialogTitle>Extracted Questions from {selectedPaper?.originalName}</DialogTitle>
+              <DialogContent>
+                {questions.length === 0 ? <Typography>No questions found or extracting...</Typography> : (
+                  <Box>
+                    {questions.map((q, i) => (
+                      <Box key={i} sx={{ mb: 2 }}>
+                        <Typography fontWeight="bold">Q{i + 1}: {q.question}</Typography>
+                        {q.options && <Typography>Options: {q.options.join(', ')}</Typography>}
+                        {q.answer && <Typography>Answer: {q.answer}</Typography>}
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setQuestionsOpen(false)}>Close</Button>
+              </DialogActions>
+            </Dialog>
+          </Paper>
+        </Box>
+      )}
     </Container>
   );
 };

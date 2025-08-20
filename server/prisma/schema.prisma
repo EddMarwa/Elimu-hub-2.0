@@ -34,6 +34,8 @@ model User {
   auditLogs       AuditLog[]
   lessonPlans     LessonPlan[]
   comments        Comment[]
+  schemeOfWorkVersions SchemeOfWorkVersion[]
+  lessonPlanVersions LessonPlanVersion[]
 
   @@map("users")
 }
@@ -94,6 +96,7 @@ model SchemeOfWork {
 
   // Relations
   user User @relation(fields: [createdBy], references: [id])
+  versions SchemeOfWorkVersion[]
 
   @@map("schemes_of_work")
 }
@@ -180,6 +183,7 @@ model LessonPlan {
   user    User     @relation(fields: [uploadedBy], references: [id])
   folder  Folder?  @relation(fields: [folderId], references: [id])
   comments Comment[]
+  versions LessonPlanVersion[]
 
   @@map("lesson_plans")
 }
@@ -351,4 +355,32 @@ model AuditLog {
   user User @relation(fields: [userId], references: [id])
 
   @@map("audit_logs")
+}
+
+model SchemeOfWorkVersion {
+  id            String   @id @default(cuid())
+  schemeId      String
+  content       String   // JSON string of the scheme at this version
+  editedBy      String
+  createdAt     DateTime @default(now())
+
+  // Relations
+  scheme   SchemeOfWork @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+  editor   User         @relation(fields: [editedBy], references: [id])
+
+  @@map("scheme_of_work_versions")
+}
+
+model LessonPlanVersion {
+  id            String   @id @default(cuid())
+  lessonPlanId  String
+  content       String   // JSON string of the lesson plan at this version
+  editedBy      String
+  createdAt     DateTime @default(now())
+
+  // Relations
+  lessonPlan LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
+  editor     User       @relation(fields: [editedBy], references: [id])
+
+  @@map("lesson_plan_versions")
 }

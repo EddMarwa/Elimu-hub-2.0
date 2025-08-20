@@ -437,6 +437,15 @@ export class LibraryService {
     }
   }
 
+  async getFileById(id: string) {
+    try {
+      return await prisma.libraryFile.findUnique({ where: { id } });
+    } catch (error) {
+      logger.error('Error fetching file by id:', error);
+      throw error;
+    }
+  }
+
   // Analytics
   async getLibraryStats(): Promise<LibraryStats> {
     try {

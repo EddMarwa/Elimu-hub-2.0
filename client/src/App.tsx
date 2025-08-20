@@ -28,6 +28,8 @@ import Library from './pages/Library/Library';
 import { useAuth } from './contexts/AuthContext';
 import LoadingSpinner from './components/Common/LoadingSpinner';
 import { UserRole } from './types';
+import LessonPlanGenerator from './pages/LessonPlanGenerator/LessonPlanGenerator';
+import LessonNotesGenerator from './pages/LessonNotesGenerator/LessonNotesGenerator';
 
 const App: React.FC = () => {
   const { user, loading } = useAuth();
@@ -107,6 +109,8 @@ const App: React.FC = () => {
           <Route path="lesson-plans" element={<LessonPlans />} />
           <Route path="library" element={<Library />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="LessonPlanGenerator/LessonPlanGenerator" element={<LessonPlanGenerator />} />
+          <Route path="LessonNotesGenerator/LessonNotesGenerator" element={<LessonNotesGenerator />} />
         </Route>
         
         {/* Catch all route */}

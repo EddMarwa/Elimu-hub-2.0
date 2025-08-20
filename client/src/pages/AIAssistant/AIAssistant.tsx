@@ -7,6 +7,7 @@ import {
   Avatar, Chip, Alert, List, ListItem, IconButton, useTheme, useMediaQuery,
   Drawer, Fab, Dialog, DialogTitle, DialogContent, DialogActions, Divider,
   AppBar, Toolbar, Badge, Tooltip, LinearProgress, Fade, Slide, Zoom,
+  CircularProgress,
 } from '@mui/material';
 
 // Import Material-UI icons for various UI elements
@@ -20,6 +21,7 @@ import {
 // Import custom hooks and services
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import { aiSummarizeAPI } from '../../services/api';
 
 // Interface defining the structure of chat messages
 interface Message {
@@ -61,6 +63,9 @@ const AIAssistant: React.FC = () => {
   const [referencesDrawerOpen, setReferencesDrawerOpen] = useState(false); // References panel
   const [questionDialogOpen, setQuestionDialogOpen] = useState(false);     // Question generation dialog
   const [rubricDialogOpen, setRubricDialogOpen] = useState(false);         // Rubric generation dialog
+  const [summarizeDialogOpen, setSummarizeDialogOpen] = useState(false);
+  const [summarizeInput, setSummarizeInput] = useState('');
+  const [summarizeLoading, setSummarizeLoading] = useState(false);
   
   // Chat State - Manages conversation flow
   const [messages, setMessages] = useState<Message[]>([
@@ -324,6 +329,38 @@ const AIAssistant: React.FC = () => {
   const handleThumbsUp = (msgId: string) => setVideoFeedback(prev => ({ ...prev, [msgId]: 'up' }));
   const handleThumbsDown = (msgId: string) => setVideoFeedback(prev => ({ ...prev, [msgId]: 'down' }));
   const handleBookmark = (msgId: string) => setBookmarkedVideos(prev => ({ ...prev, [msgId]: !prev[msgId] }));
+
+  const handleSummarize = async () => {
+    setSummarizeLoading(true);
+    try {
+      const res = await aiSummarizeAPI.summarize(summarizeInput);
+      const summary = res.data?.data?.summary || '';
+      const keyPoints = res.data?.data?.keyPoints || [];
+      setMessages(prev => [
+        ...prev,
+        {
+          id: (Date.now() + 3).toString(),
+          content: `__SUMMARY__:${JSON.stringify({ summary, keyPoints })}`,
+          sender: 'ai',
+          timestamp: new Date(),
+        },
+      ]);
+      setSummarizeDialogOpen(false);
+      setSummarizeInput('');
+    } catch {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: (Date.now() + 3).toString(),
+          content: 'Failed to summarize.',
+          sender: 'ai',
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setSummarizeLoading(false);
+    }
+  };
 
   // ===== SUGGESTION HANDLING =====
   
@@ -863,9 +900,25 @@ const AIAssistant: React.FC = () => {
                         </Box>
                       );
                     })() : (
-                      <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize: '0.98rem', fontStyle: isAI ? 'italic' : 'normal' }}>
-                        {cleanedContent}
-                      </Typography>
+                      <>
+                        {isAI && message.content.startsWith('__SUMMARY__:') ? (() => {
+                          const { summary, keyPoints } = JSON.parse(message.content.replace('__SUMMARY__:', ''));
+                          return (
+                            <Box sx={{ mt: 1 }}>
+                              <Typography variant="subtitle2" fontWeight="bold">Summary</Typography>
+                              <Typography variant="body2" sx={{ mb: 1 }}>{summary}</Typography>
+                              <Typography variant="subtitle2" fontWeight="bold">Key Points</Typography>
+                              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                                {keyPoints.map((kp: string, i: number) => <li key={i}><Typography variant="body2">{kp}</Typography></li>)}
+                              </ul>
+                            </Box>
+                          );
+                        })() : (
+                          <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize: '0.98rem', fontStyle: isAI ? 'italic' : 'normal' }}>
+                            {cleanedContent}
+                          </Typography>
+                        )}
+                      </>
                     )}
                     {/* AI message actions - Copy, Like, Dislike */}
                     {isAI && (
@@ -1040,6 +1093,7 @@ const AIAssistant: React.FC = () => {
             >
               <Send sx={{ fontSize: '0.9rem' }} />
             </Button>
+            <Button variant="outlined" sx={{ ml: 2 }} onClick={() => setSummarizeDialogOpen(true)}>Summarize Text</Button>
           </Box>
           
           {/* Quick Action Buttons */}
@@ -1368,6 +1422,28 @@ const AIAssistant: React.FC = () => {
           </DialogActions>
         </Dialog>
       )}
+
+      {/* Summarize Dialog */}
+      <Dialog open={summarizeDialogOpen} onClose={() => setSummarizeDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Summarize Text</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Paste text to summarize"
+            value={summarizeInput}
+            onChange={e => setSummarizeInput(e.target.value)}
+            fullWidth
+            multiline
+            minRows={4}
+            margin="normal"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSummarizeDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleSummarize} variant="contained" disabled={summarizeLoading || !summarizeInput}>
+            {summarizeLoading ? <CircularProgress size={20} /> : 'Summarize'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <style>
         {`

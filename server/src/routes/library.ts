@@ -7,6 +7,7 @@ import { asyncHandler } from '../middleware/errorHandler';
 import libraryService from '../services/libraryService';
 import userManagementService from '../services/userManagementService';
 import { logger } from '../utils/logger';
+import AIService from '../services/aiService';
 
 const router = Router();
 
@@ -285,6 +286,71 @@ router.post('/upload', upload.single('file'), asyncHandler(async (req: Request, 
     message: initialStatus === 'APPROVED' ? 'File uploaded and approved' : 'File uploaded and pending approval',
     data: uploadedFile
   });
+}));
+
+// POST /library/past-papers/upload
+router.post('/past-papers/upload', upload.single('file'), asyncHandler(async (req, res) => {
+  const { subject, grade, year, tags, uploadedBy } = req.body;
+  if (!req.file) return res.status(400).json({ success: false, message: 'File is required' });
+  // Save file info in DB with fileType: 'PDF' and metadata for past paper
+  const fileData = await libraryService.uploadFile({
+    filename: req.file.filename,
+    originalName: req.file.originalname,
+    filePath: req.file.path,
+    fileType: 'PDF',
+    fileSize: req.file.size,
+    mimeType: req.file.mimetype,
+    sectionId: '', // You may want to set this appropriately
+    uploadedBy: uploadedBy || 'system', // Set to actual user if available
+    description: `Past paper for ${subject} ${grade} ${year}`,
+    tags: tags ? JSON.parse(tags) : [],
+    metadata: { subject, grade, year, type: 'past-paper' },
+  });
+  res.status(201).json({ success: true, data: fileData });
+}));
+
+// GET /library/past-papers
+router.get('/past-papers', asyncHandler(async (req, res) => {
+  const { subject, grade, year, q, limit = 20, offset = 0 } = req.query;
+  const filesResult = await libraryService.getAllFiles(
+    undefined,
+    undefined,
+    Number(limit),
+    Number(offset),
+    undefined,
+    q as string
+  );
+  // Filter for past papers in metadata
+  const files = (filesResult.files || []).filter(f => {
+    try {
+      const meta = typeof f.metadata === 'string' ? JSON.parse(f.metadata) : f.metadata;
+      return meta && meta.type === 'past-paper' &&
+        (!subject || meta.subject === subject) &&
+        (!grade || meta.grade === grade) &&
+        (!year || meta.year === year);
+    } catch {
+      return false;
+    }
+  });
+  res.json({ success: true, data: files });
+}));
+
+// POST /library/past-papers/extract-questions
+router.post('/past-papers/extract-questions', asyncHandler(async (req, res) => {
+  const { fileId } = req.body;
+  const file = await libraryService.getFileById(fileId);
+  if (!file) return res.status(404).json({ success: false, message: 'File not found' });
+  // Assume file text is already extracted or use OCR if needed
+  const fileText = file.extractedText || '';
+  const prompt = `Extract exam questions from the following past paper text. Return as JSON: { questions: [ { number, question, options?, answer? } ] }\n\n${fileText}`;
+  const response = await AIService['callGrokAPI'](prompt);
+  let data: any = null;
+  try {
+    const m = response.match(/\{[\s\S]*\}/);
+    data = m ? JSON.parse(m[0]) : null;
+  } catch {}
+  if (!data) data = { questions: [] };
+  res.json({ success: true, data });
 }));
 
 // @desc    Get files by section/subfolder

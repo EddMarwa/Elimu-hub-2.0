@@ -385,6 +385,18 @@ export const libraryAPI = {
   }
 };
 
+// Past Papers API
+export const pastPapersAPI = {
+  upload: (formData: FormData) =>
+    api.post('/library/past-papers/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  list: (params?: { subject?: string; grade?: string; year?: string; q?: string; limit?: number; offset?: number }) =>
+    api.get('/library/past-papers', { params }),
+  extractQuestions: (fileId: string) =>
+    api.post('/library/past-papers/extract-questions', { fileId }),
+};
+
 // Lesson Plans API
 export const lessonPlansAPI = {
   getLessonPlans: (params?: string) => api.get(`/lesson-plans${params ? `?${params}` : ''}`),
@@ -415,6 +427,20 @@ export const lessonPlansAPI = {
   // Sharing
   shareLessonPlan: (lessonPlanId: string, data: any) => api.post(`/lesson-plans/${lessonPlanId}/share`, data),
   getSharedLessonPlans: () => api.get('/lesson-plans/shared'),
+};
+
+// AI Lesson Plan and Lesson Notes API
+export const aiLessonAPI = {
+  generateLessonPlan: (data: { subject: string; grade: string; topic: string; objectives?: string; context?: string }) =>
+    api.post('/ai/lesson-plan', data),
+  generateLessonNotes: (data: { subject: string; grade: string; topic: string; scheme?: any; lessonPlan?: any; context?: string }) =>
+    api.post('/ai/lesson-notes', data),
+};
+
+// Summarization API
+export const aiSummarizeAPI = {
+  summarize: (text: string, context?: string) =>
+    api.post('/ai/summarize', { text, context }),
 };
 
 export default api;
