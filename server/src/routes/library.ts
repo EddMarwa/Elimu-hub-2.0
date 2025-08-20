@@ -340,8 +340,12 @@ router.post('/past-papers/extract-questions', asyncHandler(async (req, res) => {
   const { fileId } = req.body;
   const file = await libraryService.getFileById(fileId);
   if (!file) return res.status(404).json({ success: false, message: 'File not found' });
-  // Assume file text is already extracted or use OCR if needed
-  const fileText = file.extractedText || '';
+  // Extract text from metadata if present
+  let meta: any = {};
+  try {
+    meta = typeof file.metadata === 'string' ? JSON.parse(file.metadata) : file.metadata;
+  } catch {}
+  const fileText = meta?.extractedText || '';
   const prompt = `Extract exam questions from the following past paper text. Return as JSON: { questions: [ { number, question, options?, answer? } ] }\n\n${fileText}`;
   const response = await AIService['callGrokAPI'](prompt);
   let data: any = null;
