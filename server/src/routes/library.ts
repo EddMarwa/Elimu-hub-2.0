@@ -337,8 +337,6 @@ router.get('/past-papers', asyncHandler(async (req, res) => {
   res.json({ success: true, data: files });
 }));
 
-
-
 // GET /library/past-papers/extract-questions
 router.get('/past-papers/extract-questions', asyncHandler(async (req, res) => {
   const { fileId } = req.query;
