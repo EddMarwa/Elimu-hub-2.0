@@ -337,6 +337,16 @@ router.get('/past-papers', asyncHandler(async (req, res) => {
   res.json({ success: true, data: files });
 }));
 
+
+
+// GET /library/past-papers/extract-questions
+router.get('/past-papers/extract-questions', asyncHandler(async (req, res) => {
+  const { fileId } = req.query;
+  const file = await libraryService.getFileById(fileId as string);
+  if (!file) return res.status(404).json({ success: false, message: 'File not found' });
+  res.json({ success: true, data: file });
+}));
+
 // POST /library/past-papers/extract-questions
 router.post('/past-papers/extract-questions', asyncHandler(async (req, res) => {
   const { fileId } = req.body;
