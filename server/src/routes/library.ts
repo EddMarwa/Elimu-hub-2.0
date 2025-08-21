@@ -11,6 +11,8 @@ import AIService from '../services/aiService';
 
 const router = Router();
 
+
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
