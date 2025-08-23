@@ -25,8 +25,8 @@ import adminUserRoutes from './routes/admin/users';
 import aiRoutes from './routes/ai';
 import lessonPlanRoutes from './routes/lessonPlans';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables from project root
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
