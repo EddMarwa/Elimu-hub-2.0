@@ -44,6 +44,18 @@ A comprehensive web application for Kenyan teachers to generate CBC-compliant sc
 
 ## 🏗️ System Architecture
 
+### Database (PostgreSQL + Prisma)
+```
+server/
+├── prisma/
+│   ├── schema.prisma           # Database schema definition
+│   ├── seed.ts                 # Database seeding script
+│   └── migrations/             # Database migration files
+├── src/
+│   └── generated/
+│       └── prisma/             # Generated Prisma Client
+```
+
 ### Backend (Node.js/TypeScript)
 ```
 server/
@@ -73,19 +85,39 @@ client/
 │   └── theme.ts                 # Green-gold-white branding
 ```
 
+### Database Models
+The system uses PostgreSQL with Prisma ORM and includes the following key models:
+- **User**: Teachers, admins with role-based access control
+- **Document**: Curriculum documents with OCR processing
+- **SchemeOfWork**: CBC-compliant schemes with weekly plans
+- **LessonPlan**: Individual lesson plans with versioning
+- **LibraryFile**: Educational resources organized by sections
+- **Template**: Reusable templates for schemes and assessments
+- **AuditLog**: Comprehensive activity tracking for compliance
+
 ### Key Technologies
-- **Backend**: Node.js, Express, TypeScript, MongoDB
+- **Backend**: Node.js, Express, TypeScript, PostgreSQL, Prisma ORM
 - **Frontend**: React, Material-UI, TypeScript
 - **AI/ML**: ChromaDB, Transformers.js, Sentence Transformers
 - **Document Processing**: Tesseract.js, PDF-parse, Sharp
 - **Export**: Puppeteer, DOCX library, HTML-to-PDF
 - **Search**: Vector embeddings, semantic similarity
+- **Database**: PostgreSQL with Prisma ORM for type-safe database operations
 
 ## 🚀 Quick Start
 
+### Database Setup
+The project uses PostgreSQL with Prisma ORM. The database schema includes:
+- **Users**: Teacher and admin accounts with role-based permissions
+- **Documents**: Curriculum materials with OCR processing capabilities
+- **Schemes of Work**: CBC-compliant weekly planning structures
+- **Lesson Plans**: Individual lesson templates with versioning
+- **Library System**: Organized educational resource management
+- **Audit Trail**: Comprehensive activity logging for compliance
+
 ### Prerequisites
 - Node.js 18+ and npm
-- MongoDB database
+- PostgreSQL 12+ database
 - Python 3.8+ (for some ML dependencies)
 
 ### Installation
@@ -107,7 +139,7 @@ npm run install:all
 cp server/.env.example server/.env
 
 # Configure your environment variables
-# - MongoDB connection string
+# - PostgreSQL DATABASE_URL (postgres://elimu_user:Ed10400die#@localhost:5432/elimuhub)
 # - ChromaDB settings
 # - File upload paths
 ```
@@ -122,13 +154,26 @@ npm run server:dev  # Backend on :5000
 npm run client:dev  # Frontend on :3000
 ```
 
-5. **Initialize Services**
+5. **Initialize Database & Services**
 ```bash
+# Set up PostgreSQL database
+cd server
+npx prisma migrate dev
+npx prisma generate
+npx prisma db seed
+
 # The system will automatically:
 # - Initialize ChromaDB collection
 # - Set up OCR workers
 # - Create upload directories
 ```
+
+**Database Seeding**: The system includes a comprehensive seeding script that creates:
+- **Default Users**: Admin and teacher accounts for testing
+- **Sample Templates**: CBC scheme of work templates  
+- **Demo Lesson Plans**: Sample mathematics and science lessons
+- **Library Structure**: Organized sections and sample resources
+- **Initial Data**: Ready-to-use educational content
 
 ## 📚 Usage Guide
 
@@ -190,11 +235,24 @@ npm run client:dev  # Frontend on :3000
 
 ## 🔧 Configuration
 
+### Database Configuration
+The project uses PostgreSQL with the following configuration:
+- **Database**: `elimuhub`
+- **User**: `elimu_user`
+- **Host**: `localhost:5432`
+- **Connection**: `postgres://elimu_user:Ed10400die#@localhost:5432/elimuhub`
+
+**Prisma Setup**:
+- Schema location: `server/prisma/schema.prisma`
+- Generated client: `server/src/generated/prisma`
+- Migrations: `server/prisma/migrations/`
+- Seeding: `server/prisma/seed.ts`
+
 ### Backend Configuration
 ```typescript
 // server/.env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/elimuhub
+DATABASE_URL=postgres://elimu_user:Ed10400die#@localhost:5432/elimuhub
 CHROMA_DB_PATH=http://localhost:8000
 UPLOAD_MAX_SIZE=50MB
 OCR_LANGUAGE=eng
@@ -291,7 +349,7 @@ docker-compose up -d
 # Services included:
 # - Node.js backend
 # - React frontend (served by Nginx)
-# - MongoDB database
+# - PostgreSQL database
 # - ChromaDB vector store
 ```
 
@@ -300,7 +358,7 @@ docker-compose up -d
 # Production environment
 NODE_ENV=production
 PORT=5000
-MONGODB_URI=mongodb://mongo:27017/elimuhub
+DATABASE_URL=postgres://elimu_user:Ed10400die#@postgres:5432/elimuhub
 CHROMA_DB_PATH=http://chromadb:8000
 CORS_ORIGIN=https://your-domain.com
 ```
