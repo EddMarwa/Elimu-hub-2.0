@@ -1,20 +1,19 @@
 version: '3.8'
 
 services:
-  # MongoDB Database
-  mongodb:
-    image: mongo:6.0
-    container_name: elimuhub-mongodb
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: elimuhub-postgres
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
-      MONGO_INITDB_DATABASE: elimuhub
+      POSTGRES_DB: elimuhub
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
     ports:
-      - "27017:27017"
+      - "5432:5432"
     volumes:
-      - mongodb_data:/data/db
-      - ./server/scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - elimuhub-network
 
@@ -28,7 +27,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 5000
-      MONGODB_URI: mongodb://admin:password123@mongodb:27017/elimuhub?authSource=admin
+      DATABASE_URL: postgresql://postgres:password123@postgres:5432/elimuhub
       JWT_SECRET: your-production-jwt-secret-here
       JWT_REFRESH_SECRET: your-production-refresh-secret-here
       OPENAI_API_KEY: ${OPENAI_API_KEY}
@@ -39,7 +38,7 @@ services:
       - ./server/uploads:/app/uploads
       - ./server/logs:/app/logs
     depends_on:
-      - mongodb
+      - postgres
     networks:
       - elimuhub-network
 
@@ -79,7 +78,7 @@ services:
       - production
 
 volumes:
-  mongodb_data:
+  postgres_data:
     driver: local
 
 networks:
