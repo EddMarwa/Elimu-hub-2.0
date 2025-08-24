@@ -1,15 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import userService from '../services/userService';
+import { PrismaClient, UserRole } from '../generated/prisma';
 import logger from '../utils/logger';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const prisma = new PrismaClient();
+
+// Re-export UserRole for convenience
+export { UserRole };
 
 export interface AuthenticatedRequest extends Request {
   user?: {
-    userId: string;
+    id: string;
     email: string;
-    role: string;
+    role: UserRole;
+    firstName: string;
+    lastName: string;
   };
 }
 
@@ -34,10 +40,21 @@ export const authenticateToken = async (
     // Verify JWT token
     const decoded = jwt.verify(token, JWT_SECRET) as any;
     
-    // Verify user still exists in database
-    const user = await userService.findUserById(decoded.userId);
+    // Query database for full user record
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        firstName: true,
+        lastName: true,
+        status: true
+      }
+    });
+
     if (!user) {
-      logger.warn(`Token valid but user not found: ${decoded.userId}`);
+      logger.warn(`Token valid but user not found: ${decoded.id}`);
       res.status(401).json({
         success: false,
         message: 'User not found'
@@ -55,10 +72,13 @@ export const authenticateToken = async (
       return;
     }
 
+    // Attach full user object to request
     req.user = {
-      userId: user.id,
+      id: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
+      firstName: user.firstName,
+      lastName: user.lastName
     };
 
     logger.info(`User authenticated: ${user.email} (${user.role})`);
@@ -87,7 +107,7 @@ export const authenticateToken = async (
   }
 };
 
-export const requireRole = (roles: string[]) => {
+export const requireRole = (roles: UserRole[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
       logger.warn('Role check attempted without authentication');
@@ -124,13 +144,25 @@ export const optionalAuth = async (
 
     if (token) {
       const decoded = jwt.verify(token, JWT_SECRET) as any;
-      const user = await userService.findUserById(decoded.userId);
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          firstName: true,
+          lastName: true,
+          status: true
+        }
+      });
       
       if (user && user.status === 'ACTIVE') {
         req.user = {
-          userId: user.id,
+          id: user.id,
           email: user.email,
-          role: user.role
+          role: user.role,
+          firstName: user.firstName,
+          lastName: user.lastName
         };
         logger.info(`Optional auth successful: ${user.email}`);
       }

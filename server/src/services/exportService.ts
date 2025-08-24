@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType } from 'docx';
 import puppeteer from 'puppeteer';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 import { SchemeOfWork } from '../types';
 
 export interface ExportOptions {

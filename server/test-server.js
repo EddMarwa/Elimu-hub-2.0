@@ -1,66 +1,125 @@
-const axios = require('axios');
+const express = require('express');
+const cors = require('cors');
+const { PrismaClient } = require('./src/generated/prisma');
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const app = express();
+const prisma = new PrismaClient();
+const PORT = process.env.PORT || 5000;
 
-async function testServer() {
-  console.log('🚀 Testing Server Status...\n');
+// Middleware
+app.use(cors());
+app.use(express.json());
 
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Test database connection
+app.get('/test-db', async (req, res) => {
   try {
-    // Test 1: Health check
-    console.log('1. Testing health check...');
-    const healthResponse = await axios.get(`${API_BASE_URL.replace('/api', '')}/health`);
-    console.log('✅ Server is running:', healthResponse.data.status);
-    console.log('📊 Server info:', {
-      uptime: healthResponse.data.uptime,
-      environment: healthResponse.data.environment,
-      timestamp: healthResponse.data.timestamp
+    const userCount = await prisma.user.count();
+    res.json({ 
+      status: 'Database connected', 
+      userCount,
+      message: 'Database communication working!'
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'Database error', 
+      error: error.message 
+    });
+  }
+});
+
+// Simple login endpoint
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email }
     });
 
-    // Test 2: API info endpoint
-    console.log('\n2. Testing API info...');
-    const apiInfoResponse = await axios.get(`${API_BASE_URL}`);
-    console.log('✅ API is accessible');
-    console.log('📋 Available endpoints:', Object.keys(apiInfoResponse.data.endpoints));
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
 
-    // Test 3: Test lesson plans endpoint (public)
-    console.log('\n3. Testing lesson plans endpoint...');
-    const lessonPlansResponse = await axios.get(`${API_BASE_URL}/lesson-plans`);
-    console.log('✅ Lesson plans endpoint accessible');
-    console.log('📊 Response structure:', {
-      success: lessonPlansResponse.data.success,
-      hasData: !!lessonPlansResponse.data.data,
-      hasPagination: !!lessonPlansResponse.data.pagination
+    // For testing, accept any password
+    res.json({
+      success: true,
+      message: 'Login successful',
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        },
+        token: 'test-token-' + Date.now()
+      }
     });
-
-    // Test 4: Test folders endpoint (public)
-    console.log('\n4. Testing folders endpoint...');
-    const foldersResponse = await axios.get(`${API_BASE_URL}/lesson-plans/folders`);
-    console.log('✅ Folders endpoint accessible');
-    console.log('📊 Folders response:', {
-      success: foldersResponse.data.success,
-      hasData: !!foldersResponse.data.data
-    });
-
-    console.log('\n🎉 Server is running correctly!');
-    console.log('\n📋 Server Status Summary:');
-    console.log('✅ Health check: PASSED');
-    console.log('✅ API endpoints: ACCESSIBLE');
-    console.log('✅ Public routes: WORKING');
-    console.log('✅ Database connection: ACTIVE');
 
   } catch (error) {
-    console.error('\n❌ Server test failed:', error.message);
-    
-    if (error.code === 'ECONNREFUSED') {
-      console.log('\n💡 Server is not running. Please start the server first:');
-      console.log('   npm run dev (or npm start)');
-    } else if (error.response?.status === 500) {
-      console.log('\n💡 Server error - check server logs for details');
-    } else {
-      console.log('\n💡 Unexpected error - check server configuration');
-    }
+    res.status(500).json({
+      success: false,
+      message: 'Login failed',
+      error: error.message
+    });
   }
-}
+});
 
-// Run the test
-testServer();
+// Get all users
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        status: true,
+        createdAt: true
+      }
+    });
+    
+    res.json({
+      success: true,
+      data: users
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get users',
+      error: error.message
+    });
+  }
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Test server running on port ${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🗄️ Database test: http://localhost:${PORT}/test-db`);
+  console.log(`🔐 Test login: POST http://localhost:${PORT}/api/auth/login`);
+  console.log(`👥 Get users: GET http://localhost:${PORT}/api/users`);
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\n🔄 Shutting down gracefully...');
+  await prisma.$disconnect();
+  process.exit(0);
+});

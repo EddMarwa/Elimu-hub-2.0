@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express from 'express';
 import { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
@@ -7,9 +7,9 @@ import { asyncHandler } from '../middleware/errorHandler';
 import PDFProcessor from '../services/pdfProcessor';
 import DocumentProcessor from '../services/documentProcessor';
 import EmbeddingService from '../services/embeddingService';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
-const router = Router();
+const router = express.Router();
 
 // Multer configuration for file uploads
 const storage = multer.diskStorage({

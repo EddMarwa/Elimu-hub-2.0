@@ -1,6 +1,7 @@
-import { PrismaClient, User, UserRole, UserStatus, AuditAction } from '../generated/prisma';
-import { logger } from '../utils/logger';
-import bcrypt from 'bcryptjs';
+import { PrismaClient, User } from '../generated/prisma';
+import { UserRole, UserStatus, AuditAction } from '../types/enums';
+import logger from '../utils/logger';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -23,6 +24,26 @@ export interface UpdateUserData {
   county?: string;
   subjects?: string[];
   status?: UserStatus;
+}
+
+export interface UserWithoutPassword {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  school?: string | null;
+  county?: string | null;
+  subjects?: string | null;
+  status: UserStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  _count?: {
+    documents: number;
+    schemesOfWork: number;
+    lessonPlans: number;
+    libraryFiles: number;
+  };
 }
 
 export interface UserFilters {
@@ -102,7 +123,7 @@ export class AdminService {
   /**
    * Get all users with filtering and pagination
    */
-  async getAllUsers(filters: UserFilters = {}, page = 1, limit = 20): Promise<{ users: User[], total: number, page: number, totalPages: number }> {
+  async getAllUsers(filters: UserFilters = {}, page = 1, limit = 20): Promise<{ users: UserWithoutPassword[], total: number, page: number, totalPages: number }> {
     try {
       const skip = (page - 1) * limit;
       
@@ -482,7 +503,7 @@ export class AdminService {
         select: { role: true }
       });
 
-      return user ? [UserRole.ADMIN, UserRole.SUPER_ADMIN].includes(user.role) : false;
+      return user ? [UserRole.ADMIN, UserRole.SUPER_ADMIN].includes(user.role as UserRole) : false;
     } catch (error) {
       logger.error('Error checking admin permission:', error);
       return false;

@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import { Request, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
-import { authenticateToken, AuthenticatedRequest } from '../middleware/authMiddleware';
-import { requireRole } from '../middleware/authMiddleware';
+import { authenticateToken, AuthenticatedRequest, requireRole, UserRole } from '../middleware/authMiddleware';
 import { PrismaClient } from '../generated/prisma';
 import bcrypt from 'bcryptjs';
 
@@ -12,7 +11,7 @@ const prisma = new PrismaClient();
 // @desc    Get all users (Admin only)
 // @route   GET /api/users
 // @access  Private/Admin
-router.get('/', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.get('/', authenticateToken, requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { page = 1, limit = 10, search, role, status } = req.query;
   
   const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
@@ -181,7 +180,7 @@ router.put('/:id', authenticateToken, asyncHandler(async (req: AuthenticatedRequ
 // @desc    Delete user (Admin only)
 // @route   DELETE /api/users/:id
 // @access  Private/Admin
-router.delete('/:id', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id', authenticateToken, requireRole([UserRole.SUPER_ADMIN]), asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { id } = req.params;
   
   // Prevent self-deletion

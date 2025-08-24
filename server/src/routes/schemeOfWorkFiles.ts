@@ -3,8 +3,8 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { PrismaClient } from '../generated/prisma';
-import { authenticateToken, requireRole, AuthenticatedRequest } from '../middleware/authMiddleware';
-import { logger } from '../utils/logger';
+import { authenticateToken, requireRole, AuthenticatedRequest, UserRole } from '../middleware/authMiddleware';
+import logger from '../utils/logger';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -135,7 +135,7 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
 router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
 
     const file = await prisma.schemeOfWorkFile.findFirst({
       where: {
@@ -178,9 +178,9 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
 });
 
 // Upload a new scheme file (Admin only)
-router.post('/upload', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), upload.single('file'), async (req: AuthenticatedRequest, res) => {
+router.post('/upload', authenticateToken, requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), upload.single('file'), async (req: AuthenticatedRequest, res) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const {
       title,
       description,
@@ -255,7 +255,7 @@ router.post('/upload', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']),
 router.get('/:id/download', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
 
     const file = await prisma.schemeOfWorkFile.findFirst({
       where: {
@@ -308,10 +308,10 @@ router.get('/:id/download', authenticateToken, async (req: AuthenticatedRequest,
 });
 
 // Update a scheme file (Admin only)
-router.put('/:id', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), async (req: AuthenticatedRequest, res) => {
+router.put('/:id', authenticateToken, requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const {
       title,
       description,
@@ -379,10 +379,10 @@ router.put('/:id', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), asy
 });
 
 // Delete a scheme file (Admin only)
-router.delete('/:id', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), async (req: AuthenticatedRequest, res) => {
+router.delete('/:id', authenticateToken, requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
 
     // Check if file exists and belongs to user
     const existingFile = await prisma.schemeOfWorkFile.findFirst({
@@ -425,7 +425,7 @@ router.delete('/:id', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), 
 });
 
 // Get scheme file statistics (Admin only)
-router.get('/stats/overview', authenticateToken, requireRole(['ADMIN', 'SUPER_ADMIN']), async (req: AuthenticatedRequest, res) => {
+router.get('/stats/overview', authenticateToken, requireRole([UserRole.ADMIN, UserRole.SUPER_ADMIN]), async (req: AuthenticatedRequest, res) => {
   try {
     const [totalFiles, totalDownloads, recentUploads, topSubjects] = await Promise.all([
       prisma.schemeOfWorkFile.count(),

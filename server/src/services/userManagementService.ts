@@ -1,5 +1,5 @@
-import { PrismaClient } from '../generated/prisma';
-import { logger } from '../utils/logger';
+import { PrismaClient, User, UserRole, UserStatus } from '../generated/prisma';
+import logger from '../utils/logger';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();

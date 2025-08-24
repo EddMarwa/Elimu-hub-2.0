@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { CustomError } from './errorHandler';
+import logger from '../utils/logger';
 
 export const notFoundHandler = (req: Request, res: Response, next: NextFunction): void => {
-  const error = new CustomError(`Not found - ${req.originalUrl}`, 404);
-  next(error);
+  logger.warn(`Route not found: ${req.method} ${req.originalUrl}`);
+  
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.method} ${req.originalUrl} not found`
+  });
 };

@@ -3,7 +3,7 @@ import multer from 'multer';
 import rateLimit from 'express-rate-limit';
 import { PrismaClient } from '../generated/prisma';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/authMiddleware';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 import OpenAI from 'openai';
 import { DocumentProcessor } from '../services/documentProcessor';
 
@@ -66,7 +66,7 @@ if (process.env.OPENAI_API_KEY) {
 // Get all schemes of work for the authenticated user
 router.get('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const { 
       page = 1, 
       limit = 10, 
@@ -143,7 +143,7 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
 router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
 
     const scheme = await prisma.schemeOfWork.findFirst({
       where: {
@@ -175,7 +175,7 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
 // Create a new scheme of work
 router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const {
       title,
       subject,
@@ -246,7 +246,7 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
 router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const {
       title,
       subject,
@@ -318,7 +318,7 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
 router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
 
     // Check if scheme exists and belongs to user
     const existingScheme = await prisma.schemeOfWork.findFirst({
@@ -364,7 +364,7 @@ router.post('/upload-template', authenticateToken, upload.single('template'), as
       });
     }
 
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const { subject, grade } = req.body; // Optional metadata
     
     // Process the uploaded document
@@ -413,7 +413,7 @@ router.post('/upload-template', authenticateToken, upload.single('template'), as
 // Get user's templates
 router.get('/templates', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     
     const templates = await prisma.schemeTemplate.findMany({
       where: {
@@ -449,7 +449,7 @@ router.get('/templates', authenticateToken, async (req: AuthenticatedRequest, re
 router.get('/templates/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
 
     const template = await prisma.schemeTemplate.findFirst({
       where: {
@@ -482,7 +482,7 @@ router.get('/templates/:id', authenticateToken, async (req: AuthenticatedRequest
 router.delete('/templates/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
 
     const template = await prisma.schemeTemplate.findFirst({
       where: {

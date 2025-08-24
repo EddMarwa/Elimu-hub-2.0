@@ -1,9 +1,11 @@
-import { Router } from 'express';
+import express from 'express';
+import { Response } from 'express';
+import { PrismaClient } from '../../generated/prisma';
+import logger from '../../utils/logger';
 import adminService from '../../services/adminService';
 import { requireAdmin, requireSuperAdmin } from '../../middleware/adminMiddleware';
-import { logger } from '../../utils/logger';
 
-const router = Router();
+const router = express.Router();
 
 /**
  * @route   GET /api/admin/system/stats
@@ -36,7 +38,6 @@ router.get('/stats', requireAdmin, async (req, res) => {
  */
 router.get('/health', requireAdmin, async (req, res) => {
   try {
-    const { PrismaClient } = require('../../generated/prisma');
     const prisma = new PrismaClient();
 
     // Test database connection
@@ -59,11 +60,14 @@ router.get('/health', requireAdmin, async (req, res) => {
         status: 'connected',
         test: dbHealth
       },
+      // System information
       system: {
-        nodeVersion: process.version,
         platform: process.platform,
-        memory: process.memoryUsage(),
-        environment: process.env.NODE_ENV || 'development'
+        arch: process.arch,
+        nodeVersion: process.version,
+        uptime: process.uptime(),
+        memoryUsage: process.memoryUsage(),
+        loadAverage: null
       },
       data: {
         users: userCount,
@@ -121,7 +125,7 @@ router.get('/performance', requireAdmin, async (req, res) => {
       },
       cpu: {
         uptime: process.uptime(),
-        loadAverage: process.loadavg ? process.loadavg() : null
+        loadAverage: null
       },
       process: {
         pid: process.pid,
@@ -153,7 +157,6 @@ router.get('/performance', requireAdmin, async (req, res) => {
  */
 router.get('/logs', requireAdmin, async (req, res) => {
   try {
-    const { PrismaClient } = require('../../generated/prisma');
     const prisma = new PrismaClient();
 
     // Get recent audit logs
@@ -297,7 +300,6 @@ router.post('/backup/trigger', requireSuperAdmin, async (req, res) => {
  */
 router.get('/analytics', requireAdmin, async (req, res) => {
   try {
-    const { PrismaClient } = require('../../generated/prisma');
     const prisma = new PrismaClient();
 
     // Get analytics data for the last 30 days

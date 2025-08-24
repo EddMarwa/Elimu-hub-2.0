@@ -1,9 +1,10 @@
-import { Router } from 'express';
-import adminService from '../../services/adminService';
+import express from 'express';
+import { Response } from 'express';
+import { PrismaClient, AuditAction } from '../../generated/prisma';
+import logger from '../../utils/logger';
 import { requireAdmin, requireSuperAdmin } from '../../middleware/adminMiddleware';
-import { logger } from '../../utils/logger';
 
-const router = Router();
+const router = express.Router();
 
 /**
  * @route   GET /api/admin/audit/logs

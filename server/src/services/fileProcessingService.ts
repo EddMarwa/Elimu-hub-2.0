@@ -1,7 +1,8 @@
-import { PrismaClient, DocumentType, ProcessingStatus } from '../generated/prisma';
-import { logger } from '../utils/logger';
-import path from 'path';
-import fs from 'fs';
+import { PrismaClient } from '../generated/prisma';
+import { DocumentType, ProcessingStatus } from '../types/enums';
+import logger from '../utils/logger';
+import * as path from 'path';
+import * as fs from 'fs';
 import multer from 'multer';
 import { createWorker } from 'tesseract.js';
 import mammoth from 'mammoth';

@@ -1,0 +1,59 @@
+// Enum definitions for ElimuHub 2.0
+// These match the Prisma schema enums
+
+export enum UserRole {
+  TEACHER = 'TEACHER',
+  ADMIN = 'ADMIN',
+  SUPER_ADMIN = 'SUPER_ADMIN'
+}
+
+export enum UserStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  SUSPENDED = 'SUSPENDED'
+}
+
+export enum DocumentType {
+  CURRICULUM_DESIGN = 'CURRICULUM_DESIGN',
+  TEACHERS_GUIDE = 'TEACHERS_GUIDE',
+  LEARNERS_BOOK = 'LEARNERS_BOOK',
+  ASSESSMENT_RUBRIC = 'ASSESSMENT_RUBRIC'
+}
+
+export enum ProcessingStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED'
+}
+
+export enum TemplateType {
+  SCHEME_OF_WORK = 'SCHEME_OF_WORK',
+  ASSESSMENT = 'ASSESSMENT'
+}
+
+export enum LibraryFileStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  DECLINED = 'DECLINED'
+}
+
+export enum LibraryFileType {
+  PDF = 'PDF',
+  VIDEO = 'VIDEO',
+  AUDIO = 'AUDIO',
+  IMAGE = 'IMAGE',
+  DOCUMENT = 'DOCUMENT'
+}
+
+export enum AuditAction {
+  CREATE_USER = 'CREATE_USER',
+  UPDATE_USER = 'UPDATE_USER',
+  DELETE_USER = 'DELETE_USER',
+  UPLOAD_FILE = 'UPLOAD_FILE',
+  APPROVE_FILE = 'APPROVE_FILE',
+  DECLINE_FILE = 'DECLINE_FILE',
+  DELETE_FILE = 'DELETE_FILE',
+  CREATE_SECTION = 'CREATE_SECTION',
+  CREATE_SUBFOLDER = 'CREATE_SUBFOLDER'
+}

@@ -39,7 +39,7 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
 
   // Generate JWT token
   const token = jwt.sign(
-    { userId: user.id, email: user.email, role: user.role },
+    { id: user.id, email: user.email, role: user.role },
     JWT_SECRET,
     { expiresIn: '7d' }
   );
@@ -89,7 +89,7 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
 
   // Generate JWT token
   const token = jwt.sign(
-    { userId: user.id, email: user.email, role: user.role },
+    { id: user.id, email: user.email, role: user.role },
     JWT_SECRET,
     { expiresIn: '7d' }
   );
@@ -137,7 +137,7 @@ router.get('/profile', authenticateToken, asyncHandler(async (req: Authenticated
   }
 
   // Get user details from database
-  const user = await userService.findUserById(req.user.userId);
+  const user = await userService.findUserById(req.user.id);
   if (!user) {
     return res.status(404).json({
       success: false,
@@ -178,7 +178,7 @@ router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
     
     // Find the user
-    const user = await userService.findUserById(decoded.userId);
+    const user = await userService.findUserById(decoded.id);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -188,7 +188,7 @@ router.post('/refresh', asyncHandler(async (req: Request, res: Response) => {
 
     // Generate new token
     const newToken = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: '7d' }
     );

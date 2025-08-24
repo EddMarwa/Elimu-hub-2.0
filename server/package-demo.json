@@ -1,0 +1,22 @@
+{
+  "name": "elimuhub-demo-server",
+  "version": "1.0.0",
+  "description": "Demo authentication server for ElimuHub 2.0",
+  "main": "simple-auth-server.js",
+  "scripts": {
+    "start": "node simple-auth-server.js",
+    "dev": "nodemon simple-auth-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "keywords": ["demo", "auth", "elimuhub"],
+  "author": "ElimuHub Team",
+  "license": "MIT"
+}

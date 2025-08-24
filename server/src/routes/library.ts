@@ -6,7 +6,7 @@ import fs from 'fs/promises';
 import { asyncHandler } from '../middleware/errorHandler';
 import libraryService from '../services/libraryService';
 import userManagementService from '../services/userManagementService';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 import AIService from '../services/aiService';
 
 const router = Router();
