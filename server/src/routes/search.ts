@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/authMiddleware';
 import searchService from '../services/searchService';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 const router = Router();
 
@@ -128,7 +128,7 @@ router.post('/advanced', authenticateToken, asyncHandler(async (req: Authenticat
 
   try {
     // Validate filters
-    const validatedFilters = this.validateFilters(filters);
+    const validatedFilters = validateFilters(filters);
 
     const searchQuery = {
       query: query || '',
@@ -309,7 +309,7 @@ router.post('/date-range', authenticateToken, asyncHandler(async (req: Authentic
 router.get('/stats', authenticateToken, asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   try {
     // Get search statistics for the user
-    const userSearchStats = await this.getUserSearchStats(req.user!.id);
+    const userSearchStats = await getUserSearchStats(req.user!.id);
 
     res.status(200).json({
       success: true,
@@ -360,7 +360,7 @@ router.post('/save-query', authenticateToken, asyncHandler(async (req: Authentic
 }));
 
 // Helper method to validate search filters
-private validateFilters(filters: any): any {
+function validateFilters(filters: any): any {
   const validated: any = {};
 
   if (filters?.subject && typeof filters.subject === 'string') {
@@ -387,7 +387,7 @@ private validateFilters(filters: any): any {
 }
 
 // Helper method to get user search statistics
-private async getUserSearchStats(userId: string): Promise<any> {
+async function getUserSearchStats(userId: string): Promise<any> {
   // TODO: Implement actual search analytics
   // For now, return mock data
   return {
