@@ -119,25 +119,25 @@ export class FileProcessingService {
 
       // Process based on file type
       switch (fileData.documentType) {
-        case 'PDF':
+        case DocumentType.CURRICULUM_DESIGN:
           const pdfResult = await this.processPDF(fileData.filePath);
           extractedContent = pdfResult.content;
           metadata = pdfResult.metadata;
           break;
 
-        case 'WORD':
+        case DocumentType.TEACHERS_GUIDE:
           const wordResult = await this.processWord(fileData.filePath);
           extractedContent = wordResult.content;
           metadata = wordResult.metadata;
           break;
 
-        case 'EXCEL':
+        case DocumentType.LEARNERS_BOOK:
           const excelResult = await this.processExcel(fileData.filePath);
           extractedContent = excelResult.content;
           metadata = excelResult.metadata;
           break;
 
-        case 'TEXT':
+        case DocumentType.ASSESSMENT_RUBRIC:
           const textResult = await this.processText(fileData.filePath);
           extractedContent = textResult.content;
           metadata = textResult.metadata;
@@ -170,7 +170,7 @@ export class FileProcessingService {
           fileName: fileData.fileName,
           filePath: fileData.filePath,
           extractedContent,
-          processingStatus: 'COMPLETED',
+          processingStatus: ProcessingStatus.COMPLETED,
           uploadedBy: fileData.uploadedBy,
           chunks: {
             create: chunks.map((chunk, index) => ({
@@ -208,7 +208,7 @@ export class FileProcessingService {
       return {
         success: true,
         extractedContent,
-        processingStatus: 'COMPLETED',
+        processingStatus: ProcessingStatus.COMPLETED,
         metadata: {
           ...metadata,
           processingTime: Date.now() - startTime
