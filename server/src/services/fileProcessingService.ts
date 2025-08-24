@@ -256,7 +256,7 @@ export class FileProcessingService {
    */
   private async processPDFWithOCR(filePath: string): Promise<{ content: string; metadata: any }> {
     try {
-      const worker = await createWorker('eng');
+      const worker = await createWorker();
       const { data: { text } } = await worker.recognize(filePath);
       await worker.terminate();
 
@@ -503,9 +503,9 @@ Respond in JSON format:
     try {
       const [total, completed, failed, processing] = await Promise.all([
         prisma.document.count(),
-        prisma.document.count({ where: { processingStatus: 'COMPLETED' } }),
-        prisma.document.count({ where: { processingStatus: 'FAILED' } }),
-        prisma.document.count({ where: { processingStatus: 'PENDING' } })
+        prisma.document.count({ where: { processingStatus: ProcessingStatus.COMPLETED } }),
+        prisma.document.count({ where: { processingStatus: ProcessingStatus.FAILED } }),
+        prisma.document.count({ where: { processingStatus: ProcessingStatus.PENDING } })
       ]);
 
       return {
@@ -535,26 +535,26 @@ Respond in JSON format:
         throw new Error('Document not found');
       }
 
-      if (document.processingStatus !== 'FAILED') {
+      if (document.processingStatus !== ProcessingStatus.FAILED) {
         throw new Error('Document is not in failed status');
       }
 
       // Reset status and retry
       await prisma.document.update({
         where: { id: documentId },
-        data: { processingStatus: 'PENDING' }
+        data: { processingStatus: ProcessingStatus.PENDING }
       });
 
       const fileData: FileUploadData = {
         originalName: document.title,
         fileName: document.fileName,
         filePath: document.filePath,
-        fileSize: document.fileSize,
-        mimeType: document.mimeType,
+        fileSize: 0, // Document model doesn't have fileSize
+        mimeType: 'application/octet-stream', // Document model doesn't have mimeType
         subject: document.subject,
         grade: document.grade,
         documentType: document.documentType,
-        description: document.description,
+        description: '', // Document model doesn't have description
         uploadedBy: document.uploadedBy
       };
 

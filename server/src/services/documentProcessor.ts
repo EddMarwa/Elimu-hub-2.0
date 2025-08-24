@@ -1,7 +1,6 @@
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import { PrismaClient } from '../generated/prisma';
-import { DocumentProcessor } from './documentProcessor';
 import logger from '../utils/logger';
 
 export interface ProcessingResult {

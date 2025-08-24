@@ -169,8 +169,8 @@ export class SearchService {
           relevance,
           metadata: {
             fileName: doc.fileName,
-            fileSize: doc.fileSize,
-            mimeType: doc.mimeType,
+            fileSize: 0, // Document model doesn't have fileSize
+            mimeType: 'application/octet-stream', // Document model doesn't have mimeType
             processingStatus: doc.processingStatus
           },
           highlights,
@@ -239,8 +239,8 @@ export class SearchService {
         relevance,
         metadata: {
           fileName: doc.fileName,
-          fileSize: doc.fileSize,
-          mimeType: doc.mimeType,
+          fileSize: 0, // Document model doesn't have fileSize
+          mimeType: 'application/octet-stream', // Document model doesn't have mimeType
           processingStatus: doc.processingStatus
         },
         highlights,
@@ -283,8 +283,8 @@ export class SearchService {
       relevance: 1.0,
       metadata: {
         fileName: doc.fileName,
-        fileSize: doc.fileSize,
-        mimeType: doc.mimeType,
+        fileSize: 0, // Document model doesn't have fileSize
+        mimeType: 'application/octet-stream', // Document model doesn't have mimeType
         processingStatus: doc.processingStatus
       },
       highlights: [],
