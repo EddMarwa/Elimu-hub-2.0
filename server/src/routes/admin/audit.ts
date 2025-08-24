@@ -1,8 +1,10 @@
-import express from 'express';
+import * as express from 'express';
 import { Response } from 'express';
-import { PrismaClient, AuditAction } from '../../generated/prisma';
+import { PrismaClient } from '../../generated/prisma';
+import { AuditAction } from '../../types/enums';
 import logger from '../../utils/logger';
 import { requireAdmin, requireSuperAdmin } from '../../middleware/adminMiddleware';
+import adminService from '../../services/adminService';
 
 const router = express.Router();
 
