@@ -19,9 +19,7 @@ import {
   Visibility,
   VisibilityOff,
   Email,
-  Lock,
-  School,
-  Person
+  Lock
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -75,28 +73,6 @@ const Login: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const demoAccounts = [
-    {
-      type: 'Teacher',
-      email: 'teacher@elimuhub.com',
-      password: 'password123',
-      icon: <School />,
-      color: '#2e7d32'
-    },
-    {
-      type: 'Admin',
-      email: 'admin@elimuhub.com',
-      password: 'password123',
-      icon: <Person />,
-      color: '#1976d2'
-    },
-  ];
-
-  const fillDemoAccount = (email: string, password: string) => {
-    setFormData({ email, password });
-    setError('');
   };
 
   return (
@@ -163,39 +139,6 @@ const Login: React.FC = () => {
                 </Typography>
               </Box>
             </Fade>
-
-            {/* Demo Accounts */}
-            <Fade in={true} timeout={1200}>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
-                  Quick Demo Access:
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  {demoAccounts.map((account) => (
-                    <Button
-                      key={account.type}
-                      variant="outlined"
-                      size="small"
-                      startIcon={account.icon}
-                      onClick={() => fillDemoAccount(account.email, account.password)}
-                      sx={{
-                        flex: 1,
-                        borderColor: account.color,
-                        color: account.color,
-                        '&:hover': {
-                          backgroundColor: account.color,
-                          color: 'white'
-                        }
-                      }}
-                    >
-                      {account.type}
-                    </Button>
-                  ))}
-                </Box>
-              </Box>
-            </Fade>
-
-            <Divider sx={{ mb: 3 }} />
 
             {/* Login Form */}
             <Fade in={true} timeout={1400}>

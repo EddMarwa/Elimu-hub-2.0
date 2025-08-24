@@ -21,7 +21,7 @@ import schemeFileRoutes from './routes/schemeOfWorkFiles';
 import templateRoutes from './routes/templates';
 import userRoutes from './routes/users';
 import libraryRoutes from './routes/library';
-import adminUserRoutes from './routes/admin/users';
+import adminRoutes from './routes/admin';
 import aiRoutes from './routes/ai';
 import lessonPlanRoutes from './routes/lessonPlans';
 
@@ -80,7 +80,7 @@ app.use('/api/scheme-files', schemeFileRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/library', libraryRoutes);
-app.use('/api/admin/users', adminUserRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/lesson-plans', lessonPlanRoutes);
 
@@ -98,7 +98,7 @@ app.get('/api', (req, res) => {
       templates: '/api/templates',
       users: '/api/users',
       library: '/api/library',
-      adminUsers: '/api/admin/users'
+      admin: '/api/admin'
     }
   });
 });
