@@ -7,7 +7,7 @@ import {
   canDeleteUser,
   logAdminAction 
 } from '../../middleware/adminMiddleware';
-import { logger } from '../../utils/logger';
+import logger from '../../utils/logger';
 import { UserRole } from '../../generated/prisma';
 
 const router = Router();

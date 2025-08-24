@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { UserRole } from '../generated/prisma';
 import adminService from '../services/adminService';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 // Extend Express Request interface to include user
 declare global {

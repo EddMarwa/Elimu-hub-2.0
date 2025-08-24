@@ -8,7 +8,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 import { connectDatabase } from './config/database';
-import { logger } from './utils/logger';
+import logger from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 
@@ -24,6 +24,7 @@ import libraryRoutes from './routes/library';
 import adminRoutes from './routes/admin';
 import aiRoutes from './routes/ai';
 import lessonPlanRoutes from './routes/lessonPlans';
+import searchRoutes from './routes/search';
 
 // Load environment variables from project root
 dotenv.config({ path: path.join(__dirname, '../../.env') });
@@ -83,6 +84,7 @@ app.use('/api/library', libraryRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/lesson-plans', lessonPlanRoutes);
+app.use('/api/search', searchRoutes);
 
 // API info endpoint
 app.get('/api', (req, res) => {

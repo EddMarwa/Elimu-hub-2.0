@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -12,36 +9,34 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  firstName String
-  lastName  String
-  role      UserRole @default(TEACHER)
-  school    String?
-  county    String?
-  subjects  String?  // JSON string array
-  password  String   // hashed password
-  status    UserStatus @default(ACTIVE)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  schemesOfWork   SchemeOfWork[]
-  schemeOfWorkFiles SchemeOfWorkFile[]
-  schemeTemplates SchemeTemplate[]
-  documents       Document[]
-  libraryFiles    LibraryFile[]
-  auditLogs       AuditLog[]
-  lessonPlans     LessonPlan[]
-  comments        Comment[]
+  id                   String                @id @default(cuid())
+  email                String                @unique
+  firstName            String
+  lastName             String
+  role                 UserRole              @default(TEACHER)
+  school               String?
+  county               String?
+  subjects             String?
+  password             String
+  status               UserStatus            @default(ACTIVE)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  auditLogs            AuditLog[]
+  comments             Comment[]
+  documents            Document[]
+  lessonPlanVersions   LessonPlanVersion[]
+  lessonPlans          LessonPlan[]
+  libraryFiles         LibraryFile[]
+  schemeOfWorkFiles    SchemeOfWorkFile[]
   schemeOfWorkVersions SchemeOfWorkVersion[]
-  lessonPlanVersions LessonPlanVersion[]
+  schemeTemplates      SchemeTemplate[]
+  schemesOfWork        SchemeOfWork[]
 
   @@map("users")
 }
 
 model Document {
-  id               String            @id @default(cuid())
+  id               String           @id @default(cuid())
   title            String
   subject          String
   grade            String
@@ -53,10 +48,8 @@ model Document {
   uploadedBy       String
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
-
-  // Relations
-  user   User              @relation(fields: [uploadedBy], references: [id])
-  chunks DocumentChunk[]
+  chunks           DocumentChunk[]
+  user             User             @relation(fields: [uploadedBy], references: [id])
 
   @@map("documents")
 }
@@ -65,20 +58,16 @@ model DocumentChunk {
   id         String   @id @default(cuid())
   documentId String
   content    String
-  metadata   String   // JSON string
+  metadata   String
   chunkIndex Int
   createdAt  DateTime @default(now())
-
-  // Relations
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@map("document_chunks")
 }
 
-
-
 model SchemeOfWork {
-  id                String   @id @default(cuid())
+  id                String                @id @default(cuid())
   title             String
   subject           String
   grade             String
@@ -87,16 +76,14 @@ model SchemeOfWork {
   subStrand         String?
   duration          String
   weeks             Int
-  generalObjectives String   // JSON string array
-  weeklyPlans       String   // JSON string array of weekly plan objects
-  resources         String?  // JSON string array
+  generalObjectives String
+  weeklyPlans       String
+  resources         String?
   createdBy         String
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  // Relations
-  user User @relation(fields: [createdBy], references: [id])
-  versions SchemeOfWorkVersion[]
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  versions          SchemeOfWorkVersion[]
+  user              User                  @relation(fields: [createdBy], references: [id])
 
   @@map("schemes_of_work")
 }
@@ -120,9 +107,7 @@ model SchemeOfWorkFile {
   uploadedBy   String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  // Relations
-  user User @relation(fields: [uploadedBy], references: [id])
+  user         User     @relation(fields: [uploadedBy], references: [id])
 
   @@map("scheme_of_work_files")
 }
@@ -134,93 +119,178 @@ model SchemeTemplate {
   filePath      String
   mimeType      String
   fileSize      Int
-  extractedText String?  // Processed content from the template
+  extractedText String?
   subject       String?
   grade         String?
   uploadedBy    String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  // Relations
-  user User @relation(fields: [uploadedBy], references: [id])
+  user          User     @relation(fields: [uploadedBy], references: [id])
 
   @@map("scheme_templates")
 }
 
 model Template {
-  id          String       @id @default(cuid())
-  name        String
-  type        TemplateType
-  subject     String?
-  grade       String?
-  content     String       // JSON template structure
-  isDefault   Boolean      @default(false)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id        String       @id @default(cuid())
+  name      String
+  type      TemplateType
+  subject   String?
+  grade     String?
+  content   String
+  isDefault Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
   @@map("templates")
 }
 
 model LessonPlan {
-  id          String   @id @default(uuid())
+  id          String              @id @default(uuid())
   title       String
   description String
   grade       String
   subject     String
-  tags        String   // JSON string for storing tags array
+  tags        String
   fileUrl     String
   fileType    String
   uploadedBy  String
   folderId    String?
-  downloads   Int      @default(0)
-  rating      Float    @default(0)
-  reviewCount Int      @default(0)
-  isPublic    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  user    User     @relation(fields: [uploadedBy], references: [id])
-  folder  Folder?  @relation(fields: [folderId], references: [id])
-  comments Comment[]
-  versions LessonPlanVersion[]
+  downloads   Int                 @default(0)
+  rating      Float               @default(0)
+  reviewCount Int                 @default(0)
+  isPublic    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  comments    Comment[]
+  versions    LessonPlanVersion[]
+  folder      Folder?             @relation(fields: [folderId], references: [id])
+  user        User                @relation(fields: [uploadedBy], references: [id])
 
   @@map("lesson_plans")
 }
 
 model Folder {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
   description String?
   parentId    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  parent      Folder?    @relation("FolderHierarchy", fields: [parentId], references: [id])
-  children    Folder[]   @relation("FolderHierarchy")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  parent      Folder?      @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children    Folder[]     @relation("FolderHierarchy")
   lessonPlans LessonPlan[]
 
   @@map("folders")
 }
 
 model Comment {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   content      String
-  rating       Int      @default(0)
+  rating       Int        @default(0)
   userId       String
   lessonPlanId String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // Relations
-  user       User       @relation(fields: [userId], references: [id])
-  lessonPlan LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  lessonPlan   LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id])
 
   @@map("comments")
 }
 
-// Enums
+model LibrarySection {
+  id          String             @id @default(cuid())
+  name        String             @unique
+  description String?
+  order       Int                @default(0)
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  files       LibraryFile[]
+  subfolders  LibrarySubfolder[]
+
+  @@map("library_sections")
+}
+
+model LibrarySubfolder {
+  id        String         @id @default(cuid())
+  name      String
+  sectionId String
+  metadata  String?
+  order     Int            @default(0)
+  isActive  Boolean        @default(true)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  files     LibraryFile[]
+  section   LibrarySection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, name])
+  @@map("library_subfolders")
+}
+
+model LibraryFile {
+  id           String            @id @default(cuid())
+  filename     String
+  originalName String
+  filePath     String
+  fileType     LibraryFileType
+  fileSize     Int
+  mimeType     String
+  status       LibraryFileStatus @default(PENDING)
+  sectionId    String
+  subfolderId  String?
+  uploadedBy   String
+  approvedBy   String?
+  metadata     String?
+  description  String?
+  tags         String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  section      LibrarySection    @relation(fields: [sectionId], references: [id])
+  subfolder    LibrarySubfolder? @relation(fields: [subfolderId], references: [id])
+  uploader     User              @relation(fields: [uploadedBy], references: [id])
+
+  @@map("library_files")
+}
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  action     AuditAction
+  entityType String
+  entityId   String
+  userId     String
+  details    String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now())
+  user       User        @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model SchemeOfWorkVersion {
+  id        String       @id @default(cuid())
+  schemeId  String
+  content   String
+  editedBy  String
+  createdAt DateTime     @default(now())
+  editor    User         @relation(fields: [editedBy], references: [id])
+  scheme    SchemeOfWork @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+
+  @@map("scheme_of_work_versions")
+}
+
+model LessonPlanVersion {
+  id           String     @id @default(cuid())
+  lessonPlanId String
+  content      String
+  editedBy     String
+  createdAt    DateTime   @default(now())
+  editor       User       @relation(fields: [editedBy], references: [id])
+  lessonPlan   LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
+
+  @@map("lesson_plan_versions")
+}
+
 enum UserRole {
   TEACHER
   ADMIN
@@ -276,111 +346,4 @@ enum AuditAction {
   DELETE_FILE
   CREATE_SECTION
   CREATE_SUBFOLDER
-}
-
-// Library System Models
-model LibrarySection {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String?
-  order       Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  subfolders LibrarySubfolder[]
-  files      LibraryFile[]
-
-  @@map("library_sections")
-}
-
-model LibrarySubfolder {
-  id        String   @id @default(cuid())
-  name      String
-  sectionId String
-  metadata  String?  // JSON for flexible data (e.g., grade, subject, year)
-  order     Int      @default(0)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  section LibrarySection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  files   LibraryFile[]
-
-  @@unique([sectionId, name])
-  @@map("library_subfolders")
-}
-
-model LibraryFile {
-  id           String            @id @default(cuid())
-  filename     String
-  originalName String
-  filePath     String
-  fileType     LibraryFileType
-  fileSize     Int
-  mimeType     String
-  status       LibraryFileStatus @default(PENDING)
-  sectionId    String
-  subfolderId  String?
-  uploadedBy   String
-  approvedBy   String?
-  metadata     String?           // JSON for additional file info
-  description  String?
-  tags         String?           // JSON array of tags
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-
-  // Relations
-  section    LibrarySection     @relation(fields: [sectionId], references: [id])
-  subfolder  LibrarySubfolder?  @relation(fields: [subfolderId], references: [id])
-  uploader   User               @relation(fields: [uploadedBy], references: [id])
-
-  @@map("library_files")
-}
-
-model AuditLog {
-  id          String      @id @default(cuid())
-  action      AuditAction
-  entityType  String      // Type of entity (User, LibraryFile, etc.)
-  entityId    String      // ID of the entity
-  userId      String      // User who performed the action
-  details     String?     // JSON with additional details
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime    @default(now())
-
-  // Relations
-  user User @relation(fields: [userId], references: [id])
-
-  @@map("audit_logs")
-}
-
-model SchemeOfWorkVersion {
-  id            String   @id @default(cuid())
-  schemeId      String
-  content       String   // JSON string of the scheme at this version
-  editedBy      String
-  createdAt     DateTime @default(now())
-
-  // Relations
-  scheme   SchemeOfWork @relation(fields: [schemeId], references: [id], onDelete: Cascade)
-  editor   User         @relation(fields: [editedBy], references: [id])
-
-  @@map("scheme_of_work_versions")
-}
-
-model LessonPlanVersion {
-  id            String   @id @default(cuid())
-  lessonPlanId  String
-  content       String   // JSON string of the lesson plan at this version
-  editedBy      String
-  createdAt     DateTime @default(now())
-
-  // Relations
-  lessonPlan LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
-  editor     User       @relation(fields: [editedBy], references: [id])
-
-  @@map("lesson_plan_versions")
 }

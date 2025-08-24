@@ -17,7 +17,8 @@
     "db:studio": "prisma studio",
     "db:seed": "ts-node prisma/seed.ts",
     "create:admins": "ts-node src/scripts/createAdminUsers.ts",
-    "create:admins:js": "node create-admin-users.js"
+    "create:admins:js": "node create-admin-users.js",
+    "setup": "node quick-setup.js"
   },
   "dependencies": {
     "@prisma/client": "^6.12.0",
