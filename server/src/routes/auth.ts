@@ -1,6 +1,5 @@
-import { Router } from 'express';
-import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import { Router, Request, Response } from 'express';
+import * as jwt from 'jsonwebtoken';
 import { asyncHandler } from '../middleware/errorHandler';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/authMiddleware';
 import userService from '../services/userService';

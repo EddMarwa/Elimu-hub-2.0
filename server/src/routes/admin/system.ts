@@ -1,4 +1,4 @@
-import express from 'express';
+import * as express from 'express';
 import { Response } from 'express';
 import { PrismaClient } from '../../generated/prisma';
 import logger from '../../utils/logger';

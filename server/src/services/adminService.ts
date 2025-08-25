@@ -31,11 +31,11 @@ export interface UserWithoutPassword {
   email: string;
   firstName: string;
   lastName: string;
-  role: UserRole;
+  role: string; // Use string to match Prisma's enum type
   school?: string | null;
   county?: string | null;
   subjects?: string | null;
-  status: UserStatus;
+  status: string; // Use string to match Prisma's enum type
   createdAt: Date;
   updatedAt: Date;
   _count?: {
