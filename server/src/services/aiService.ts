@@ -196,13 +196,26 @@ export class AIService {
     max_tokens?: number,
     temperature?: number,
   }): Promise<string> {
+    // Check if any API keys are available
+    if (!this.groqApiKey && !this.openRouterApiKey) {
+      throw new Error('No AI API keys configured. Please set GROQ_API_KEY or OPENROUTER_API_KEY environment variables.');
+    }
+
     try {
-      // Always try Groq first
-      return await this.callGrokAPIChat(request);
+      // Always try Groq first if available
+      if (this.groqApiKey) {
+        return await this.callGrokAPIChat(request);
+      }
     } catch (err) {
       logger.warn('Groq failed, falling back to OpenRouter:', err);
+    }
+
+    // Fall back to OpenRouter if Groq fails or is not available
+    if (this.openRouterApiKey) {
       return await this.callOpenRouterAPIChat(request);
     }
+
+    throw new Error('All AI providers failed. Please check your API keys and try again.');
   }
 
   // Groq chat completion (OpenAI-compatible)

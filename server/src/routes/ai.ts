@@ -166,7 +166,20 @@ router.post('/chat', asyncHandler(async (req: Request, res: Response) => {
     if (error instanceof Error && error.stack) {
       console.error(error.stack);
     }
-    return res.status(500).json({ success: false, message: 'AI chat failed', error: error instanceof Error ? error.message : error });
+    // Safe error serialization to avoid circular references
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
+    // Provide helpful error message for missing API keys
+    if (errorMessage.includes('No AI API keys configured')) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'AI service not configured', 
+        error: 'Please configure GROQ_API_KEY or OPENROUTER_API_KEY environment variables to use AI features.',
+        setupInstructions: 'Add your API keys to the server/.env file. See env.example for the required format.'
+      });
+    }
+    
+    return res.status(500).json({ success: false, message: 'AI chat failed', error: errorMessage });
   }
 }));
 
@@ -176,16 +189,14 @@ router.get('/youtube/search', asyncHandler(async (req: Request, res: Response) =
   if (!q || typeof q !== 'string') {
     return res.status(400).json({ success: false, message: 'Missing query parameter q' });
   }
-  // Only allow educational queries (simple keyword filter)
-  const educationalKeywords = [
-    'science', 'math', 'history', 'experiment', 'lesson', 'tutorial', 'education', 'cbc', 'curriculum', 'teacher', 'class', 'learning', 'demonstration', 'activity', 'explained', 'explainer', 'school', 'subject', 'topic', 'how to', 'explore', 'explain', 'study', 'revision', 'practice', 'exam', 'test', 'cbc', 'kenya', 'primary', 'secondary', 'grade', 'syllabus'
-  ];
-  const isEducational = educationalKeywords.some(kw => q.toLowerCase().includes(kw));
-  if (!isEducational) {
-    return res.status(200).json({ success: false, message: 'No educational video suggested for this topic.' });
-  }
+  // For now, allow all queries to pass through for testing
+  // TODO: Implement proper educational content filtering
+  console.log('Processing YouTube search for query:', q);
   try {
-    const apiKey = 'AIzaSyAZk_pGC52sgHzFKdSD7FEDayAf636p-9Q';
+    const apiKey = process.env.YOUTUBE_API_KEY || 'AIzaSyAZk_pGC52sgHzFKdSD7FEDayAf636p-9Q';
+    console.log('YouTube search query:', q);
+    console.log('Using YouTube API key:', apiKey ? '[set]' : '[missing]');
+    
     const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
       params: {
         part: 'snippet',
@@ -214,7 +225,26 @@ router.get('/youtube/search', asyncHandler(async (req: Request, res: Response) =
       return res.status(404).json({ success: false, message: 'No video found' });
     }
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'YouTube API error', error });
+    console.error('YouTube API error:', error instanceof Error ? error.message : error);
+    if (error instanceof Error && error.stack) {
+      console.error(error.stack);
+    }
+    
+    // Check if it's an API key issue
+    if (error instanceof Error && error.message.includes('API key')) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'YouTube API key error', 
+        error: 'Please configure YOUTUBE_API_KEY environment variable for video search features.',
+        setupInstructions: 'Add your YouTube Data API v3 key to the server/.env file.'
+      });
+    }
+    
+    return res.status(500).json({ 
+      success: false, 
+      message: 'YouTube API error', 
+      error: error instanceof Error ? error.message : String(error)
+    });
   }
 }));
 
