@@ -387,7 +387,6 @@ router.post('/upload-template', authenticateToken, upload.single('template'), as
     });
 
     logger.info(`Template uploaded and saved: ${req.file.originalname} by user ${userId}`);
-
     res.json({
       success: true,
       message: 'Template uploaded successfully',
