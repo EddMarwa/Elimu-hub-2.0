@@ -388,7 +388,7 @@ router.post('/upload-template', authenticateToken, upload.single('template'), as
 
     logger.info(`Template uploaded and saved: ${req.file.originalname} by user ${userId}`);
 
-    // Delete the uploaded file from the server
+  
     res.json({
       success: true,
       message: 'Template uploaded successfully',
