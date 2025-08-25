@@ -12,6 +12,8 @@ import { UserRole } from '../../generated/prisma';
 
 const router = Router();
 
+
+
 /**
  * @route   GET /api/admin/users
  * @desc    Get all users with filtering and pagination
