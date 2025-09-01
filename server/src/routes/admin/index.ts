@@ -5,6 +5,8 @@ import auditRoutes from './audit';
 
 const router = Router();
 
+
+
 // Admin routes
 router.use('/users', userRoutes);
 router.use('/system', systemRoutes);
